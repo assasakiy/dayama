@@ -1,0 +1,386 @@
+import React, { useState } from 'react';
+import { Head, router } from '@inertiajs/react';
+import DashboardLayout from '@dashboard/Layouts/DashboardLayout';
+import { Button } from '@dashboard/Components/ui/button';
+import { Input } from '@dashboard/Components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@dashboard/Components/ui/dialog';
+import ConfirmDialog from '@dashboard/Components/ui/confirm-dialog';
+import PermissionMatrix from '@dashboard/Components/ui/permission-matrix';
+import {
+    Plus, ShieldCheck, Pencil, Trash2, Users, Lock, X,
+    Copy, MoreVertical, Crown, Shield, Star, Save
+} from 'lucide-react';
+import { Btn } from '@dashboard/Components/ui/btn';
+
+interface PermissionItem {
+    id: string;
+    name: string;
+    module?: string;
+    action?: string;
+    scope?: string;
+    description?: string;
+}
+
+interface Role {
+    id: string;
+    name: string;
+    slug?: string;
+    guard_name: string;
+    display_name?: string | null;
+    description?: string | null;
+    color?: string | null;
+    icon?: string | null;
+    is_system: boolean;
+    status: string;
+    sort_order: number;
+    permissions_count: number;
+    users_count: number;
+    rank: number;
+    created_at: string;
+    can: {
+        update: boolean;
+        delete: boolean;
+    };
+}
+
+interface GroupedPermissions {
+    [group: string]: PermissionItem[];
+}
+
+const ROLE_COLORS = [
+    '#7c3aed', '#2563eb', '#dc2626', '#059669', '#d97706',
+    '#6b7280', '#ec4899', '#0891b2', '#65a30d', '#9333ea',
+];
+
+const ROLE_ICONS = [
+    { name: 'shield', label: 'Shield' },
+    { name: 'crown', label: 'Crown' },
+    { name: 'star', label: 'Star' },
+    { name: 'user', label: 'User' },
+    { name: 'pen-tool', label: 'Editor' },
+    { name: 'feather', label: 'Author' },
+    { name: 'edit-3', label: 'Writer' },
+    { name: 'eye', label: 'Viewer' },
+];
+
+function RoleIcon({ icon, color, size = 5 }: { icon?: string | null; color?: string | null; size?: number }) {
+    const style = color ? { color } : {};
+    const cls = `w-${size} h-${size}`;
+    switch (icon) {
+        case 'crown': return <Crown className={cls} style={style} />;
+        case 'star': return <Star className={cls} style={style} />;
+        case 'shield': return <Shield className={cls} style={style} />;
+        default: return <ShieldCheck className={cls} style={style} />;
+    }
+}
+
+export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]; groupedPermissions: GroupedPermissions }) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editRole, setEditRole] = useState<Role | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+    // Form state
+    const [name, setName] = useState('');
+    const [displayName, setDisplayName] = useState('');
+    const [description, setDescription] = useState('');
+    const [color, setColor] = useState('#7c3aed');
+    const [icon, setIcon] = useState('shield');
+    const [status, setStatus] = useState('active');
+    const [rank, setRank] = useState(10);
+    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+    const [initialPermissions, setInitialPermissions] = useState<string[]>([]);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [submitting, setSubmitting] = useState(false);
+
+    const isEdit = !!editRole;
+
+    const isDirty = isEdit 
+        ? (
+            name !== (editRole?.name ?? '') ||
+            displayName !== (editRole?.display_name ?? '') ||
+            description !== (editRole?.description ?? '') ||
+            color !== (editRole?.color ?? '#7c3aed') ||
+            icon !== (editRole?.icon ?? 'shield') ||
+            status !== (editRole?.status ?? 'active') ||
+            rank !== (editRole?.rank ?? 10) ||
+            JSON.stringify([...selectedPermissions].sort()) !== JSON.stringify([...initialPermissions].sort())
+        )
+        : (!!name || !!displayName || !!description || selectedPermissions.length > 0);
+
+    const resetForm = () => {
+        setName(''); setDisplayName(''); setDescription('');
+        setColor('#7c3aed'); setIcon('shield'); setStatus('active'); setRank(10);
+        setSelectedPermissions([]); setInitialPermissions([]); setErrors({}); setSubmitting(false); setEditRole(null);
+    };
+
+    const openCreate = () => { resetForm(); setModalOpen(true); };
+
+    const openEdit = (role: Role) => {
+        setEditRole(role);
+        setName(role.name);
+        setDisplayName(role.display_name ?? '');
+        setDescription(role.description ?? '');
+        setColor(role.color || '#7c3aed');
+        setIcon(role.icon || 'shield');
+        setStatus(role.status);
+        setRank(role.rank);
+        
+        // Fetch permissions for the role
+        fetch(`/dashboard/roles/${role.id}/permissions`).then(r => r.json()).then(data => {
+            setSelectedPermissions(data.permissions);
+            setInitialPermissions(data.permissions);
+        }).finally(() => setSubmitting(false));
+        setModalOpen(true);
+        setOpenMenuId(null);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        const data = {
+            name, display_name: displayName, description,
+            color, icon, status, rank, permissions: selectedPermissions
+        }; 
+        if (isEdit) {
+            router.put(`/dashboard/roles/${editRole!.id}`, data, {
+                onError: (errs) => { setErrors(errs); setSubmitting(false); },
+                onSuccess: () => { setModalOpen(false); resetForm(); },
+                onFinish: () => setSubmitting(false),
+            });
+        } else {
+            router.post('/dashboard/roles', data, {
+                onError: (errs) => { setErrors(errs); setSubmitting(false); },
+                onSuccess: () => { setModalOpen(false); resetForm(); },
+                onFinish: () => setSubmitting(false),
+            });
+        }
+    };
+
+    const handleDelete = () => {
+        if (!deleteTarget) return;
+        router.delete(`/dashboard/roles/${deleteTarget.id}`, { preserveScroll: true });
+        setDeleteTarget(null);
+    };
+
+    const handleDuplicate = (id: string) => {
+        router.post(`/dashboard/roles/${id}/duplicate`, {}, { preserveScroll: true });
+        setOpenMenuId(null);
+    };
+
+    return (
+        <DashboardLayout>
+            <Head title="Roles" />
+            <div className="space-y-5">
+                <div className="flex items-center justify-end md:justify-between w-full">
+                    <div className="hidden md:block">
+                        <h1 className="text-xl font-semibold tracking-tight">Roles</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{roles.length} role{roles.length !== 1 ? 's' : ''} configured</p>
+                    </div>
+                    <button
+                        onClick={openCreate}
+                        className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Role
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {roles.map((role) => (
+                        <div 
+                            key={role.id} 
+                            className="bg-background border border-border-subtle rounded-xl p-5 hover:shadow-elevated transition-shadow group relative"
+                            style={{ borderTopWidth: '4px', borderTopColor: role.color || '#7c3aed' }}
+                        >
+                            <div className="flex items-start justify-between mt-1">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                                        style={{ backgroundColor: (role.color || '#7c3aed') + '20' }}
+                                    >
+                                        <RoleIcon icon={role.icon} color={role.color} />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="font-semibold text-sm">{role.display_name || role.name}</p>
+                                            {role.is_system && (
+                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                                                    <Lock className="w-2.5 h-2.5" />
+                                                    System
+                                                </span>
+                                            )}
+                                        </div>
+                                        {role.display_name && (
+                                            <p className="text-xs text-muted-foreground">{role.name}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setOpenMenuId(openMenuId === role.id ? null : role.id)}
+                                        className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-all ${openMenuId === role.id ? 'opacity-100 bg-surface-muted' : 'opacity-100 md:opacity-0 group-hover:opacity-100'}`}
+                                    >
+                                        <MoreVertical className="w-4 h-4" />
+                                    </button>
+                                    {openMenuId === role.id && (
+                                        <>
+                                            <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
+                                            <div className="absolute right-0 top-8 z-20 w-44 bg-background border border-border-subtle rounded-xl shadow-lg py-1 overflow-hidden">
+                                                <div className="py-1">
+                                                    {role.can.update && (
+                                                        <button
+                                                            onClick={() => { openEdit(role); setOpenMenuId(null); }}
+                                                            className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-surface-muted flex items-center gap-2"
+                                                        >
+                                                            <Pencil className="w-4 h-4" /> Edit Role
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => { handleDuplicate(role.id); setOpenMenuId(null); }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-surface-muted flex items-center gap-2"
+                                                    >
+                                                        <Copy className="w-4 h-4" /> Duplicate
+                                                    </button>
+                                                    {role.can.delete && !role.is_system && (
+                                                        <button
+                                                            onClick={() => { setDeleteTarget({ id: role.id, name: role.name }); setOpenMenuId(null); }}
+                                                            className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 flex items-center gap-2"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" /> Delete Role
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {role.description && (
+                                <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{role.description}</p>
+                            )}
+
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 pt-3 border-t border-border-subtle">
+                                <span className="inline-flex items-center gap-1">
+                                    <Lock className="w-3 h-3" />
+                                    {role.permissions_count} permissions
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                    <Users className="w-3 h-3" />
+                                    {role.users_count} users
+                                </span>
+                                <span className="ml-auto font-medium">Rank: {role.rank}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+                    <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Role' : 'Create Role'}</DialogTitle>
+                        <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
+                            <X className="w-4 h-4" />
+                        </DialogClose>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                        <div className="space-y-5 px-6 py-4 overflow-y-auto flex-1">
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input label="Name (slug)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="e.g. editor" disabled={isEdit && editRole?.is_system} />
+                                <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={errors.display_name} placeholder="e.g. Editor" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Description</label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Optional description of this role..."
+                                    rows={2}
+                                    className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Role Color</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {ROLE_COLORS.map((c) => (
+                                            <button
+                                                key={c}
+                                                type="button"
+                                                onClick={() => setColor(c)}
+                                                className={`w-7 h-7 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-105'}`}
+                                                style={{ backgroundColor: c }}
+                                            />
+                                        ))}
+                                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border border-border-subtle" title="Custom color" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-foreground">Status</label>
+                                        <select
+                                            value={status}
+                                            onChange={(e) => setStatus(e.target.value)}
+                                            className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-foreground">Rank <span className="text-muted-foreground font-normal">(0-100)</span></label>
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={rank}
+                                            onChange={(e) => setRank(parseInt(e.target.value) || 0)}
+                                            error={errors.rank}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Permissions</label>
+                                {errors.permissions && <p className="text-xs text-destructive">{errors.permissions}</p>}
+                                <PermissionMatrix
+                                    groupedPermissions={groupedPermissions}
+                                    selected={selectedPermissions}
+                                    onChange={setSelectedPermissions}
+                                />
+                            </div>
+                        </div>
+
+                        <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle mt-0 shrink-0">
+                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Cancel</Button>
+                            <Btn
+                                type="submit"
+                                loading={submitting}
+                                disabled={!isDirty || submitting}
+                                icon={<Save className="w-4 h-4" />}
+                            >
+                                {isEdit ? 'Update Role' : 'Create Role'}
+                            </Btn>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <ConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+                title="Delete Role"
+                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Users with this role may lose permissions.` : ''}
+                confirmLabel="Delete"
+                variant="danger"
+                onConfirm={handleDelete}
+            />
+        </DashboardLayout>
+    );
+}

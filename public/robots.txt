@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Sitemap: http://test-blog.test/sitemap.xml
+
+Disallow: /dashboard
+Disallow: /api
+Disallow: /login
+Disallow: /register
+Disallow: /_debugbar
