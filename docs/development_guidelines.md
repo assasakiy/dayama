@@ -46,26 +46,24 @@ Sistem menggunakan **React (Inertia.js)** dengan antarmuka berbasis **Tailwind C
 
 ## 3. Status Implementasi Fitur & Progress Saat Ini
 
-Proyek saat ini sedang mengimplementasikan **CMS Settings & Multi-Domain System**. Berikut adalah progres terakhir dari iterasi pengembangan:
+Proyek saat ini menggunakan arsitektur **File-Based Multi-Domain & CMS**. Berikut adalah progres terakhir dari iterasi pengembangan:
 
-- **[SELESAI] Phase 1 - 3: Fondasi Settings, Email Templates & Multi-Domain Controller**
-  - Pemindahan antarmuka Settings sepenuhnya ke *Sidebar*.
+- **[SELESAI] Phase 1: File-Based Multi-Domain Architecture**
+  - Implementasi murni arsitektur monolith terisolasi.
+  - File `config/projects.php` sebagai otak kendali domain (`core` vs `projects`).
+  - Pemisahan total rute API, Dashboard, Auth, Blog, dan Landing.
+  - Implementasi Middleware `CheckDashboardAccess` untuk mengamankan akses admin.
+  - Pendelegasian pemuatan rute dinamis ke `RoutesServiceProvider`.
+- **[BELUM SELESAI] Phase 2: Penyempurnaan Settings UI & Email Templates**
+  - Implementasi UI React/Inertia untuk `SettingController` secara penuh.
   - Pembuatan *Email Templates CRUD* dengan *WYSIWYG editor*.
-  - Pembuatan `LandingController` yang mampu mengarahkan pengguna ke halaman spesifik (Blog, Homepage Custom, Dashboard) secara dinamis.
-- **[SELESAI] Phase 2B: Domain-Aware Branding**
-  - Implementasi `TemplateMailable` yang cerdas: Injeksi variabel `brand_name` dan `footer_brand` disesuaikan secara _realtime_ berdasarkan *host* *request* (Multi-Domain).
-  - Teks *Footer* email diatur murni lewat manajemen *Email Templates*, **bukan** dari SMTP Settings.
-- **[SELESAI] Phase 4: Dynamic Static Pages**
-  - Pembuatan arsitektur `Page` (Model, Controller, Migration).
-  - Dukungan perutean dinamis `/{slug}` untuk merender halaman kustom yang terdaftar di database, dengan proteksi *whitelist template*.
-- **[SELESAI] Refactor: UI Pengaturan Mail (Mail Settings)**
+  - Menghubungkan *TemplateMailable* dengan database *Email Templates*.
+- **[SELESAI] Refactor UI Standar**
+  - Pemindahan antarmuka Settings sepenuhnya ke *Sidebar*.
   - Optimasi antarmuka formulir *Settings* (Grid 2-Kolom).
-  - Logika otomatis untuk *Port Default* (TLS = 587, SSL = 465).
   - Integrasi Inertia `useForm` (mendukung `isDirty` dan indikasi _loading_ `processing`).
-- **[BELUM DIMULAI] Phase 5: Navigation Dinamis & Domain-Aware Menus**
-  - Pembuatan sistem relasi Menu dan *Nav Items*.
-  - Dukungan lokasi (Header/Footer) dan penyaringan menu berdasarkan *domain context*.
-  - UI *Drag-and-Drop* untuk manajemen urutan menu.
+- **[DIBATALKAN] Dynamic Static Pages (via DB)**
+  - Karena adopsi `File-Based Multi-Domain`, pembuatan Landing Page atau halaman kustom baru harus di-hardcode sebagai sebuah *Project Module* di file `.blade.php` agar tidak *over-engineering*.
 
 ---
 
