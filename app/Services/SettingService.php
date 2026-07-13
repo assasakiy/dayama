@@ -24,10 +24,13 @@ final class SettingService
     /**
      * Get a single setting value by dotted key (e.g. 'general.site_name').
      */
-    public static function get(string $key, mixed $default = null): mixed
+    public static function get(string $key, mixed $default = null, string $context = 'global'): mixed
     {
-        return Cache::remember("setting:{$key}", self::CACHE_TTL, function () use ($key, $default) {
-            $setting = Setting::where('key', $key)->first();
+        return Cache::remember("setting:{$context}:{$key}", self::CACHE_TTL, function () use ($key, $default, $context) {
+            $setting = Setting::where('key', $key)
+                ->whereIn('context', [$context, 'global'])
+                ->orderByRaw("context = ? DESC", [$context])
+                ->first();
 
             if (! $setting) {
                 return $default;
@@ -46,29 +49,38 @@ final class SettingService
      * Get all settings within a group as a key→value array.
      * Keys are returned without the group prefix (e.g. 'site_name' not 'general.site_name').
      */
-    public static function group(string $group): array
+    public static function group(string $group, string $context = 'global'): array
     {
-        return Cache::remember("setting_group:{$group}", self::CACHE_TTL, function () use ($group) {
-            return Setting::where('group', $group)
-                ->get()
-                ->mapWithKeys(function (Setting $setting) {
-                    $shortKey = ltrim(str_replace($setting->group . '.', '', $setting->key), '.');
-                    $value = $setting->is_env
-                        ? static::fromEnv($setting->key)
-                        : $setting->value;
-                    return [$shortKey => $value];
-                })
-                ->toArray();
+        return Cache::remember("setting_group:{$context}:{$group}", self::CACHE_TTL, function () use ($group, $context) {
+            // Fetch global and context specific, then merge
+            $globals = Setting::where('group', $group)->where('context', 'global')->get()->keyBy('key');
+            $contexts = Setting::where('group', $group)->where('context', $context)->get()->keyBy('key');
+
+            return $globals->map(function ($globalSetting) use ($contexts) {
+                $actualSetting = $contexts->get($globalSetting->key) ?? $globalSetting;
+                $shortKey = ltrim(str_replace($actualSetting->group . '.', '', $actualSetting->key), '.');
+                $value = $actualSetting->is_env
+                    ? static::fromEnv($actualSetting->key)
+                    : $actualSetting->value;
+                return [$shortKey => $value];
+            })->collapse()->toArray();
         });
     }
 
     /**
      * Get all settings as a nested array grouped by group name.
      */
-    public static function all(): array
+    public static function all(string $context = 'global'): array
     {
-        return Cache::remember('settings_all', self::CACHE_TTL, function () {
-            return Setting::all()
+        return Cache::remember("settings_all:{$context}", self::CACHE_TTL, function () use ($context) {
+            $globals = Setting::where('context', 'global')->get()->keyBy('key');
+            $contexts = Setting::where('context', $context)->get()->keyBy('key');
+
+            $merged = $globals->map(function ($globalSetting) use ($contexts) {
+                return $contexts->get($globalSetting->key) ?? $globalSetting;
+            });
+
+            return $merged
                 ->groupBy('group')
                 ->map(function ($groupItems) {
                     return $groupItems->mapWithKeys(function (Setting $setting) {
@@ -86,22 +98,24 @@ final class SettingService
      * Get raw setting models for a group (includes metadata like is_env, is_locked, type).
      * Used by the dashboard UI to render fields correctly.
      */
-    public static function groupWithMeta(string $group): array
+    public static function groupWithMeta(string $group, string $context = 'global'): array
     {
-        return Setting::where('group', $group)
-            ->orderBy('key')
-            ->get()
-            ->map(function (Setting $setting) {
-                return [
-                    'key'         => $setting->key,
-                    'value'       => $setting->is_env ? static::fromEnv($setting->key) : $setting->value,
-                    'type'        => $setting->type,
-                    'is_env'      => $setting->is_env,
-                    'is_locked'   => $setting->is_locked,
-                    'description' => $setting->description,
-                ];
-            })
-            ->toArray();
+        $globals = Setting::where('group', $group)->where('context', 'global')->orderBy('key')->get()->keyBy('key');
+        $contexts = Setting::where('group', $group)->where('context', $context)->get()->keyBy('key');
+
+        return $globals->map(function (Setting $globalSetting) use ($contexts, $context) {
+            $actualSetting = $contexts->get($globalSetting->key) ?? $globalSetting;
+            return [
+                'key'         => $globalSetting->key,
+                'value'       => $actualSetting->is_env ? static::fromEnv($actualSetting->key) : $actualSetting->value,
+                'type'        => $globalSetting->type,
+                'is_env'      => $globalSetting->is_env,
+                'is_locked'   => $globalSetting->is_locked,
+                'description' => $globalSetting->description,
+                'is_fallback' => !$contexts->has($globalSetting->key) && $context !== 'global',
+                'context'     => $actualSetting->context,
+            ];
+        })->values()->toArray();
     }
 
     // -------------------------------------------------------------------------
@@ -111,47 +125,82 @@ final class SettingService
     /**
      * Set a single setting value. Throws if the setting is env-managed.
      */
-    public static function set(string $key, mixed $value): void
+    public static function set(string $key, mixed $value, string $context = 'global'): void
     {
-        $setting = Setting::where('key', $key)->first();
+        $globalSetting = Setting::where('key', $key)->where('context', 'global')->first();
+        $actualSetting = Setting::where('key', $key)->where('context', $context)->first();
 
-        if ($setting?->is_env) {
+        // Use global setting for meta checks if actual doesn't exist yet
+        $metaSource = $actualSetting ?? $globalSetting;
+
+        if ($metaSource?->is_env) {
             throw new \RuntimeException(
                 "Setting [{$key}] is environment-managed and cannot be written from the UI. " .
                 'Please update your .env file instead.'
             );
         }
 
-        if ($setting?->is_locked) {
+        if ($metaSource?->is_locked) {
             throw new \RuntimeException("Setting [{$key}] is locked and cannot be modified.");
         }
 
         Setting::updateOrCreate(
-            ['key' => $key],
-            ['value' => $value]
+            ['key' => $key, 'context' => $context],
+            [
+                'value' => $value,
+                'group' => $globalSetting?->group ?? 'general',
+                'type'  => $globalSetting?->type ?? 'string',
+                'description' => $globalSetting?->description,
+            ]
         );
 
-        Cache::forget("setting:{$key}");
+        self::forgetCache($key, $context);
     }
 
     /**
      * Bulk-set an array of key→value pairs.
      * Silently skips is_env and is_locked fields.
      */
-    public static function setMany(array $values): void
+    public static function setMany(array $values, string $context = 'global'): void
     {
         foreach ($values as $key => $value) {
-            $setting = Setting::where('key', $key)->first();
-            if ($setting?->is_env || $setting?->is_locked) {
+            $globalSetting = Setting::where('key', $key)->where('context', 'global')->first();
+            $actualSetting = Setting::where('key', $key)->where('context', $context)->first();
+            
+            $metaSource = $actualSetting ?? $globalSetting;
+
+            if ($metaSource?->is_env || $metaSource?->is_locked) {
                 continue;
             }
 
             Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
+                ['key' => $key, 'context' => $context],
+                [
+                    'value' => $value,
+                    'group' => $globalSetting?->group ?? 'general',
+                    'type'  => $globalSetting?->type ?? 'string',
+                    'description' => $globalSetting?->description,
+                ]
             );
 
-            Cache::forget("setting:{$key}");
+            self::forgetCache($key, $context);
+        }
+    }
+
+    private static function forgetCache(string $key, string $context): void
+    {
+        // Since dashboard and blog contexts inherit from global, we must clear them all
+        // to avoid stale inherited values when a global value is updated.
+        $contextsToClear = array_unique(['global', 'dashboard', 'blog', $context]);
+
+        $setting = Setting::where('key', $key)->where('context', $context)->first();
+
+        foreach ($contextsToClear as $ctx) {
+            Cache::forget("setting:{$ctx}:{$key}");
+            if ($setting) {
+                Cache::forget("setting_group:{$ctx}:{$setting->group}");
+            }
+            Cache::forget("settings_all:{$ctx}");
         }
     }
 
@@ -159,30 +208,38 @@ final class SettingService
     // Cache Invalidation
     // -------------------------------------------------------------------------
 
-    public static function forget(string $key): void
+    public static function forget(string $key, string $context = 'global'): void
     {
-        Cache::forget("setting:{$key}");
+        self::forgetCache($key, $context);
     }
 
-    public static function forgetGroup(string $group): void
+    public static function forgetGroup(string $group, string $context = 'global'): void
     {
-        Cache::forget("setting_group:{$group}");
-        Cache::forget('settings_all');
+        $contextsToClear = array_unique(['global', 'dashboard', 'blog', $context]);
 
-        Setting::where('group', $group)
-            ->pluck('key')
-            ->each(fn (string $key) => Cache::forget("setting:{$key}"));
+        foreach ($contextsToClear as $ctx) {
+            Cache::forget("setting_group:{$ctx}:{$group}");
+            Cache::forget("settings_all:{$ctx}");
+
+            Setting::where('group', $group)->where('context', $context)
+                ->pluck('key')
+                ->each(fn (string $key) => Cache::forget("setting:{$ctx}:{$key}"));
+        }
     }
 
     public static function forgetAll(): void
     {
-        Cache::forget('settings_all');
-
-        Setting::pluck('key', 'group')
-            ->each(function (string $key, string $group) {
-                Cache::forget("setting:{$key}");
-                Cache::forget("setting_group:{$group}");
-            });
+        // This is a bit heavy, might want to flush by tag if supported, but for now clear known patterns
+        $contexts = Setting::select('context')->distinct()->pluck('context');
+        
+        foreach ($contexts as $context) {
+            Cache::forget("settings_all:{$context}");
+            Setting::where('context', $context)->pluck('key', 'group')
+                ->each(function (string $key, string $group) use ($context) {
+                    Cache::forget("setting:{$context}:{$key}");
+                    Cache::forget("setting_group:{$context}:{$group}");
+                });
+        }
     }
 
     // -------------------------------------------------------------------------

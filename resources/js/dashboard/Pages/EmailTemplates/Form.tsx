@@ -24,7 +24,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/dashboard/email-templates/${template.id}`, {
+        put(`/email-templates/${template.id}`, {
             preserveScroll: true,
             onSuccess: () => setPreviewKey(k => k + 1)
         });
@@ -37,7 +37,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
-                            <Link href="/dashboard/email-templates" className="hover:text-foreground flex items-center gap-1 transition-colors">
+                            <Link href="/email-templates" className="hover:text-foreground flex items-center gap-1 transition-colors">
                                 <ArrowLeft className="w-3.5 h-3.5" /> Back to templates
                             </Link>
                         </div>
@@ -146,7 +146,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                             </div>
                             <iframe
                                 key={previewKey}
-                                src={`/dashboard/email-templates/${template.id}/preview`}
+                                src={`/email-templates/${template.id}/preview`}
                                 className="w-full flex-1 bg-white"
                                 sandbox="allow-same-origin"
                                 title="Email Preview"

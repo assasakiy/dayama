@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { Btn } from '@dashboard/Components/ui/btn';
 
 export default function Login() {
+    const { props } = usePage<any>();
+    const settings = props.settings?.general || {};
+    const siteName = settings.site_name || 'ModernBlog';
+    const logoUrl = settings.logo_url || null;
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [remember, setRemember] = useState(false);
@@ -16,7 +21,7 @@ export default function Login() {
         setSubmitting(true);
         router.post('/login', { email, password, remember }, {
             onError: (errs) => { setErrors(errs); setSubmitting(false); },
-            onSuccess: () => { window.location.href = '/dashboard'; },
+            onSuccess: () => { window.location.href = '/'; },
             onFinish: () => setSubmitting(false),
         });
     };
@@ -32,9 +37,13 @@ export default function Login() {
 
                     <div className="p-8">
                         <div className="text-center mb-8">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-xl mx-auto mb-4 shadow-sm">
-                                M
-                            </div>
+                            {logoUrl ? (
+                                <img src={logoUrl} alt={siteName} className="w-12 h-12 object-contain mx-auto mb-4" />
+                            ) : (
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-xl mx-auto mb-4 shadow-sm">
+                                    {siteName.charAt(0)}
+                                </div>
+                            )}
                             <h1 className="text-xl font-semibold tracking-tight">Welcome back</h1>
                             <p className="text-sm text-muted-foreground mt-1.5">Sign in to your dashboard</p>
                         </div>

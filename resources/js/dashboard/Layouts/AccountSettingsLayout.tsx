@@ -27,25 +27,25 @@ export const menuGroups: MenuGroup[] = [
     {
         title: 'Personal',
         items: [
-            { label: 'Profile', href: '/dashboard/account/profile', icon: User },
-            { label: 'Account Details', href: '/dashboard/account/details', icon: Settings2 },
+            { label: 'Profile', href: '/account/profile', icon: User },
+            { label: 'Account Details', href: '/account/details', icon: Settings2 },
         ]
     },
     {
         title: 'Security & Privacy',
         items: [
-            { label: 'Security', href: '/dashboard/account/security', icon: Shield },
-            { label: 'Connected Accounts', href: '/dashboard/account/connected', icon: Share2 },
-            { label: 'Export Data', href: '/dashboard/account/export', icon: Download },
-            { label: 'Delete Account', href: '/dashboard/account/delete', icon: Trash2, destructive: true },
+            { label: 'Security', href: '/account/security', icon: Shield },
+            { label: 'Connected Accounts', href: '/account/connected', icon: Share2 },
+            { label: 'Export Data', href: '/account/export', icon: Download },
+            { label: 'Delete Account', href: '/account/delete', icon: Trash2, destructive: true },
         ]
     },
     {
         title: 'Preferences',
         items: [
-            { label: 'Appearance', href: '/dashboard/account/appearance', icon: Palette },
-            { label: 'Writing Preferences', href: '/dashboard/account/writing', icon: PenTool, permission: 'posts.create' },
-            { label: 'Notifications', href: '/dashboard/account/notifications', icon: Bell },
+            { label: 'Appearance', href: '/account/appearance', icon: Palette },
+            { label: 'Writing Preferences', href: '/account/writing', icon: PenTool, permission: 'posts.create' },
+            { label: 'Notifications', href: '/account/notifications', icon: Bell },
         ]
     }
 ];
@@ -57,7 +57,7 @@ export default function AccountSettingsLayout({ children, title = 'Settings', de
         return url.startsWith(href);
     };
 
-    const isIndex = url === '/dashboard/account' || url === '/dashboard/account/';
+    const isIndex = url === '/account' || url === '/account/';
     const { can } = usePermissions();
 
     const filteredMenuGroups = menuGroups.map(group => ({
@@ -108,7 +108,7 @@ export default function AccountSettingsLayout({ children, title = 'Settings', de
                     {/* Mobile Breadcrumb */}
                     <div className="md:hidden mb-5">
                         <div className="bg-background border border-border-subtle rounded-xl shadow-sm p-3 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Link href="/dashboard/account" className="flex items-center gap-1 hover:text-primary transition-colors">
+                            <Link href="/account" className="flex items-center gap-1 hover:text-primary transition-colors">
                                 <ChevronLeft className="w-4 h-4 -ml-1" />
                                 <span className="font-medium">Settings</span>
                             </Link>

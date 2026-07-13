@@ -96,12 +96,12 @@ export default function PermissionGroupsIndex({
         const data = { name, description: description || null, color, sort_order: sortOrder, permission_ids: permIds };
 
         if (isEdit) {
-            router.put(`/dashboard/permission-groups/${editGroup!.id}`, data, {
+            router.put(`/permission-groups/${editGroup!.id}`, data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
             });
         } else {
-            router.post('/dashboard/permission-groups', data, {
+            router.post('/permission-groups', data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
             });
@@ -110,7 +110,7 @@ export default function PermissionGroupsIndex({
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/permission-groups/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/permission-groups/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 

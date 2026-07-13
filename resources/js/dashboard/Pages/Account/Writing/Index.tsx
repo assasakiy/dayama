@@ -16,7 +16,7 @@ export default function WritingIndex() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/dashboard/account/writing', { preserveScroll: true });
+        put('/account/writing', { preserveScroll: true });
     };
 
     return (

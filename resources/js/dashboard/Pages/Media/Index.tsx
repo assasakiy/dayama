@@ -103,7 +103,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
         if (role && role !== 'all') query.role = role;
         if (user && user !== 'all') query.user = user;
         
-        router.get('/dashboard/media', query, { preserveState: true });
+        router.get('/media', query, { preserveState: true });
     };
 
     const applyFilter = (key: string, value: string) => {
@@ -118,7 +118,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
         if (key === 'role') setRole(value);
         if (key === 'user') setUser(value);
         
-        router.get('/dashboard/media', query, { preserveState: true });
+        router.get('/media', query, { preserveState: true });
     };
 
     const closeBottomSheet = () => {
@@ -164,7 +164,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
         const formData = new FormData();
         formData.append('file', uploadFile);
 
-        router.post('/dashboard/media', formData, {
+        router.post('/media', formData, {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
@@ -188,7 +188,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
 
     const confirmDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/media/${deleteTarget.id}`, {
+        router.delete(`/media/${deleteTarget.id}`, {
             onSuccess: () => {
                 setSelectedMedia(null);
                 setBottomSheetMedia(null);
@@ -650,7 +650,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             setIsSavingTitle(true);
-                            router.put(`/dashboard/media/${editingMedia.id}`, { 
+                            router.put(`/media/${editingMedia.id}`, { 
                                 name: editTitle
                             }, { 
                                 preserveScroll: true,
@@ -722,7 +722,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                         onCheckedChange={(checked) => {
                                             setEditIsPublic(checked);
                                             setIsSavingVisibility(true);
-                                            router.put(`/dashboard/media/${visibilityMedia.id}`, { 
+                                            router.put(`/media/${visibilityMedia.id}`, { 
                                                 name: visibilityMedia.name,
                                                 is_public: checked
                                             }, { 
@@ -732,7 +732,6 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                                     // Also update local item state if we need it
                                                     const updatedMedia = {...visibilityMedia, custom_properties: {...visibilityMedia.custom_properties, is_public: checked}};
                                                     setVisibilityMedia(updatedMedia);
-                                                    toast.success('Media visibility updated automatically');
                                                 }
                                             });
                                         }}

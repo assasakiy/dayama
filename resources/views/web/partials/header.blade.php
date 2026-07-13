@@ -1,5 +1,9 @@
 @php 
+    $context = $context ?? 'blog';
     $categories = \App\Models\Category::where('is_visible', true)->orderBy('name')->get(); 
+    $siteName = \App\Services\SettingService::get('general.site_name', config('app.name'), $context);
+    $tagline = \App\Services\SettingService::get('general.tagline', 'Modern Web Design', $context);
+    $logoUrl = \App\Services\SettingService::get('general.logo_url', null, $context);
 @endphp
 <header 
     x-data="{ 
@@ -31,10 +35,14 @@
         <div class="container-page flex items-center justify-between w-full h-full">
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="flex items-center gap-3 text-foreground tracking-tight hover:opacity-80 transition-opacity">
-                <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm">M</span>
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto">
+                @else
+                    <span class="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm">{{ substr($siteName, 0, 1) }}</span>
+                @endif
                 <div class="flex flex-col">
-                    <span class="font-bold leading-none text-lg">{{ config('app.name') }}</span>
-                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Modern Web Design</span>
+                    <span class="font-bold leading-none text-lg">{{ $siteName }}</span>
+                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{{ $tagline }}</span>
                 </div>
             </a>
 

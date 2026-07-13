@@ -147,6 +147,14 @@ class MediaController
             })
             ->latest();
         
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('file_name', 'like', "%{$search}%");
+            });
+        }
+        
         $media = $query->paginate(30);
         
         $items = $media->getCollection()->map(function($item) {
@@ -199,28 +207,35 @@ class MediaController
 
     public function update(Request $request, Media $medium): RedirectResponse
     {
-        \Illuminate\Support\Facades\Gate::authorize('update', $medium);
+        Gate::authorize('update', $medium);
         
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
         ]);
 
+        $message = 'Media updated successfully.';
+        
+        if ($medium->name !== $request->input('name')) {
+            $message = 'Media renamed successfully.';
+        }
         $medium->name = $request->input('name');
-        $medium->file_name = \Illuminate\Support\Str::slug($request->input('name')) . '.' . pathinfo($medium->file_name, PATHINFO_EXTENSION);
         
         if ($request->has('is_public')) {
             $medium->setCustomProperty('is_public', $request->boolean('is_public'));
+            $message = $request->boolean('is_public') 
+                ? 'Media visibility turned on (Public).' 
+                : 'Media visibility turned off (Private).';
         }
 
         $medium->save();
 
-        return redirect()->back()->with('success', 'Media renamed successfully.');
+        return redirect()->back()->with('success', $message);
     }
 
     public function destroy(Media $medium): RedirectResponse
     {
-        \Illuminate\Support\Facades\Gate::authorize('delete', $medium);
+        Gate::authorize('delete', $medium);
 
         $user = request()->user();
         $capabilities = app(\App\Authorization\AuthorizationService::class)->capabilities($user, Media::class);

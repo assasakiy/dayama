@@ -103,12 +103,12 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
         const data = { module, action, scope: scope || null, description: description || null };
 
         if (isEdit) {
-            router.put(`/dashboard/permissions/${editPermission!.id}`, { description: description || null }, {
+            router.put(`/permissions/${editPermission!.id}`, { description: description || null }, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
             });
         } else {
-            router.post('/dashboard/permissions', data, {
+            router.post('/permissions', data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
             });
@@ -117,12 +117,12 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/permissions/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/permissions/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 
     const handleSeed = () => {
-        router.post('/dashboard/permissions/seed', {}, { onSuccess: () => setSeedConfirm(false) });
+        router.post('/permissions/seed', {}, { onSuccess: () => setSeedConfirm(false) });
     };
 
     const toggleCollapse = (module: string) => {

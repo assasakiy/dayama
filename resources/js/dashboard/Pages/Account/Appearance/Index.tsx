@@ -14,7 +14,7 @@ export default function AppearanceIndex() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/dashboard/account/appearance', { preserveScroll: true });
+        put('/account/appearance', { preserveScroll: true });
     };
 
     return (

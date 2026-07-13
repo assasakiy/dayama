@@ -30,7 +30,7 @@ export default function Error({ status }: { status: number }) {
                 </div>
 
                 <div className="pt-6 flex items-center justify-center gap-4">
-                    <Button onClick={() => router.visit('/dashboard')}>
+                    <Button onClick={() => router.visit('/')}>
                         Go Home
                     </Button>
                     <Button variant="outline" onClick={() => window.location.reload()}>

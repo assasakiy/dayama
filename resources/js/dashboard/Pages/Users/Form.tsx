@@ -125,12 +125,12 @@ export default function UserForm({ user, roles }: Props) {
 
         if (isEditing && user) {
             formData.append('_method', 'PUT');
-            router.post(`/dashboard/users/${user.id}`, formData, {
+            router.post(`/users/${user.id}`, formData, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            router.post('/dashboard/users', formData, {
+            router.post('/users', formData, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onFinish: () => setSubmitting(false),
             });
@@ -146,7 +146,7 @@ export default function UserForm({ user, roles }: Props) {
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="flex items-center gap-3">
                         <Link
-                            href="/dashboard/users"
+                            href="/users"
                             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -160,7 +160,7 @@ export default function UserForm({ user, roles }: Props) {
                     </div>
                     {isEditing && user && (
                         <Link
-                            href={`/dashboard/users/${user.id}`}
+                            href={`/users/${user.id}`}
                             className="inline-flex items-center gap-1.5 h-8 px-3 text-xs border border-border-subtle rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-all"
                         >
                             <Eye className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ export default function UserForm({ user, roles }: Props) {
                             {/* Actions */}
                             <div className="flex items-center gap-2">
                                 <Link
-                                    href="/dashboard/users"
+                                    href="/users"
                                     className="ml-auto inline-flex items-center justify-center flex-1 h-9 px-4 border border-border-strong bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted transition-all shadow-sm"
                                 >
                                     Cancel

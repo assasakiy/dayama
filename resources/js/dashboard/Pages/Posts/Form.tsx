@@ -155,7 +155,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                 formData.append('excerpt', excerpt);
                 formData.append('_method', 'PATCH');
                 
-                axios.post(`/dashboard/posts/${post.id}/autosave`, formData)
+                axios.post(`/posts/${post.id}/autosave`, formData)
                     .then(() => setLastAutosavedTime(new Date()))
                     .catch((err: any) => console.error('Autosave failed', err));
             }
@@ -205,13 +205,13 @@ export default function PostForm({ post, categories, tags }: Props) {
 
         if (isEditing && post) {
             formData.append('_method', 'PUT');
-            router.post(`/dashboard/posts/${post.id}`, formData, {
+            router.post(`/posts/${post.id}`, formData, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => setSubmitting(false),
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            router.post('/dashboard/posts', formData, {
+            router.post('/posts', formData, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => setSubmitting(false),
                 onFinish: () => setSubmitting(false),
@@ -238,7 +238,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="flex items-center gap-3">
                         <Link
-                            href="/dashboard/posts"
+                            href="/posts"
                             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                         )}
                         {isEditing && post?.id && (
                             <Link
-                                href={`/dashboard/posts/${post.id}/revisions`}
+                                href={`/posts/${post.id}/revisions`}
                                 className="inline-flex items-center gap-1.5 h-8 px-3 text-xs border border-border-subtle rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-all"
                             >
                                 <History className="w-3.5 h-3.5" />
@@ -406,7 +406,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                     )}
                                     {isEditing && post && (
                                         <Link
-                                            href={`/dashboard/posts/${post.id}/revisions`}
+                                            href={`/posts/${post.id}/revisions`}
                                             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                                         >
                                             <History className="w-3.5 h-3.5" />

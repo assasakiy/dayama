@@ -11,7 +11,11 @@ class HandleInertiaRequests extends Middleware
 {
     public function rootView(Request $request): string
     {
-        if ($request->is('dashboard*') || $request->is('login*') || $request->is('register*')) {
+        // Gunakan host base atau request path untuk menentukan view mana yang akan di load
+        $isDashboardDomain = $request->getHost() === config('projects.core.dashboard');
+        $isAuthDomain = $request->getHost() === config('projects.core.auth');
+
+        if ($isDashboardDomain || $isAuthDomain || $request->is('dashboard*') || $request->is('login*') || $request->is('register*')) {
             return 'dashboard';
         }
 
@@ -27,6 +31,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'blog_url' => ($request->secure() ? 'https://' : 'http://') . config('projects.projects.blog.domain'),
             'csrf_token' => csrf_token(),
             'auth' => [
                 'user' => $request->user() ? array_merge(
@@ -50,6 +55,10 @@ class HandleInertiaRequests extends Middleware
                 'warning' => fn () => $request->session()->get('warning'),
                 'info' => fn () => $request->session()->get('info'),
                 'status' => fn () => $request->session()->get('status'),
+            ],
+            'settings' => [
+                'general' => \App\Services\SettingService::group('general', 'dashboard'),
+                'appearance' => \App\Services\SettingService::group('appearance', 'dashboard'),
             ],
         ];
     }

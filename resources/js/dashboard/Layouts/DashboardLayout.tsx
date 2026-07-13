@@ -60,9 +60,10 @@ import { usePermissions } from '../hooks/usePermissions';
 
 interface MenuItem {
     label: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
+    href?: string;
+    icon?: React.ComponentType<{ className?: string }>;
     permission?: string;
+    items?: MenuItem[];
 }
 
 interface MenuGroup {
@@ -77,83 +78,107 @@ const menuGroups: MenuGroup[] = [
         label: 'Dashboard',
         key: 'dashboard',
         items: [
-            { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { label: 'Dashboard', href: '/', icon: LayoutDashboard },
         ]
     },
     {
         label: 'Media',
         key: 'media',
         items: [
-            { label: 'Media', href: '/dashboard/media', icon: ImageIcon, permission: 'media.view' },
+            { label: 'Media', href: '/media', icon: ImageIcon, permission: 'media.view' },
         ]
     },
     {
         label: 'Post Management',
         key: 'post',
         items: [
-            { label: 'All Posts', href: '/dashboard/posts', icon: Newspaper, permission: 'posts.view' },
-            { label: 'Drafts', href: '/dashboard/posts?status=draft', icon: Clock, permission: 'posts.view' },
-            { label: 'Published', href: '/dashboard/posts?status=published', icon: CheckCircle2, permission: 'posts.view' },
-            { label: 'Trash', href: '/dashboard/posts?status=trash', icon: Trash2, permission: 'posts.view' },
-            { label: 'Categories', href: '/dashboard/categories', icon: FolderTree, permission: 'categories.view' },
-            { label: 'Tags', href: '/dashboard/tags', icon: Tags, permission: 'tags.view' },
-            { label: 'Comments', href: '/dashboard/comments', icon: MessageSquare, permission: 'comments.view' },
+            { label: 'All Posts', href: '/posts', icon: Newspaper, permission: 'posts.view' },
+            { label: 'Drafts', href: '/posts?status=draft', icon: Clock, permission: 'posts.view' },
+            { label: 'Published', href: '/posts?status=published', icon: CheckCircle2, permission: 'posts.view' },
+            { label: 'Trash', href: '/posts?status=trash', icon: Trash2, permission: 'posts.view' },
+            { label: 'Categories', href: '/categories', icon: FolderTree, permission: 'categories.view' },
+            { label: 'Tags', href: '/tags', icon: Tags, permission: 'tags.view' },
+            { label: 'Comments', href: '/comments', icon: MessageSquare, permission: 'comments.view' },
         ],
     },
     {
         label: 'My Content',
         key: 'my-content',
         items: [
-            { label: 'My Bookmarks',    href: '/dashboard/bookmarks', icon: Bookmark,  permission: 'bookmarks.view.own' },
-            { label: 'Reading History', href: '/dashboard/history',   icon: BookOpen,  permission: 'reading_history.view.own' },
+            { label: 'My Bookmarks',    href: '/bookmarks', icon: Bookmark,  permission: 'bookmarks.view.own' },
+            { label: 'Reading History', href: '/history',   icon: BookOpen,  permission: 'reading_history.view.own' },
         ],
     },
     {
-        label: 'System Settings',
+        label: 'Activity',
+        key: 'activity',
+        items: [
+            { label: 'Activity Logs', href: '/activity-logs', icon: Activity, permission: 'activity_logs.view' },
+        ],
+    },
+    {
+        label: 'Management Settings',
         key: 'system',
         items: [
-            { label: 'Activity Logs', href: '/dashboard/activity-logs', icon: Activity, permission: 'activity_logs.view' },
-            { label: 'General', href: '/dashboard/settings/general', icon: Settings, permission: 'settings.view' },
-            { label: 'SEO & Meta', href: '/dashboard/settings/seo', icon: Search, permission: 'settings.view' },
-            { label: 'Media', href: '/dashboard/settings/media', icon: ImageIcon, permission: 'settings.view' },
-            { label: 'Mail (SMTP)', href: '/dashboard/settings/mail', icon: Mail, permission: 'settings.view' },
-            { label: 'Email Templates', href: '/dashboard/email-templates', icon: LayoutTemplate, permission: 'settings.view' },
-            { label: 'Security', href: '/dashboard/settings/security', icon: Shield, permission: 'settings.view' },
-            { label: 'Appearance', href: '/dashboard/settings/appearance', icon: Palette, permission: 'settings.view' },
+            { label: 'Global Settings', href: '/settings/global', icon: Globe, permission: 'settings.view' },
+            { label: 'Blog Settings', href: '/settings/blog', icon: Newspaper, permission: 'settings.view' },
+            { label: 'Landing Settings', href: '/settings/landing', icon: LayoutTemplate, permission: 'settings.view' },
+        ],
+    },
+    {
+        label: 'Mail Management',
+        key: 'mail-management',
+        items: [
+            { label: 'Mail (SMTP)', href: '/settings/global/mail', icon: Mail, permission: 'settings.view' },
+            { label: 'Email Templates', href: '/email-templates', icon: LayoutTemplate, permission: 'settings.view' },
         ],
     },
     {
         label: 'Access Management',
         key: 'access',
         items: [
-            { label: 'Users', href: '/dashboard/users', icon: Users, permission: 'users.view' },
-            { label: 'Roles', href: '/dashboard/roles', icon: ShieldCheck, permission: 'roles.view' },
-            { label: 'Permissions', href: '/dashboard/permissions', icon: KeyRound, permission: 'roles.view' },
-            { label: 'Permission Groups', href: '/dashboard/permission-groups', icon: Layers, permission: 'roles.view' },
+            { label: 'Users', href: '/users', icon: Users, permission: 'users.view' },
+            { label: 'Roles', href: '/roles', icon: ShieldCheck, permission: 'roles.view' },
+            { label: 'Permissions', href: '/permissions', icon: KeyRound, permission: 'roles.view' },
+            { label: 'Permission Groups', href: '/permission-groups', icon: Layers, permission: 'roles.view' },
         ],
     }
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    const { url, props } = usePage<any>();
+    const user = (props as { auth?: { user?: { name: string; email: string; avatar_url?: string; unread_notifications?: any[]; unread_notifications_count?: number } } }).auth?.user;
+    const { can } = usePermissions();
+    const settings = props.settings?.general || {};
+    const siteName = settings.site_name || 'ModernBlog';
+    const logoUrl = settings.logo_url || null;
+
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ content: true });
-    
-    const { url, props } = usePage();
-    const user = (props as { auth?: { user?: { name: string; email: string; avatar_url?: string; unread_notifications?: any[]; unread_notifications_count?: number } } }).auth?.user;
-    
-    const { can } = usePermissions();
 
     const toggleGroup = (key: string) => {
         setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
     };
 
-    // Filter items based on permissions
+    // Filter items based on permissions (recursive)
+    const filterItems = (items: MenuItem[]): MenuItem[] => {
+        return items.map(item => {
+            if (item.items) {
+                return { ...item, items: filterItems(item.items) };
+            }
+            return item;
+        }).filter(item => {
+            if (item.items) return item.items.length > 0;
+            return !item.permission || can(item.permission);
+        });
+    };
+
     const filteredGroups = menuGroups.map(group => ({
         ...group,
-        items: group.items.filter(item => !item.permission || can(item.permission))
+        items: filterItems(group.items)
     })).filter(group => group.items.length > 0);
 
     // Load state from local storage on mount
@@ -165,16 +190,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         // Auto-expand groups that contain the active url
         const initialExpanded: Record<string, boolean> = { post: true };
-        filteredGroups.forEach(group => {
-            if (!['dashboard', 'media'].includes(group.key) && group.items.some(item => url.startsWith(item.href))) {
-                initialExpanded[group.key] = true;
-            }
-        });
-        setExpandedGroups(prev => ({ ...prev, ...initialExpanded }));
+        
+        // Helper to check if a menu item or its children match the URL
+        const matchesUrl = (items: MenuItem[]): boolean => {
+            return items.some(item => {
+                if (item.href && url.startsWith(item.href)) return true;
+                if (item.items) return matchesUrl(item.items);
+                return false;
+            });
+        };
+
+        try {
+            filteredGroups.forEach(group => {
+                if (!['dashboard', 'media'].includes(group.key) && matchesUrl(group.items)) {
+                    initialExpanded[group.key] = true;
+                }
+                
+                // Also expand sub-menus
+                const expandSubMenus = (items: MenuItem[]) => {
+                    items.forEach(item => {
+                        if (item.items && matchesUrl(item.items)) {
+                            initialExpanded[item.label] = true;
+                            expandSubMenus(item.items);
+                        }
+                    });
+                };
+                expandSubMenus(group.items);
+            });
+            setExpandedGroups(prev => ({ ...prev, ...initialExpanded }));
+        } catch (e) {
+            console.error(e);
+        }
 
         const isDark = document.documentElement.classList.contains('dark');
         setIsDarkMode(isDark);
-    }, []);
+    }, [url]); // Added url as dependency
+
 
     const toggleSidebar = () => {
         const newState = !sidebarCollapsed;
@@ -194,13 +245,75 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     const isActive = (href: string) => {
-        if (href === '/dashboard') return url === '/dashboard';
+        if (href === '/') return url === '/';
         return url.startsWith(href);
     };
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/dashboard/logout');
+        router.post('/logout');
+    };
+
+    const renderMenuItem = (item: MenuItem, level: number = 0) => {
+        if (item.items) {
+            const isSubExpanded = expandedGroups[item.label] || false;
+            const isActive = item.items.some(sub => sub.href && url.startsWith(sub.href));
+            
+            return (
+                <div key={item.label} className="pt-1">
+                    <button
+                        type="button"
+                        onClick={() => toggleGroup(item.label)}
+                        className={`flex items-center justify-between w-full py-2 rounded-lg text-sm transition-all group
+                            ${isActive ? 'bg-primary/5 text-primary font-medium' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground'}
+                            ${sidebarCollapsed ? 'lg:justify-center px-3' : ''}
+                        `}
+                        style={{ paddingLeft: sidebarCollapsed ? '' : `${12 + level * 16}px`, paddingRight: sidebarCollapsed ? '' : '12px' }}
+                    >
+                        <div className="flex items-center gap-3">
+                            {item.icon && <item.icon className={`shrink-0 ${level === 0 ? 'w-5 h-5' : 'w-4 h-4'} ${isActive ? 'text-primary' : ''}`} />}
+                            <span className={`whitespace-nowrap transition-all duration-200 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0 lg:hidden' : 'opacity-100'}`}>
+                                {item.label}
+                            </span>
+                        </div>
+                        {!sidebarCollapsed && (
+                            isSubExpanded ? (
+                                <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                            ) : (
+                                <ChevronRight className="w-3.5 h-3.5 opacity-50" />
+                            )
+                        )}
+                    </button>
+                    {(isSubExpanded || sidebarCollapsed) && (
+                        <div className="space-y-0.5 mt-0.5">
+                            {item.items.map(subItem => renderMenuItem(subItem, level + 1))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const active = item.href?.includes('?') 
+            ? url === item.href || (item.href && url.startsWith(item.href + '&'))
+            : url === item.href || (item.href && url.startsWith(item.href + '/') && !url.includes('?status='));
+        
+        return (
+            <Link
+                key={item.href || item.label}
+                href={item.href || '#'}
+                onClick={() => setMobileDrawerOpen(false)}
+                className={`flex items-center gap-3 py-2.5 rounded-lg text-sm transition-all relative group
+                    ${active ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground'}
+                    ${sidebarCollapsed ? 'lg:justify-center px-3' : 'justify-start'}
+                `}
+                style={{ paddingLeft: sidebarCollapsed ? '' : `${12 + level * 16}px`, paddingRight: sidebarCollapsed ? '' : '12px' }}
+            >
+                {item.icon && <item.icon className={`shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary' : ''} ${level === 0 ? 'w-5 h-5' : 'w-4 h-4'}`} />}
+                <span className={`whitespace-nowrap transition-all duration-200 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0 lg:hidden' : 'opacity-100'}`}>
+                    {item.label}
+                </span>
+            </Link>
+        );
     };
 
     return (
@@ -226,12 +339,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                     {/* Logo Area */}
                     <div className={`flex items-center h-16 border-b border-border-subtle shrink-0 ${sidebarCollapsed ? 'lg:justify-center px-4' : 'px-4'}`}>
-                        <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-                            <span className="shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm">
-                                M
-                            </span>
+                        <Link href="/" className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
+                            {logoUrl ? (
+                                <img src={logoUrl} alt={siteName} className="shrink-0 w-8 h-8 object-contain" />
+                            ) : (
+                                <span className="shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm">
+                                    {siteName.charAt(0)}
+                                </span>
+                            )}
                             <span className={`font-bold text-lg transition-opacity duration-200 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
-                                ModernBlog
+                                {siteName}
                             </span>
                         </Link>
                     </div>
@@ -241,7 +358,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         {filteredGroups.map(group => {
                             if (['dashboard', 'media'].includes(group.key)) {
                                 const item = group.items[0];
-                                const active = url.startsWith(item.href) && (item.href !== '/dashboard' || url === '/dashboard');
+                                const active = item.href ? (url.startsWith(item.href) && (item.href !== '/' || url === '/')) : false;
                                 return (
                                     <Link
                                         key={item.href}
@@ -260,7 +377,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 );
                             }
 
-                            const isGroupActive = group.items.some(item => url.startsWith(item.href));
+                            const isGroupActive = group.items.some(item => item.href && url.startsWith(item.href));
                             const isExpanded = expandedGroups[group.key] || false;
                             
                             return (
@@ -283,27 +400,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     {/* Sub-items */}
                                     {(isExpanded || sidebarCollapsed) && (
                                         <div className="space-y-0.5">
-                                            {group.items.map((item) => {
-                                                const active = item.href.includes('?') 
-                                                    ? url === item.href || url.startsWith(item.href + '&')
-                                                    : url === item.href || (url.startsWith(item.href + '/') && !url.includes('?status='));
-                                                return (
-                                                    <Link
-                                                        key={item.href}
-                                                        href={item.href}
-                                                        onClick={() => setMobileDrawerOpen(false)}
-                                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group
-                                                            ${active ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground'}
-                                                            ${sidebarCollapsed ? 'lg:justify-center' : 'justify-start'}
-                                                        `}
-                                                    >
-                                                        {item.icon && <item.icon className={`shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary w-5 h-5' : 'w-5 h-5'}`} />}
-                                                        <span className={`whitespace-nowrap transition-all duration-200 ${sidebarCollapsed ? 'lg:opacity-0 lg:w-0 lg:hidden' : 'opacity-100'}`}>
-                                                            {item.label}
-                                                        </span>
-                                                    </Link>
-                                                );
-                                            })}
+                                            {group.items.map(item => renderMenuItem(item, 0))}
                                         </div>
                                     )}
                                 </div>
@@ -354,7 +451,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             
                             {/* New Post Button */}
                             <Link 
-                                href="/dashboard/posts/create"
+                                href="/posts/create"
                                 className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-transform active:scale-95"
                             >
                                 <Plus className="w-4 h-4" />
@@ -363,7 +460,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                             {/* Mobile New Post Icon */}
                             <Link 
-                                href="/dashboard/posts/create"
+                                href="/posts/create"
                                 className="sm:hidden p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                             >
                                 <Plus className="w-5 h-5" />
@@ -411,7 +508,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         )}
                                     </div>
                                     <div className="p-2 border-t border-border-subtle bg-surface/50">
-                                        <Link href="/dashboard/notifications" className="block text-center w-full py-2 text-sm text-primary font-medium hover:bg-primary/10 rounded-lg transition-colors">
+                                        <Link href="/notifications" className="block text-center w-full py-2 text-sm text-primary font-medium hover:bg-primary/10 rounded-lg transition-colors">
                                             View all notifications
                                         </Link>
                                     </div>
@@ -440,19 +537,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                             <p className="text-sm font-medium">{user?.name || 'Admin User'}</p>
                                             <p className="text-xs text-muted-foreground truncate">{user?.email || 'admin@modernblog.com'}</p>
                                         </div>
-                                        <Link href="/dashboard/account/profile" className="w-full">
+                                        <Link href="/account/profile" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <User className="w-4 h-4 mr-2 text-muted-foreground" />
                                                 Personal
                                             </DropdownMenuItem>
                                         </Link>
-                                        <Link href="/dashboard/account/security" className="w-full">
+                                        <Link href="/account/security" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <Shield className="w-4 h-4 mr-2 text-muted-foreground" />
                                                 Security & Privacy
                                             </DropdownMenuItem>
                                         </Link>
-                                        <Link href="/dashboard/account/appearance" className="w-full">
+                                        <Link href="/account/appearance" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <Settings className="w-4 h-4 mr-2 text-muted-foreground" />
                                                 Preferences
@@ -461,7 +558,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem 
                                             className="rounded-lg cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive w-full"
-                                            onClick={() => router.post('/dashboard/logout')}
+                                            onClick={() => router.post('/logout')}
                                         >
                                             <LogOut className="w-4 h-4 mr-2" />
                                             Logout
@@ -510,19 +607,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                     
                     <div className="space-y-1">
-                        <Link href="/dashboard/account/profile" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
+                        <Link href="/account/profile" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
                             <User className="w-5 h-5 mr-3 text-muted-foreground" /> Personal
                         </Link>
-                        <Link href="/dashboard/account/security" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
+                        <Link href="/account/security" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
                             <Shield className="w-5 h-5 mr-3 text-muted-foreground" /> Security & Privacy
                         </Link>
-                        <Link href="/dashboard/account" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
+                        <Link href="/account" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
                             <Settings2 className="w-5 h-5 mr-3 text-muted-foreground" /> Account Settings
                         </Link>
-                        <Link href="/dashboard/account/appearance" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
+                        <Link href="/account/appearance" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
                             <Settings className="w-5 h-5 mr-3 text-muted-foreground" /> Preferences
                         </Link>
-                        <button onClick={() => { setIsUserMenuOpen(false); router.post('/dashboard/logout'); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
+                        <button onClick={() => { setIsUserMenuOpen(false); router.post('/logout'); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
                             <LogOut className="w-5 h-5 mr-3" /> Logout
                         </button>
                     </div>

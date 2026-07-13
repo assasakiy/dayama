@@ -56,7 +56,7 @@ export default function ProfileIndex() {
             'social_links[linkedin]': data.social_links.linkedin,
         }));
         
-        post('/dashboard/account/profile', { 
+        post('/account/profile', { 
             preserveScroll: true,
             onSuccess: () => {
                 setEditingSection(null);
@@ -67,7 +67,7 @@ export default function ProfileIndex() {
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            router.post('/dashboard/account/profile', {
+            router.post('/account/profile', {
                 ...data,
                 avatar: file,
                 _method: 'put'
@@ -79,7 +79,7 @@ export default function ProfileIndex() {
     const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            router.post('/dashboard/account/profile', {
+            router.post('/account/profile', {
                 ...data,
                 banner: file,
                 _method: 'put'
@@ -94,7 +94,7 @@ export default function ProfileIndex() {
     };
 
     const confirmDeleteAvatar = () => {
-        router.post('/dashboard/account/profile', {
+        router.post('/account/profile', {
             ...data,
             delete_avatar: true,
             avatar: null,
@@ -108,7 +108,7 @@ export default function ProfileIndex() {
     };
 
     const confirmDeleteBanner = () => {
-        router.post('/dashboard/account/profile', {
+        router.post('/account/profile', {
             ...data,
             delete_banner: true,
             banner: null,

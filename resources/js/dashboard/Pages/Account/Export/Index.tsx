@@ -62,7 +62,7 @@ export default function ExportIndex() {
                                 </div>
 
                                 <div className="flex justify-end pt-2">
-                                    <form method="POST" action="/dashboard/account/export" onSubmit={requestExport}>
+                                    <form method="POST" action="/account/export" onSubmit={requestExport}>
                                         <input type="hidden" name="_token" value={usePage().props.csrf_token as string} />
                                         <Btn 
                                             type="submit"

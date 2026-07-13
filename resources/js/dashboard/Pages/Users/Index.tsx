@@ -111,7 +111,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
-        router.post('/dashboard/users', { name, email, password, roles: selectedRoles }, {
+        router.post('/users', { name, email, password, roles: selectedRoles }, {
             onError: (errs) => { setErrors(errs); setSubmitting(false); },
             onSuccess: () => { setShowCreate(false); resetForm(); },
             onFinish: () => setSubmitting(false),
@@ -120,16 +120,16 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/users/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/users/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 
     const applySearch = useCallback(() => {
-        router.get('/dashboard/users', { ...filters, search: searchInput || undefined }, { preserveState: true, replace: true });
+        router.get('/users', { ...filters, search: searchInput || undefined }, { preserveState: true, replace: true });
     }, [searchInput, filters]);
 
     const applyFilter = (key: string, value: string) => {
-        router.get('/dashboard/users', { ...filters, [key]: value || undefined }, { preserveState: true, replace: true });
+        router.get('/users', { ...filters, [key]: value || undefined }, { preserveState: true, replace: true });
     };
 
     const toggleSelect = (id: string) => {
@@ -140,13 +140,13 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
     };
 
     const handleBulkDelete = () => {
-        router.delete('/dashboard/users', { data: { ids: selected }, preserveScroll: true });
+        router.delete('/users', { data: { ids: selected }, preserveScroll: true });
         setSelected([]);
     };
 
     const handleBulkRole = () => {
         if (!bulkRole) return;
-        router.post('/dashboard/users/bulk-role', { ids: selected, role: bulkRole }, {
+        router.post('/users/bulk-role', { ids: selected, role: bulkRole }, {
             onSuccess: () => { setShowBulkRoleModal(false); setSelected([]); setBulkRole(''); },
         });
     };
@@ -293,7 +293,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-1.5">
                                                         <Link
-                                                            href={`/dashboard/users/${user.id}`}
+                                                            href={`/users/${user.id}`}
                                                             className="font-medium hover:text-primary transition-colors truncate block"
                                                         >
                                                             {user.name}
@@ -359,7 +359,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex items-center justify-end gap-1">
                                                 <Link
-                                                    href={`/dashboard/users/${user.id}`}
+                                                    href={`/users/${user.id}`}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                                                     title="View"
                                                 >
@@ -367,7 +367,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                 </Link>
                                                 {user.can.update && (
                                                     <Link
-                                                        href={`/dashboard/users/${user.id}/edit`}
+                                                        href={`/users/${user.id}/edit`}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                                                         title="Edit"
                                                     >

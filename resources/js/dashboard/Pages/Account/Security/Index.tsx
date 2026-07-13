@@ -17,7 +17,7 @@ export default function SecurityIndex() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/dashboard/account/security/password', {
+        put('/account/security/password', {
             preserveScroll: true,
             onSuccess: () => reset(),
         });
@@ -33,7 +33,7 @@ export default function SecurityIndex() {
 
     const enable2FA = () => {
         setIsGenerating(true);
-        axios.post('/dashboard/account/security/two-factor').then(response => {
+        axios.post('/account/security/two-factor').then(response => {
             setQrCodeSvg(response.data.qr_code_svg);
             setSecret(response.data.secret);
             setIs2FADialogOpen(true);
@@ -46,7 +46,7 @@ export default function SecurityIndex() {
     const confirm2FA = (e: React.FormEvent) => {
         e.preventDefault();
         setIsConfirming(true);
-        router.post('/dashboard/account/security/two-factor/confirm', { code: twoFactorCode }, {
+        router.post('/account/security/two-factor/confirm', { code: twoFactorCode }, {
             preserveScroll: true,
             onSuccess: () => {
                 setIs2FADialogOpen(false);
@@ -64,7 +64,7 @@ export default function SecurityIndex() {
     };
 
     const confirmDisable2FA = () => {
-        router.delete('/dashboard/account/security/two-factor', { 
+        router.delete('/account/security/two-factor', { 
             preserveScroll: true,
             onSuccess: () => setIsDisableConfirmOpen(false)
         });

@@ -64,3 +64,22 @@ Karena aset disalin dan diikat pada model `Post`, maka aset tersebut mengikuti s
 
 > [!TIP]
 > Arsitektur ini memastikan peladen Anda bersih dari *file* yang tidak terpakai, sekaligus mengamankan semua artikel publik dari kehilangan gambar.
+
+---
+
+## 5. Pemecahan Masalah (Troubleshooting) & Multi-Domain
+
+Saat menjalankan aplikasi ini dalam arsitektur multi-domain (contoh: `dashboard.test-blog.test` dan `blog.test-blog.test`), pengelolaan *file upload* dan *CORS (Cross-Origin Resource Sharing)* memegang peran krusial. Beberapa kendala yang pernah terjadi dan cara penyelesaiannya:
+
+### A. Isu 403 Forbidden pada Akses Gambar
+**Gejala:** Setelah mengunggah atau memperbarui *visibility* gambar, penampil (*viewer*) gagal memuat gambar dan melempar *HTTP 403 Forbidden*.
+**Penyebab & Solusi:** 
+- Terjadi perbedaan atau inkonsistensi skema URL (*absolute* vs *relative*). Solusi utamanya adalah selalu mereturn URL gambar sebagai *absolute path* mulai dari *root* (e.g., `/storage/...`) daripada beserta domainnya.
+- Pastikan juga konfigurasi `cors.php` Laravel mengizinkan origin dari kedua domain, terutama pada jalur unggahan dan penyajian aset di `public/storage/`.
+
+### B. Isu 500 Internal Server Error saat Upload
+**Gejala:** Proses *upload* mengembalikan error 500 di *console*, meskipun *file* fisik berhasil terunggah (terlihat ketika di-reload). Log mencatat `FileNotFoundException: The file ".../Temp/phpXXXX.tmp" does not exist`.
+**Penyebab & Solusi:**
+- *Bug* ini sering terjadi pada pustaka *Spatie Media Library* ketika sebuah referensi *temporary uploaded file* masih digunakan atau di-render di dalam sebuah Blade / View Response *setelah* file sementara tersebut dipindahkan/diolah oleh *Spatie*.
+- Hal ini umum terjadi apabila `MediaController` atau `ProfileController` melakukan pemanggilan `addMedia()` lalu mencoba merender ulang properti relasi `media` di dalam fungsi yang sama tanpa *reload* / pembaruan objek (dimana referensi asli file `$request->file('avatar')` masih tertahan di *memory* / *request payload*).
+- **Perbaikan yang dilakukan:** Selalu memanggil *method* untuk mengembalikan struktur JSON sederhana dan spesifik (misal *URL image* yang baru, atau *refresh model*) setelah *file* berhasil disimpan, jangan me-return ulang seluruh *Request Payload* bawaan yang memuat objek file sementara.

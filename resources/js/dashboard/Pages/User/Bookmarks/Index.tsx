@@ -1,15 +1,17 @@
 import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { SmartLink } from '@dashboard/Components/ui/SmartLink';
 import DashboardLayout from '@dashboard/Layouts/DashboardLayout';
 import ConfirmDialog from '@dashboard/Components/ui/confirm-dialog';
 import { Bookmark, Clock, ExternalLink, Trash2, BookOpen } from 'lucide-react';
 
 export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
+    const { blog_url } = usePage().props as any;
     const [removeId, setRemoveId] = React.useState<string | null>(null);
 
     const handleRemove = () => {
         if (!removeId) return;
-        router.delete(`/dashboard/bookmarks/${removeId}`, { preserveScroll: true });
+        router.delete(`/bookmarks/${removeId}`, { preserveScroll: true });
         setRemoveId(null);
     };
 
@@ -27,9 +29,9 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
                         <Bookmark className="w-10 h-10 text-muted-foreground/30 mb-3" />
                         <p className="text-sm font-medium text-foreground">No bookmarks yet</p>
                         <p className="text-xs text-muted-foreground mt-1">Click the bookmark icon on any article to save it here.</p>
-                        <Link href="/" className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                        <SmartLink href={blog_url} className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
                             <BookOpen className="w-3.5 h-3.5" /> Browse Articles
-                        </Link>
+                        </SmartLink>
                     </div>
                 ) : (
                     <div className="bg-background border border-border-subtle rounded-lg overflow-hidden">
@@ -54,9 +56,9 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
                                                         <img src={post.cover} alt="" className="w-10 h-10 rounded object-cover shrink-0 hidden sm:block" />
                                                     )}
                                                     <div className="min-w-0">
-                                                        <Link href={`/post/${post.slug}`} className="font-medium hover:text-primary transition-colors line-clamp-1">
+                                                        <SmartLink href={`${blog_url}/post/${post.slug}`} className="font-medium hover:text-primary transition-colors line-clamp-1">
                                                             {post.title}
-                                                        </Link>
+                                                        </SmartLink>
                                                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                                                             {post.author && <span>{post.author.name}</span>}
                                                             {post.reading_time && (

@@ -37,7 +37,7 @@ export default function PostRevisions({ post, revisions }: Props) {
 
     const handleRestore = (revisionId: string) => {
         if (confirm('Are you sure you want to restore to this revision? Current unsaved changes will be lost.')) {
-            router.post(`/dashboard/posts/${post.id}/restore-revision/${revisionId}`);
+            router.post(`/posts/${post.id}/restore-revision/${revisionId}`);
         }
     };
 
@@ -47,7 +47,7 @@ export default function PostRevisions({ post, revisions }: Props) {
             <div className="space-y-5">
                 <div className="flex items-center gap-3">
                     <Link
-                        href={`/dashboard/posts/${post.id}/edit`}
+                        href={`/posts/${post.id}/edit`}
                         className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />

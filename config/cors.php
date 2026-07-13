@@ -15,15 +15,12 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*', 'api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        // Mengizinkan panggilan dari domain dashboard atau blog di mode multi-domain
-        env('CORS_ALLOWED_ORIGIN', 'http://dashboard.test-blog.test'),
-        'http://test-blog.test',
-        'http://account.test-blog.test',
+        '*',
     ],
 
     'allowed_origins_patterns' => [],

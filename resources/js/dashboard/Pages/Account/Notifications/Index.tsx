@@ -19,7 +19,7 @@ export default function NotificationsIndex() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/dashboard/account/notifications', { preserveScroll: true });
+        put('/account/notifications', { preserveScroll: true });
     };
 
     return (

@@ -23,19 +23,19 @@ export default function PostIndex({ posts }: { posts: any }) {
     const handleDelete = () => {
         if (!deleteTarget) return;
         if (deleteTarget.force) {
-            router.delete(`/dashboard/posts/${deleteTarget.id}/force-delete`, { preserveScroll: true });
+            router.delete(`/posts/${deleteTarget.id}/force-delete`, { preserveScroll: true });
         } else {
-            router.delete(`/dashboard/posts/${deleteTarget.id}`, { preserveScroll: true });
+            router.delete(`/posts/${deleteTarget.id}`, { preserveScroll: true });
         }
         setDeleteTarget(null);
     };
 
     const handleRestore = (id: string) => {
-        router.post(`/dashboard/posts/${id}/restore`, {}, { preserveScroll: true });
+        router.post(`/posts/${id}/restore`, {}, { preserveScroll: true });
     };
 
     const handleEmptyTrash = () => {
-        router.delete('/dashboard/posts/empty-trash', { preserveScroll: true });
+        router.delete('/posts/empty-trash', { preserveScroll: true });
         setShowEmptyTrashConfirm(false);
     };
 
@@ -60,7 +60,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                     </div>
                     {!isTrash ? (
                         <Link
-                            href="/dashboard/posts/create"
+                            href="/posts/create"
                             className="ml-auto inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
@@ -102,7 +102,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <Link href={`/dashboard/posts/${post.id}/edit`} className="font-medium hover:text-primary transition-colors">
+                                        <Link href={`/posts/${post.id}/edit`} className="font-medium hover:text-primary transition-colors">
                                             {post.title}
                                         </Link>
                                         {post.category && (
@@ -150,7 +150,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                                                         <Eye className="w-3.5 h-3.5" />
                                                     </Link>
                                                     <Link
-                                                        href={`/dashboard/posts/${post.id}/edit`}
+                                                        href={`/posts/${post.id}/edit`}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                                                         title="Edit"
                                                     >
@@ -181,7 +181,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                             </p>
                             {!isTrash && (
                                 <Link
-                                    href="/dashboard/posts/create"
+                                    href="/posts/create"
                                     className="ml-auto inline-flex items-center gap-2 mt-4 h-8 px-3 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 transition-all"
                                 >
                                     <Plus className="w-3.5 h-3.5" />

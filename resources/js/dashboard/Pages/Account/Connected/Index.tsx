@@ -26,7 +26,7 @@ export default function ConnectedIndex() {
 
     const handleConnect = (providerId: string) => {
         setLoadingId(providerId);
-        window.location.href = `/dashboard/account/connected/${providerId}/redirect`;
+        window.location.href = `/account/connected/${providerId}/redirect`;
     };
 
     const handleDisconnect = (accountId: string, providerId: string) => {
@@ -36,7 +36,7 @@ export default function ConnectedIndex() {
     const confirmDisconnect = () => {
         if (!disconnectTarget) return;
         setLoadingId(disconnectTarget.providerId);
-        router.delete(`/dashboard/account/connected/${disconnectTarget.accountId}`, {
+        router.delete(`/account/connected/${disconnectTarget.accountId}`, {
             onSuccess: () => setDisconnectTarget(null),
             onFinish: () => setLoadingId(null),
         });

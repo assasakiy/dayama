@@ -19,7 +19,7 @@ export default function DeleteIndex() {
         e.preventDefault();
         if (!isConfirmMatch || !data.password) return;
         
-        destroy('/dashboard/account/delete', {
+        destroy('/account/delete', {
             preserveScroll: true,
         });
     };

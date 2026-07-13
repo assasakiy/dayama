@@ -127,7 +127,7 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
         setRank(role.rank);
         
         // Fetch permissions for the role
-        fetch(`/dashboard/roles/${role.id}/permissions`).then(r => r.json()).then(data => {
+        fetch(`/roles/${role.id}/permissions`).then(r => r.json()).then(data => {
             setSelectedPermissions(data.permissions);
             setInitialPermissions(data.permissions);
         }).finally(() => setSubmitting(false));
@@ -143,13 +143,13 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
             color, icon, status, rank, permissions: selectedPermissions
         }; 
         if (isEdit) {
-            router.put(`/dashboard/roles/${editRole!.id}`, data, {
+            router.put(`/roles/${editRole!.id}`, data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            router.post('/dashboard/roles', data, {
+            router.post('/roles', data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
                 onFinish: () => setSubmitting(false),
@@ -159,12 +159,12 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/roles/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/roles/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 
     const handleDuplicate = (id: string) => {
-        router.post(`/dashboard/roles/${id}/duplicate`, {}, { preserveScroll: true });
+        router.post(`/roles/${id}/duplicate`, {}, { preserveScroll: true });
         setOpenMenuId(null);
     };
 

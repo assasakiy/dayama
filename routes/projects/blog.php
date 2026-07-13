@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Route;
 // Karena ini sudah domain khusus blog, kita tidak butuh LandingController lagi di sini.
 // Route::get('/', [\App\Http\Controllers\Web\LandingController::class, 'index'])->name('home');
 
-// Pindahkan rute BlogController::__invoke ke root
-Route::get('/', [BlogController::class, '__invoke'])->name('home'); // Jadikan blog.index sebagai home dari subdomain blog
+// Rute Utama Blog (Home)
+Route::get('/', [\App\Http\Controllers\Web\HomeController::class, '__invoke'])->name('home');
 
 Route::post('/cookie-consent', [\App\Http\Controllers\Web\CookieConsentController::class, 'store'])->name('cookie-consent.store');
 
 Route::prefix('post')->group(function (): void {
-    // Route::get('/', [BlogController::class, '__invoke'])->name('blog.index'); // Sudah dipindah ke root
+    // Post Archive (Indeks Artikel)
+    Route::get('/', [BlogController::class, '__invoke'])->name('blog.index');
     Route::get('/trending', [BlogController::class, 'trending'])->name('blog.trending');
     Route::get('/{post:slug}', [PostController::class, 'show'])->name('blog.show');
     Route::put('/{post:slug}/reaction', [\App\Http\Controllers\Web\ReactionController::class, 'update'])->name('blog.reaction');

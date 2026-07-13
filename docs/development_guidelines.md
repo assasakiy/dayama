@@ -77,5 +77,37 @@ Proyek saat ini menggunakan arsitektur **File-Based Multi-Domain & CMS**. Beriku
    - Gunakan *namespace import* (*use statement*) di bagian atas file dan hapus *Fully Qualified Class Names* yang redundan pada _route/controller_.
 
 ---
+
+## 5. Navigasi & SmartLink (Multi-Domain)
+
+Karena arsitektur menggunakan *Multi-Domain* (`dashboard.test-blog.test` dan `blog.test-blog.test`), penggunaan tautan navigasi standar (komponen `<Link>` dari Inertia) tidak akan selalu berfungsi dengan baik jika mengarah lintas domain (Cross-Domain Navigation).
+
+1. **Wajib menggunakan `<SmartLink>`:** 
+   Seluruh menu navigasi, sidebar, atau tautan keluar dari antarmuka React wajib menggunakan komponen `@dashboard/Components/ui/SmartLink`.
+2. **Kecerdasan SmartLink:**
+   - Komponen ini secara otomatis mendeteksi apakah tautan tersebut bersifat *internal/Inertia* (e.g. `/settings`) atau *external/lintas-domain* (e.g. `http://blog.test-blog.test` atau tautan yang mengandung skema `http/https`).
+   - Jika tautan eksternal terdeteksi, `SmartLink` secara dinamis akan melakukan *fallback* dan merender tag HTML jangkar biasa `<a>` alih-alih `Inertia Link`.
+   - Hal ini sangat krusial mencegah *bug* Inertia yang mencoba melakukan *XHR request* antar-domain dan berakibat pada kegagalan CORS saat mengklik menu (seperti "Visit Blog").
+
+---
+
+## 6. Pengelolaan Global Settings di Frontend (React)
+
+Pengaturan dinamis (*Settings*) dikirimkan ke dalam konteks React / Inertia melalui `HandleInertiaRequests` middleware.
+
+1. **Akses Pengaturan:**
+   Selalu gunakan properti `settings` dari *shared Inertia props*.
+   ```tsx
+   import { usePage } from '@inertiajs/react';
+   const { settings } = usePage().props;
+   
+   // Mengakses pengaturan
+   const siteName = settings.general?.site_name || 'Default Name';
+   const logoUrl = settings.general?.logo_url || null;
+   ```
+2. **Aturan Fallback:**
+   Frontend **wajib** selalu menyertakan mekanisme *fallback* (contoh: `|| null` atau UI pengganti seperti Monogram huruf pertama) ketika data *setting* bernilai `null` atau kosong. Hal ini melindungi antarmuka jika *cache* belum siap atau konfigurasi dihapus secara tak terduga.
+
+---
 **Catatan untuk AI Agent:**
 Setiap kali Anda ditugaskan pada fitur baru atau _refactoring_, pastikan *checklist* dalam panduan ini diikuti secara ketat.

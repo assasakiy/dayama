@@ -65,7 +65,7 @@ function VerifyPanel({ email, onDone, onExpired }: { email: UserEmail; onDone: (
     const submitCode = () => {
         if (code.length !== 6) return;
         setSubmitting(true);
-        router.post(`/dashboard/account/details/emails/${email.id}/verify`, { code }, {
+        router.post(`/account/details/emails/${email.id}/verify`, { code }, {
             preserveScroll: true,
             onSuccess: () => { setSubmitting(false); onDone(); },
             onError: () => setSubmitting(false),
@@ -74,7 +74,7 @@ function VerifyPanel({ email, onDone, onExpired }: { email: UserEmail; onDone: (
 
     const resend = () => {
         setResending(true);
-        router.post(`/dashboard/account/details/emails/${email.id}/resend`, {}, {
+        router.post(`/account/details/emails/${email.id}/resend`, {}, {
             preserveScroll: true,
             onSuccess: () => { setResending(false); setCode(''); setCooldown(60); setExpired(false); },
             onError: () => setResending(false),
@@ -149,13 +149,13 @@ export default function AccountIndex() {
 
     const submitSettings = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/dashboard/account/details');
+        put('/account/details');
     };
 
     const addEmail = () => {
         if (!newEmail) return;
         setAddingEmail(true);
-        router.post('/dashboard/account/details/emails', { email: newEmail }, {
+        router.post('/account/details/emails', { email: newEmail }, {
             preserveScroll: true,
             onSuccess: (page: any) => {
                 setNewEmail('');
@@ -179,7 +179,7 @@ export default function AccountIndex() {
         const id = emailToRemove;
         setActionId(id);
         if (verifyingId === id) setVerifyingId(null);
-        router.delete(`/dashboard/account/details/emails/${id}`, {
+        router.delete(`/account/details/emails/${id}`, {
             preserveScroll: true,
             onSuccess: () => setEmailToRemove(null),
             onFinish: () => setActionId(null),
@@ -188,7 +188,7 @@ export default function AccountIndex() {
 
     const makePrimary = (id: string) => {
         setActionId(id);
-        router.put(`/dashboard/account/details/emails/${id}/primary`, {}, {
+        router.put(`/account/details/emails/${id}/primary`, {}, {
             preserveScroll: true,
             onFinish: () => setActionId(null),
         });
@@ -313,7 +313,7 @@ export default function AccountIndex() {
                                                     onClick={() => {
                                                         if (isExpired) {
                                                             // Resend directly when code is expired
-                                                            router.post(`/dashboard/account/details/emails/${email.id}/resend`, {}, {
+                                                            router.post(`/account/details/emails/${email.id}/resend`, {}, {
                                                                 preserveScroll: true,
                                                                 onSuccess: () => setVerifyingId(email.id),
                                                             });

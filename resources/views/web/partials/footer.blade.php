@@ -1,17 +1,28 @@
+@php
+    $context = $context ?? 'blog';
+    $siteName = \App\Services\SettingService::get('general.site_name', config('app.name'), $context);
+    $tagline = \App\Services\SettingService::get('general.tagline', 'Modern Web Design', $context);
+    $footerDesc = \App\Services\SettingService::get('general.description', 'A modern blog exploring technology, design, and development. We write about the things that matter.', $context);
+    $logoUrl = \App\Services\SettingService::get('general.logo_url', null, $context);
+@endphp
 <footer class="mt-auto border-t border-border-subtle bg-surface-muted/50">
     <div class="container-page py-12">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             {{-- Brand --}}
             <div class="md:col-span-2">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 text-foreground tracking-tight hover:opacity-80 transition-opacity mb-4">
-                    <span class="w-10 h-10 rounded-md bg-primary flex items-center justify-center text-primary-foreground text-base font-bold shadow-sm">M</span>
+                    @if($logoUrl)
+                        <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-10 w-auto">
+                    @else
+                        <span class="w-10 h-10 rounded-md bg-primary flex items-center justify-center text-primary-foreground text-base font-bold shadow-sm">{{ substr($siteName, 0, 1) }}</span>
+                    @endif
                     <div class="flex flex-col">
-                        <span class="font-bold leading-none text-xl">{{ config('app.name') }}</span>
-                        <span class="text-xs text-muted-foreground uppercase tracking-widest mt-1">Modern Web Design</span>
+                        <span class="font-bold leading-none text-xl">{{ $siteName }}</span>
+                        <span class="text-xs text-muted-foreground uppercase tracking-widest mt-1">{{ $tagline }}</span>
                     </div>
                 </a>
                 <p class="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                    A modern blog exploring technology, design, and development. We write about the things that matter.
+                    {{ $footerDesc }}
                 </p>
                 <div class="mt-6">
                     <span class="text-sm font-semibold text-foreground">{{ __('Follow on') }}</span>
@@ -36,7 +47,7 @@
             <div>
                 <h4 class="text-sm font-semibold text-foreground mb-3">{{ __('Explore') }}</h4>
                 <ul class="space-y-2 text-sm text-muted-foreground">
-                    <li><a href="{{ route('blog.index') }}" class="hover:text-foreground transition-colors">{{ __('Post Archive') }}</a></li>
+                    <li><a href="{{ route('home') }}" class="hover:text-foreground transition-colors">{{ __('Post Archive') }}</a></li>
                     <li><a href="{{ route('blog.trending') }}" class="hover:text-foreground transition-colors">{{ __('Trending') }}</a></li>
                     <li><a href="{{ route('categories.index') }}" class="hover:text-foreground transition-colors">{{ __('Categories') }}</a></li>
                     <li><a href="{{ route('tags.index') }}" class="hover:text-foreground transition-colors">{{ __('Tags') }}</a></li>
@@ -57,7 +68,7 @@
         </div>
 
         <div class="mt-8 pt-6 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}</p>
+            <p>&copy; {{ date('Y') }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
             <div class="flex items-center gap-4">
                 <a href="{{ url('/privacy-policy') }}" class="hover:text-foreground transition-colors">{{ __('Privacy') }}</a>
                 <a href="{{ url('/terms-of-service') }}" class="hover:text-foreground transition-colors">{{ __('Terms') }}</a>

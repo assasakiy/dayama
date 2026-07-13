@@ -182,7 +182,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
         if (removeImage) data.remove_image = true;
 
         if (isEdit) {
-            router.post(`/dashboard/categories/${editCategory!.id}`, {
+            router.post(`/categories/${editCategory!.id}`, {
                 _method: 'put',
                 ...data
             }, {
@@ -191,7 +191,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            router.post('/dashboard/categories', data, {
+            router.post('/categories', data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
                 onFinish: () => setSubmitting(false),
@@ -201,7 +201,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/categories/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/categories/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 

@@ -13,19 +13,19 @@ import {
 export default function NotificationIndex({ notifications, unreadCount }: { notifications: any; unreadCount: number }) {
     
     const handleMarkAsRead = (id: string) => {
-        router.patch(`/dashboard/notifications/${id}/read`, {}, {
+        router.patch(`/notifications/${id}/read`, {}, {
             preserveScroll: true,
         });
     };
 
     const handleMarkAllAsRead = () => {
-        router.post(`/dashboard/notifications/read-all`, {}, {
+        router.post(`/notifications/read-all`, {}, {
             preserveScroll: true,
         });
     };
 
     const handleDelete = (id: string) => {
-        router.delete(`/dashboard/notifications/${id}`, {
+        router.delete(`/notifications/${id}`, {
             preserveScroll: true,
         });
     };

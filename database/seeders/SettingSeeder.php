@@ -14,12 +14,10 @@ class SettingSeeder extends Seeder
     {
         // ─── Setting Groups ───────────────────────────────────────────────────
         $groups = [
-            ['key' => 'general',    'name' => 'General',           'icon' => 'Settings',       'sort_order' => 1,  'description' => 'Basic site information and identity.'],
-            ['key' => 'seo',        'name' => 'SEO & Meta',        'icon' => 'Search',          'sort_order' => 2,  'description' => 'Search engine and social sharing settings.'],
-            ['key' => 'media',      'name' => 'Media',             'icon' => 'Image',           'sort_order' => 3,  'description' => 'File upload and media library settings.'],
-            ['key' => 'mail',       'name' => 'Mail',              'icon' => 'Mail',            'sort_order' => 4,  'description' => 'Email sending configuration.'],
-            ['key' => 'security',   'name' => 'Security',          'icon' => 'Shield',          'sort_order' => 5,  'description' => 'Authentication, rate limiting, and maintenance.'],
-            ['key' => 'appearance', 'name' => 'Appearance',        'icon' => 'Palette',         'sort_order' => 6,  'description' => 'Design and branding settings.'],
+            ['key' => 'general',    'name' => 'General',           'icon' => 'Settings',       'sort_order' => 1,  'description' => 'Basic site information, identity, SEO, and appearance.'],
+            ['key' => 'media',      'name' => 'Media',             'icon' => 'Image',           'sort_order' => 2,  'description' => 'File upload and media library settings.'],
+            ['key' => 'mail',       'name' => 'Mail',              'icon' => 'Mail',            'sort_order' => 3,  'description' => 'Email sending configuration.'],
+            ['key' => 'security',   'name' => 'Security',          'icon' => 'Shield',          'sort_order' => 4,  'description' => 'Authentication, rate limiting, and maintenance.'],
         ];
 
         foreach ($groups as $group) {
@@ -30,21 +28,23 @@ class SettingSeeder extends Seeder
         $settings = [
 
             // General
-            ['group' => 'general', 'key' => 'general.site_name',    'value' => 'My Blog',         'type' => 'string',  'description' => 'The name of your site.'],
-            ['group' => 'general', 'key' => 'general.tagline',       'value' => 'A modern blog',   'type' => 'string',  'description' => 'A short description shown below the site name.'],
+            ['group' => 'general', 'key' => 'general.site_name',         'value' => 'My Blog',         'type' => 'string',  'description' => 'The name of your site.'],
+            ['group' => 'general', 'key' => 'general.tagline',           'value' => 'A modern blog',   'type' => 'string',  'description' => 'A short description shown below the site name.'],
+            ['group' => 'general', 'key' => 'general.site_description',  'value' => 'Welcome to my modern blog where we share the latest updates.', 'type' => 'text', 'description' => 'Detailed description of the site for general display and fallback SEO.'],
             ['group' => 'general', 'key' => 'general.logo_url',      'value' => null,              'type' => 'string',  'description' => 'URL of your site logo image.'],
             ['group' => 'general', 'key' => 'general.favicon_url',   'value' => null,              'type' => 'string',  'description' => 'URL of your favicon (.ico or .png).'],
             ['group' => 'general', 'key' => 'general.timezone',      'value' => 'Asia/Jakarta',    'type' => 'string',  'description' => 'Default timezone for date display.'],
             ['group' => 'general', 'key' => 'general.language',      'value' => 'id',              'type' => 'string',  'description' => 'Default site language code (e.g. id, en).'],
             ['group' => 'general', 'key' => 'general.date_format',   'value' => 'd M Y',           'type' => 'string',  'description' => 'PHP date format for displaying dates.'],
 
-            // SEO
-            ['group' => 'seo', 'key' => 'seo.meta_title_suffix',    'value' => '| My Blog',       'type' => 'string',  'description' => 'Appended to every page title tag.'],
-            ['group' => 'seo', 'key' => 'seo.meta_description',     'value' => 'A modern blog',   'type' => 'string',  'description' => 'Default meta description for pages without one.'],
-            ['group' => 'seo', 'key' => 'seo.og_image_url',         'value' => null,              'type' => 'string',  'description' => 'Default Open Graph image for social sharing.'],
-            ['group' => 'seo', 'key' => 'seo.google_analytics_id',  'value' => null,              'type' => 'string',  'description' => 'Google Analytics measurement ID (GA-XXXXXX).'],
-            ['group' => 'seo', 'key' => 'seo.robots',               'value' => 'index,follow',    'type' => 'string',  'description' => 'Default robots meta tag value.'],
-            ['group' => 'seo', 'key' => 'seo.sitemap_enabled',      'value' => true,              'type' => 'boolean', 'description' => 'Enable automatic XML sitemap generation.'],
+            // SEO (now part of general)
+            ['group' => 'general', 'key' => 'seo.custom_seo_enabled',   'value' => false,             'type' => 'boolean', 'description' => 'Enable custom SEO configurations. If disabled, SEO is generated automatically from Branding.'],
+            ['group' => 'general', 'key' => 'seo.meta_title_suffix',    'value' => '| My Blog',       'type' => 'string',  'description' => 'Appended to every page title tag.'],
+            ['group' => 'general', 'key' => 'seo.meta_description',     'value' => 'A modern blog',   'type' => 'string',  'description' => 'Default meta description for pages without one.'],
+            ['group' => 'general', 'key' => 'seo.og_image_url',         'value' => null,              'type' => 'string',  'description' => 'Default Open Graph image for social sharing.'],
+            ['group' => 'general', 'key' => 'seo.google_analytics_id',  'value' => null,              'type' => 'string',  'description' => 'Google Analytics measurement ID (GA-XXXXXX).'],
+            ['group' => 'general', 'key' => 'seo.robots',               'value' => 'index,follow',    'type' => 'string',  'description' => 'Default robots meta tag value.'],
+            ['group' => 'general', 'key' => 'seo.sitemap_enabled',      'value' => true,              'type' => 'boolean', 'description' => 'Enable automatic XML sitemap generation.'],
 
             // Media
             ['group' => 'media', 'key' => 'media.max_upload_size_mb', 'value' => 10,                                       'type' => 'integer', 'description' => 'Maximum file upload size in megabytes.'],
@@ -73,8 +73,9 @@ class SettingSeeder extends Seeder
             ['group' => 'security', 'key' => 'security.maintenance_whitelist_ips',   'value' => [],    'type' => 'json',    'description' => 'IPs that bypass maintenance mode.'],
             ['group' => 'security', 'key' => 'security.force_https',                 'value' => false, 'type' => 'boolean', 'description' => 'Force HTTPS redirect for all requests.'],
 
-            // Appearance
-            ['group' => 'appearance', 'key' => 'appearance.primary_color',      'value' => '#6366f1',       'type' => 'string', 'description' => 'Primary brand color (hex).'],
+            // Appearance / Theme
+            ['group' => 'general', 'key' => 'appearance.primary_color',      'value' => '#ff9100ff',       'type' => 'string', 'description' => 'Primary brand color (hex).'],
+            ['group' => 'general', 'key' => 'appearance.secondary_color',    'value' => '#f2b12eff',       'type' => 'string', 'description' => 'Secondary brand color (hex).'],
 
 
         ];

@@ -58,7 +58,7 @@ export default function EmailTemplatesIndex({ templates }: { templates: EmailTem
                                         <td className="px-6 py-4">
                                             <div className="flex justify-end gap-2">
                                                 <Link
-                                                    href={`/dashboard/email-templates/${template.id}/edit`}
+                                                    href={`/email-templates/${template.id}/edit`}
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                                                 >
                                                     <Edit className="w-3.5 h-3.5" />

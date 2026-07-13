@@ -1,5 +1,6 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { SmartLink } from '@dashboard/Components/ui/SmartLink';
 import DashboardLayout from '@dashboard/Layouts/DashboardLayout';
 import {
     FileText,
@@ -56,6 +57,7 @@ const statCards = [
 ];
 
 export default function Dashboard({ stats, recent_posts, recent_comments }: Props) {
+    const { blog_url } = usePage().props as any;
     return (
         <DashboardLayout>
             <Head title="Dashboard" />
@@ -91,7 +93,7 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                                 <FileText className="w-4 h-4 text-muted-foreground" />
                                 Recent Posts
                             </h2>
-                            <Link href="/dashboard/posts" className="text-xs text-primary hover:underline flex items-center gap-1">
+                            <Link href="/posts" className="text-xs text-primary hover:underline flex items-center gap-1">
                                 View all <ChevronRight className="w-3 h-3" />
                             </Link>
                         </div>
@@ -111,7 +113,7 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                                             </div>
                                         )}
                                         <div className="min-w-0 flex-1">
-                                            <Link href={`/dashboard/posts/${p.id}/edit`} className="text-sm font-medium truncate block hover:text-primary transition-colors">
+                                            <Link href={`/posts/${p.id}/edit`} className="text-sm font-medium truncate block hover:text-primary transition-colors">
                                                 {p.title}
                                             </Link>
                                             <p className="text-xs text-muted-foreground">{p.author?.name} &middot; {p.category?.name}</p>
@@ -130,7 +132,7 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                                 <MessageSquare className="w-4 h-4 text-muted-foreground" />
                                 Recent Comments
                             </h2>
-                            <Link href="/dashboard/comments" className="text-xs text-primary hover:underline flex items-center gap-1">
+                            <Link href="/comments" className="text-xs text-primary hover:underline flex items-center gap-1">
                                 View all <ChevronRight className="w-3 h-3" />
                             </Link>
                         </div>
@@ -145,7 +147,7 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                                         <p className="text-sm truncate">{c.content.slice(0, 80)}...</p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                             {c.author?.name ?? 'Anonymous'} on{' '}
-                                            <Link href={`/post/${c.post?.slug}`} className="hover:text-primary transition-colors">{c.post?.title}</Link>
+                                            <SmartLink href={`${blog_url}/post/${c.post?.slug}`} className="hover:text-primary transition-colors">{c.post?.title}</SmartLink>
                                         </p>
                                     </div>
                                 ))

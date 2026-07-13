@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthController
 {
@@ -19,7 +20,7 @@ class AuthController
         return Inertia::render('Auth/Register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): SymfonyResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -38,7 +39,9 @@ class AuthController
 
         // User yang baru register biasanya adalah user reguler
         $blogDomain = config('projects.projects.blog.domain');
-        return redirect()->to($request->getScheme() . '://' . $blogDomain . '/');
+        $url = $request->getScheme() . '://' . $blogDomain . '/';
+
+        return Inertia::location($url);
     }
 
     public function login(): Response
@@ -46,7 +49,7 @@ class AuthController
         return Inertia::render('Auth/Login');
     }
 
-    public function authenticate(Request $request): RedirectResponse
+    public function authenticate(Request $request): SymfonyResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -57,15 +60,17 @@ class AuthController
             $request->session()->regenerate();
 
             $user = Auth::user();
-            // Jika user adalah super-admin atau punya akses dashboard
-            if ($user->hasRole('super-admin') || $user->hasPermissionTo('access dashboard')) {
+            if ($user->hasRole('super-admin') || $user->hasPermissionTo('dashboard.view')) {
                 $dashboardDomain = config('projects.core.dashboard');
-                return redirect()->intended($request->getScheme() . '://' . $dashboardDomain . '/');
+                $url = $request->getScheme() . '://' . $dashboardDomain . '/';
+
+                return Inertia::location($url);
             }
-            
-            // Jika user biasa, kembalikan ke blog
+
             $blogDomain = config('projects.projects.blog.domain');
-            return redirect()->intended($request->getScheme() . '://' . $blogDomain . '/');
+            $url = $request->getScheme() . '://' . $blogDomain . '/';
+
+            return Inertia::location($url);
         }
 
         return back()->withErrors([
@@ -73,13 +78,15 @@ class AuthController
         ])->onlyInput('email');
     }
 
-    public function logout(Request $request): RedirectResponse
+    public function logout(Request $request): SymfonyResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         $authDomain = config('projects.core.auth');
-        return redirect()->to($request->getScheme() . '://' . $authDomain . '/login');
+        $url = $request->getScheme() . '://' . $authDomain . '/login';
+
+        return Inertia::location($url);
     }
 }

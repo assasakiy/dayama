@@ -69,7 +69,7 @@ export default function SettingsIndex({
 
     const handleSave = () => {
         setSaving(true);
-        router.put(`/dashboard/settings/${activeGroup}`, {
+        router.put(`/settings/${activeGroup}`, {
             settings: currentValues,
         }, {
             preserveScroll: true,

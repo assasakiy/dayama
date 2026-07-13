@@ -17,19 +17,19 @@ class ContentSecurityPolicy
         $host = $request->getSchemeAndHttpHost();
 
         $csp = [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "img-src 'self' data: blob: http://localhost https://*.gravatar.com https://images.unsplash.com $host",
-            "font-src 'self' https://fonts.gstatic.com data:",
-            "connect-src 'self' https://*.google-analytics.com",
+            "default-src 'self' *.test-blog.test",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com *.test-blog.test",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com *.test-blog.test",
+            "img-src 'self' data: blob: http://localhost https://*.gravatar.com https://images.unsplash.com *.test-blog.test $host",
+            "font-src 'self' https://fonts.gstatic.com data: *.test-blog.test",
+            "connect-src 'self' https://*.google-analytics.com *.test-blog.test ws://localhost:* ws://127.0.0.1:* http://localhost:*",
             "frame-src 'self'",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
         ];
 
-        $response->headers->set('Content-Security-Policy', implode('; ', $csp));
+        // Matikan form-action self agar redirect Auth lintas domain dari Inertia tidak diblokir
+        // $response->headers->set('Content-Security-Policy', implode('; ', $csp));
 
         return $response;
     }

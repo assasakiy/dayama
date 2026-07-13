@@ -24,7 +24,7 @@ class ProfileController extends Controller
     {
         $service->update($request->user(), $request->validated());
 
-        return redirect()->route('dashboard.account.profile.index')
+        return redirect()->route('dashboard.account.profile')
             ->with('success', 'Profile updated successfully.');
     }
 }

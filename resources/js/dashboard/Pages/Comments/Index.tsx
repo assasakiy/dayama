@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { SmartLink } from '@dashboard/Components/ui/SmartLink';
 import DashboardLayout from '@dashboard/Layouts/DashboardLayout';
 import ConfirmDialog from '@dashboard/Components/ui/confirm-dialog';
 import {
@@ -21,11 +22,11 @@ import {
 } from 'lucide-react';
 
 const STATUS_TABS = [
-    { label: 'All', value: 'all', href: '/dashboard/comments' },
-    { label: 'Review', value: 'review', href: '/dashboard/comments?status=review' },
-    { label: 'Published', value: 'published', href: '/dashboard/comments?status=published' },
-    { label: 'Spam', value: 'spam', href: '/dashboard/comments?status=spam' },
-    { label: 'Rejected', value: 'rejected', href: '/dashboard/comments?status=rejected' },
+    { label: 'All', value: 'all', href: '/comments' },
+    { label: 'Review', value: 'review', href: '/comments?status=review' },
+    { label: 'Published', value: 'published', href: '/comments?status=published' },
+    { label: 'Spam', value: 'spam', href: '/comments?status=spam' },
+    { label: 'Rejected', value: 'rejected', href: '/comments?status=rejected' },
 ];
 
 const statusBadge = (status: string) => {
@@ -45,24 +46,25 @@ const statusBadge = (status: string) => {
 };
 
 export default function CommentIndex({ comments, currentStatus }: { comments: any; currentStatus: string }) {
+    const { blog_url } = usePage().props as any;
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const handleDelete = () => {
         if (!deleteId) return;
-        router.delete(`/dashboard/comments/${deleteId}`, {
+        router.delete(`/comments/${deleteId}`, {
             preserveScroll: true,
         });
         setDeleteId(null);
     };
 
     const handleStatusChange = (commentId: string, status: string) => {
-        router.patch(`/dashboard/comments/${commentId}/status`, { status }, {
+        router.patch(`/comments/${commentId}/status`, { status }, {
             preserveScroll: true,
         });
     };
 
     const handlePinChange = (commentId: string) => {
-        router.patch(`/dashboard/comments/${commentId}/pin`, {}, {
+        router.patch(`/comments/${commentId}/pin`, {}, {
             preserveScroll: true,
         });
     };
@@ -149,10 +151,10 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                     </td>
                                     <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">
                                         {comment.post && (
-                                            <Link href={`/post/${comment.post.slug}`} className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+                                            <SmartLink href={`${blog_url}/post/${comment.post.slug}`} className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
                                                 <ExternalLink className="w-3 h-3 shrink-0" />
                                                 <span className="truncate">{comment.post.title}</span>
-                                            </Link>
+                                            </SmartLink>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">

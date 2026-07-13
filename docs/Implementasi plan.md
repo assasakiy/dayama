@@ -27,8 +27,8 @@ Berdasarkan evaluasi, membangun *Page Builder* dinamis (menyimpan layout di DB) 
   RoutesServiceProvider -> Otomatis membagi rute berdasarkan file konfigurasi
 
 ❌ BELUM ADA (Target Berikutnya):
-  Email Templates      -> Migrasi tabel sudah ada, integrasi Mailable dan UI belum.
-  Settings UI          -> UI Dashboard untuk mengelola konfigurasi umum belum lengkap.
+  Automated Testing    -> Test suite bawaan gagal (404) karena penyesuaian multi-domain; perlu menulis Unit/Feature test untuk Services (Bookmark, Settings, dll).
+  Phase 5 (Discovery)  -> Popular Score (algoritma time-decay) dan Search Analytics belum diimplementasikan di PostMetricsService maupun SearchService.
 ```
 
 ---
@@ -49,14 +49,19 @@ Proyek Tambahan (Frontend Modules):
 
 ---
 
-## PHASE 1 - Penyelesaian CMS Foundation
-**Prioritas: PERTAMA**
+## Prioritas Berikutnya (Sesuai Fakta Lapangan)
 
-1. **Email Templates:**
-   - Mengonfigurasi `TemplateMailable` agar dinamis.
-   - Menyempurnakan fungsionalitas `EmailTemplateController` untuk operasi CRUD di Dashboard.
-2. **Settings UI:**
-   - Memastikan antarmuka React/Inertia untuk `SettingsController` beroperasi secara penuh untuk membaca dan menyimpan variabel non-env ke database.
+1. **Perbaikan & Penambahan Automated Tests (Kritis):**
+   - Lingkungan pengujian standar (`php artisan test`) mengembalikan error 404 karena `routes/web.php` dikosongkan untuk arsitektur multi-domain.
+   - Perlu merekonfigurasi `TestCase` agar mendukung pengujian lintas domain.
+   - Menulis *Unit/Feature Tests* untuk logika yang sudah ada (Settings, Email Templates, Bookmarks, dll). Walaupun UI dan Service sudah ada, pengujian masih sangat kurang.
+
+2. **Memulai Phase 5 (Discovery):**
+   - **Popular Score:** Membuat fungsionalitas untuk mengkalkulasi popularitas artikel menggunakan sistem peluruhan berdasar waktu (*time-decay formula*). Saat ini `PostMetricsService` baru sebatas menyimpan *view count*.
+   - **Search Analytics:** Merekam dan menambang histori pencarian di `SearchService`.
+
+3. **Penyesuaian Lanjutan (Fase 1-4):**
+   - Meskipun secara fundamental UI Settings dan Email Templates (Phase 1), serta Bookmarks & Komentar (Phase 3 & 4) sudah diimplementasikan, masih diperlukan *review* kode, penyempurnaan, dan *bug-fixing* lebih lanjut. Jangan asumsikan sudah *100% passed* sebelum di-test secara menyeluruh.
 
 ---
 

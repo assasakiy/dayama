@@ -4,6 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $favicon = \App\Services\SettingService::get('general.favicon_url', null, 'global');
+    @endphp
+    @if($favicon)
+        <link rel="icon" href="{{ $favicon }}">
+    @endif
 
     {{-- SEO Meta --}}
     <title>@yield('title', config('app.name'))</title>
@@ -37,17 +43,31 @@
 
     @vite(['resources/js/website.ts'])
     @stack('styles')
+
+    @php
+        $context = $context ?? 'blog';
+        $primaryColor = \App\Services\SettingService::get('appearance.primary_color', null, 'global');
+        $secondaryColor = \App\Services\SettingService::get('appearance.secondary_color', null, 'global');
+    @endphp
+    @if($primaryColor || $secondaryColor)
+    <style>
+        :root, .dark {
+            @if($primaryColor) --color-primary: {{ $primaryColor }}; @endif
+            @if($secondaryColor) --color-secondary: {{ $secondaryColor }}; @endif
+        }
+    </style>
+    @endif
 </head>
 <body class="flex flex-col min-h-screen antialiased">
     <a href="#main-content" class="skip-link">{{ __('Skip to main content') }}</a>
 
-    @include('web.partials.header')
+    @include('web.partials.header', ['context' => $context])
 
     <main id="main-content" class="flex-1">
         @yield('content')
     </main>
 
-    @include('web.partials.footer')
+    @include('web.partials.footer', ['context' => $context])
 
     @stack('scripts')
 

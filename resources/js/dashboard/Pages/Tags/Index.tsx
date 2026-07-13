@@ -97,13 +97,13 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
         };
 
         if (isEdit) {
-            router.put(`/dashboard/tags/${editTag!.id}`, data, {
+            router.put(`/tags/${editTag!.id}`, data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            router.post('/dashboard/tags', data, {
+            router.post('/tags', data, {
                 onError: (errs) => { setErrors(errs); setSubmitting(false); },
                 onSuccess: () => { setModalOpen(false); resetForm(); },
                 onFinish: () => setSubmitting(false),
@@ -113,7 +113,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/dashboard/tags/${deleteTarget.id}`, { preserveScroll: true });
+        router.delete(`/tags/${deleteTarget.id}`, { preserveScroll: true });
         setDeleteTarget(null);
     };
 

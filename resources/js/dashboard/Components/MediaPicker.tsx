@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from './ui/dialog';
 import { Btn } from './ui/btn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Upload, Search, Check, Image as ImageIcon, LayoutGrid, X, RefreshCw } from 'lucide-react';
+import { Upload, Search, Check, Image as ImageIcon, LayoutGrid, X, RefreshCw, Lock, Globe } from 'lucide-react';
 import { Input } from './ui/input';
+import { usePage } from '@inertiajs/react';
 
 interface MediaItem {
     id: number;
@@ -14,6 +15,9 @@ interface MediaItem {
     human_readable_size: string;
     thumbnail_url: string;
     original_url: string;
+    custom_properties?: any;
+    model_type?: string;
+    model_id?: number;
 }
 
 interface MediaPickerProps {
@@ -24,6 +28,7 @@ interface MediaPickerProps {
 }
 
 export default function MediaPicker({ open, onOpenChange, onSelect, title = "Select Media" }: MediaPickerProps) {
+    const { auth } = usePage<any>().props;
     const [activeTab, setActiveTab] = useState('library');
     const [media, setMedia] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -34,10 +39,12 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchMedia = async (pageNum: number = 1) => {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchMedia = async (pageNum: number = 1, query: string = '') => {
         setLoading(true);
         try {
-            const res = await fetch(`/dashboard/api/media?page=${pageNum}`);
+            const res = await fetch(`/media/api/index?page=${pageNum}&search=${encodeURIComponent(query)}`);
             const json = await res.json();
             if (pageNum === 1) {
                 setMedia(json.data);
@@ -54,10 +61,14 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
 
     useEffect(() => {
         if (open && activeTab === 'library') {
-            fetchMedia(1);
-            setPage(1);
+            setLoading(true);
+            const timer = setTimeout(() => {
+                setPage(1);
+                fetchMedia(1, searchQuery);
+            }, 400);
+            return () => clearTimeout(timer);
         }
-    }, [open, activeTab]);
+    }, [open, activeTab, searchQuery]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -85,6 +96,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
         setSelectedItem(null);
         setUploadFile(null);
         setUploadPreview(null);
+        setSearchQuery('');
         setActiveTab('library');
     };
 
@@ -105,7 +117,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                 </DialogHeader>
                 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                    <div className="px-4 sm:px-6 pt-4 shrink-0">
+                    <div className="px-4 sm:px-6 pt-4 shrink-0 flex items-center justify-between gap-4">
                         <TabsList className="grid w-full max-w-md grid-cols-2">
                             <TabsTrigger value="library" className="data-[state=active]:text-primary data-[state=active]:bg-primary/10 transition-colors gap-2">
                                 <LayoutGrid className="w-4 h-4" />
@@ -116,6 +128,19 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                 Upload New
                             </TabsTrigger>
                         </TabsList>
+
+                        {activeTab === 'library' && (
+                            <div className="relative w-full max-w-xs">
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <Input 
+                                    type="text"
+                                    placeholder="Search media..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-9 h-9 text-sm bg-surface-muted border-transparent focus-visible:bg-background focus-visible:border-primary"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <TabsContent value="library" className="flex-1 overflow-y-auto p-4 sm:p-6 m-0 outline-none">
@@ -157,6 +182,36 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                             <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 truncate text-[10px] text-white">
                                                 {item.name}
                                             </div>
+                                            <div className="absolute top-2 left-2 flex gap-1">
+                                                {item.model_type === 'App\\Models\\User' ? (
+                                                    (item.model_id === auth.user.id || item.custom_properties?.uploaded_by === auth.user.id) ? (
+                                                        item.custom_properties?.is_public ? (
+                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm flex items-center gap-1" title="Shared Publicly (Personal)">
+                                                                <Lock className="w-3 h-3 opacity-70" />
+                                                                <Globe className="w-3 h-3" />
+                                                            </span>
+                                                        ) : (
+                                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Personal)">
+                                                                <Lock className="w-3 h-3" />
+                                                            </span>
+                                                        )
+                                                    ) : (
+                                                        item.custom_properties?.is_public ? (
+                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Public (Personal)">
+                                                                <Globe className="w-3 h-3" />
+                                                            </span>
+                                                        ) : (
+                                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Other User)">
+                                                                <Lock className="w-3 h-3" />
+                                                            </span>
+                                                        )
+                                                    )
+                                                ) : (
+                                                    <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Public">
+                                                        <Globe className="w-3 h-3" />
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -169,7 +224,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                             onClick={() => {
                                                 const nextPage = page + 1;
                                                 setPage(nextPage);
-                                                fetchMedia(nextPage);
+                                                fetchMedia(nextPage, searchQuery);
                                             }}
                                         >
                                             Load More

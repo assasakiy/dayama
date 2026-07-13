@@ -55,14 +55,14 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
         if (key === 'date_from') setFilterDateFrom(value);
         if (key === 'date_to') setFilterDateTo(value);
 
-        router.get('/dashboard/activity-logs', newFilters, { preserveState: true, preserveScroll: true });
+        router.get('/activity-logs', newFilters, { preserveState: true, preserveScroll: true });
     };
 
     const hasFilter = !!(filters.event || filters.date_from || filters.date_to);
 
     const handleDelete = () => {
         if (!deleteId) return;
-        router.delete(`/dashboard/activity-logs/${deleteId}`, { preserveScroll: true });
+        router.delete(`/activity-logs/${deleteId}`, { preserveScroll: true });
         setDeleteId(null);
         setSelectedIds(prev => prev.filter(id => id !== deleteId));
     };
@@ -85,7 +85,7 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
 
     const handleBulkDelete = () => {
         if (selectedIds.length === 0) return;
-        router.delete('/dashboard/activity-logs', {
+        router.delete('/activity-logs', {
             data: { ids: selectedIds },
             preserveScroll: true,
             onSuccess: () => {

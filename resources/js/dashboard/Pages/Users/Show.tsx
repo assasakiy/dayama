@@ -57,7 +57,7 @@ export default function UserShow({ user }: Props) {
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="flex items-center gap-3">
                         <Link
-                            href="/dashboard/users"
+                            href="/users"
                             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -68,7 +68,7 @@ export default function UserShow({ user }: Props) {
                         </div>
                     </div>
                     <Link
-                        href={`/dashboard/users/${user.id}/edit`}
+                        href={`/users/${user.id}/edit`}
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
                     >
                         <Pencil className="w-4 h-4" />
