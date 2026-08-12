@@ -48,23 +48,23 @@ interface Props {
 }
 
 const statCards = [
-    { label: 'Total Posts', key: 'posts' as const, icon: FileText, color: 'text-primary' },
-    { label: 'Published', key: 'published_posts' as const, icon: CheckCircle2, color: 'text-success' },
-    { label: 'Drafts', key: 'draft_posts' as const, icon: Clock, color: 'text-warning' },
-    { label: 'Comments', key: 'comments' as const, icon: MessageSquare, color: 'text-info' },
-    { label: 'Categories', key: 'categories' as const, icon: FolderTree, color: 'text-foreground' },
-    { label: 'Users', key: 'users' as const, icon: Users, color: 'text-muted-foreground' },
+    { label: 'Total Postingan', key: 'posts' as const, icon: FileText, color: 'text-primary' },
+    { label: 'Terbit', key: 'published_posts' as const, icon: CheckCircle2, color: 'text-success' },
+    { label: 'Draf', key: 'draft_posts' as const, icon: Clock, color: 'text-warning' },
+    { label: 'Komentar', key: 'comments' as const, icon: MessageSquare, color: 'text-info' },
+    { label: 'Kategori', key: 'categories' as const, icon: FolderTree, color: 'text-foreground' },
+    { label: 'Pengguna', key: 'users' as const, icon: Users, color: 'text-muted-foreground' },
 ];
 
 export default function Dashboard({ stats, recent_posts, recent_comments }: Props) {
     const { blog_url } = usePage().props as any;
     return (
         <DashboardLayout>
-            <Head title="Dashboard" />
+            <Head title="Dasbor" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Your blog at a glance</p>
+                    <h1 className="text-2xl font-semibold tracking-tight">Ringkasan</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Sekilas tentang blog Anda</p>
                 </div>
 
                 {/* Stats grid */}
@@ -91,16 +91,16 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                         <div className="flex items-center justify-end md:justify-between px-5 py-3.5 border-b border-border-subtle w-full">
                             <h2 className="text-sm font-semibold flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-muted-foreground" />
-                                Recent Posts
+                                Postingan Terbaru
                             </h2>
                             <Link href="/posts" className="text-xs text-primary hover:underline flex items-center gap-1">
-                                View all <ChevronRight className="w-3 h-3" />
+                                Lihat Semua <ChevronRight className="w-3 h-3" />
                             </Link>
                         </div>
                         <div className="divide-y divide-border-subtle">
                             {recent_posts.length === 0 ? (
                                 <div className="px-5 py-8 text-center text-sm text-muted-foreground">
-                                    No posts yet. Start writing!
+                                    Belum ada postingan. Mulai menulis!
                                 </div>
                             ) : (
                                 recent_posts.map((p) => (
@@ -130,23 +130,23 @@ export default function Dashboard({ stats, recent_posts, recent_comments }: Prop
                         <div className="flex items-center justify-end md:justify-between px-5 py-3.5 border-b border-border-subtle w-full">
                             <h2 className="text-sm font-semibold flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                                Recent Comments
+                                Komentar Terbaru
                             </h2>
                             <Link href="/comments" className="text-xs text-primary hover:underline flex items-center gap-1">
-                                View all <ChevronRight className="w-3 h-3" />
+                                Lihat Semua <ChevronRight className="w-3 h-3" />
                             </Link>
                         </div>
                         <div className="divide-y divide-border-subtle">
                             {recent_comments.length === 0 ? (
                                 <div className="px-5 py-8 text-center text-sm text-muted-foreground">
-                                    No comments yet.
+                                    Belum ada komentar.
                                 </div>
                             ) : (
                                 recent_comments.map((c) => (
                                     <div key={c.id} className="px-5 py-3 hover:bg-surface-muted/30 transition-colors">
                                         <p className="text-sm truncate">{c.content.slice(0, 80)}...</p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
-                                            {c.author?.name ?? 'Anonymous'} on{' '}
+                                            {c.author?.name ?? 'Anonim'} pada{' '}
                                             <SmartLink href={`${blog_url}/post/${c.post?.slug}`} className="hover:text-primary transition-colors">{c.post?.title}</SmartLink>
                                         </p>
                                     </div>

@@ -7,7 +7,9 @@ namespace App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StoreUserRequest;
 use App\Http\Requests\Dashboard\UpdateUserRequest;
-use App\Models\User;
+use Modules\Core\Models\Institution;
+use Modules\Core\Models\RoleUser;
+use Modules\Core\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,14 +24,15 @@ class UserController
         Gate::authorize('viewAny', User::class);
         $query = User::with('roles')
             ->withCount(['posts', 'comments'])
+            ->with('roleUser.institution')
             ->latest();
 
         // Search
         if ($search = $request->input('search')) {
             $query->where(fn ($q) => $q
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
+                ->where('email', 'like', "%{$search}%")
                 ->orWhere('username', 'like', "%{$search}%")
+                ->orWhereHas('person', fn ($pq) => $pq->where('nama_lengkap', 'like', "%{$search}%"))
             );
         }
 
@@ -72,6 +75,10 @@ class UserController
             'is_protected'      => $user->is_protected,
             'is_verified'       => $user->is_verified,
             'highest_rank'      => $user->getHighestRank(),
+            'institution'       => $user->roleUser->first()?->institution ? [
+                'id'   => $user->roleUser->first()->institution->id,
+                'name' => $user->roleUser->first()->institution->name,
+            ] : null,
             'can'               => [
                 'update' => request()->user()->can('update', $user),
                 'delete' => request()->user()->can('delete', $user),
@@ -79,16 +86,17 @@ class UserController
         ]);
 
         return Inertia::render('Users/Index', [
-            'users'   => $users,
-            'roles'   => Role::orderBy('name')->get(['id', 'name', 'color', 'icon']),
-            'filters' => $request->only(['search', 'role', 'status', 'verified']),
+            'users'       => $users,
+            'roles'       => Role::orderBy('name')->get(['id', 'name', 'color', 'icon', 'scope']),
+            'filters'     => $request->only(['search', 'role', 'status', 'verified']),
+            'institutions' => Institution::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function show(User $user): Response
     {
         Gate::authorize('view', $user);
-        $user->loadCount(['posts', 'comments'])->load('roles');
+        $user->loadCount(['posts', 'comments'])->load('roles', 'roleUser.institution');
 
         return Inertia::render('Users/Show', [
             'user' => [
@@ -113,6 +121,10 @@ class UserController
                     'name'  => $r->name,
                     'color' => $r->color,
                 ]),
+                'institution'       => $user->roleUser->first()?->institution ? [
+                    'id'   => $user->roleUser->first()->institution->id,
+                    'name' => $user->roleUser->first()->institution->name,
+                ] : null,
             ],
         ]);
     }
@@ -122,7 +134,6 @@ class UserController
         $validated = $request->validated();
 
         $user = User::create([
-            'name'     => $validated['name'],
             'email'    => $validated['email'],
             'username' => $validated['username'] ?? str($validated['email'])->before('@'),
             'password' => $validated['password'],
@@ -130,6 +141,7 @@ class UserController
         ]);
 
         $profileData = [
+            'full_name' => $validated['name'],
             'biography' => $validated['biography'] ?? null,
             'website'  => $validated['website'] ?? null,
             'social_links' => array_filter([
@@ -147,6 +159,7 @@ class UserController
 
         if (! empty($validated['roles'])) {
             $user->syncRoles($validated['roles']);
+            $this->syncRoleUserPivot($user, $validated['roles'], $validated['institution_id'] ?? null);
         }
 
         return redirect()->route('dashboard.users.index')->with('success', 'User created.');
@@ -155,7 +168,7 @@ class UserController
     public function edit(User $user): Response
     {
         Gate::authorize('update', $user);
-        $user->load(['roles', 'profile']);
+        $user->load(['roles', 'profile', 'roleUser.institution']);
 
         return Inertia::render('Users/Form', [
             'user' => [
@@ -173,8 +186,13 @@ class UserController
                 'roles'             => $user->roles->pluck('name'),
                 'is_protected'      => $user->is_protected,
                 'is_verified'       => $user->is_verified,
+                'institution'       => $user->roleUser->first()?->institution ? [
+                    'id'   => $user->roleUser->first()->institution->id,
+                    'name' => $user->roleUser->first()->institution->name,
+                ] : null,
             ],
-            'roles' => Role::orderBy('name')->get(['id', 'name', 'color', 'icon']),
+            'roles' => Role::orderBy('name')->get(['id', 'name', 'color', 'icon', 'scope']),
+            'institutions' => Institution::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -182,8 +200,8 @@ class UserController
     {
         $validated = $request->validated();
 
+
         $data = [
-            'name'     => $validated['name'],
             'email'    => $validated['email'],
             'status'   => $validated['status'] ?? 'active',
         ];
@@ -211,6 +229,7 @@ class UserController
         $user->update($data);
 
         $profileData = [
+            'full_name' => $validated['name'],
             'biography' => $validated['biography'] ?? null,
             'website'  => $validated['website'] ?? null,
             'social_links' => array_filter([
@@ -232,6 +251,7 @@ class UserController
 
         if (isset($validated['roles'])) {
             $user->syncRoles($validated['roles']);
+            $this->syncRoleUserPivot($user, $validated['roles'], $validated['institution_id'] ?? null);
         }
 
         return redirect()->route('dashboard.users.index')->with('success', 'User updated.');
@@ -243,6 +263,26 @@ class UserController
         $user->delete();
 
         return redirect()->route('dashboard.users.index')->with('success', 'User deleted.');
+    }
+
+    /**
+     * Sync the core_role_user pivot for lembaga-scoped roles.
+     */
+    private function syncRoleUserPivot(User $user, array $roleNames, ?string $institutionId): void
+    {
+        $lembagaRoleIds = Role::whereIn('name', $roleNames)
+            ->where('scope', 'lembaga')
+            ->pluck('id');
+
+        $user->roleUser()->delete();
+
+        foreach ($lembagaRoleIds as $roleId) {
+            RoleUser::create([
+                'user_id'        => $user->id,
+                'role_id'        => $roleId,
+                'institution_id' => $institutionId,
+            ]);
+        }
     }
 
     public function bulkDelete(Request $request): RedirectResponse

@@ -121,7 +121,7 @@ export default function PostForm({ post, categories, tags }: Props) {
     const slug = post?.slug ?? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     const generatedExcerpt = content.replace(/<[^>]*>?/gm, '').substring(0, 160) + (content.length > 160 ? '...' : '');
-    const generatedTitle = title || 'Post Title';
+    const generatedTitle = title || 'Judul Postingan';
     const generatedCanonical = `${window.location.origin}/post/${slug || 'your-post-url'}`;
     const generatedMetaKeywords = selectedTags
         .map(tagId => tags.find(t => t.id === tagId)?.name)
@@ -233,7 +233,7 @@ export default function PostForm({ post, categories, tags }: Props) {
 
     return (
         <DashboardLayout>
-            <Head title={isEditing ? 'Edit Post' : 'New Post'} />
+            <Head title={isEditing ? 'Edit Postingan' : 'Posting Baru'} />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="flex items-center gap-3">
@@ -244,8 +244,8 @@ export default function PostForm({ post, categories, tags }: Props) {
                             <ArrowLeft className="w-4 h-4" />
                         </Link>
                         <div className="hidden md:block">
-                            <h1 className="text-xl font-semibold tracking-tight">{isEditing ? 'Edit Post' : 'New Post'}</h1>
-                            <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{isEditing ? 'Update your post content' : 'Create a new blog post'}</p>
+                            <h1 className="text-xl font-semibold tracking-tight">{isEditing ? 'Edit Postingan' : 'Posting Baru'}</h1>
+                            <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{isEditing ? 'Perbarui konten postingan' : 'Buat postingan blog baru'}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         checked={isAutosaveEnabled}
                                         onChange={(e) => setIsAutosaveEnabled(e.target.checked)}
                                     />
-                                    <span className="text-xs text-muted-foreground font-medium">Autosave</span>
+                                    <span className="text-xs text-muted-foreground font-medium">Simpan Otomatis</span>
                                 </label>
                                 {lastAutosavedTime && (
                                     <span className="text-[10px] text-muted-foreground/70">
@@ -282,7 +282,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                 className="inline-flex items-center gap-1.5 h-8 px-3 text-xs border border-border-subtle rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-all"
                             >
                                 <History className="w-3.5 h-3.5" />
-                                Revisions
+                                Revisi
                             </Link>
                         )}
                     </div>
@@ -298,38 +298,38 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <ImageIcon className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Content
+Konten
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <Input
-                                        label="Title"
+                                        label="Judul"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         error={errors.title}
                                         required
-                                        placeholder="Enter post title"
+                                        placeholder="Masukkan judul postingan"
                                     />
                                     <div>
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <label className="text-sm font-medium block">Excerpt (Optional)</label>
-                                            {!excerpt && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Auto Generated</span>}
+                                            <label className="text-sm font-medium block">Cuplikan (Opsional)</label>
+                                            {!excerpt && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Otomatis</span>}
                                         </div>
                                         <Textarea
                                             value={excerpt}
                                             onChange={(e) => setExcerpt(e.target.value)}
-                                            placeholder={generatedExcerpt || "Brief summary for listings..."}
+                                            placeholder={generatedExcerpt || "Ringkasan singkat untuk daftar..."}
                                             rows={2}
                                         />
-                                        <p className="text-xs text-muted-foreground mt-1.5">Leave empty to automatically generate from the article content.</p>
+                                        <p className="text-xs text-muted-foreground mt-1.5">Kosongkan untuk menghasilkan otomatis dari konten artikel.</p>
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium mb-1.5 block">Body</label>
+                                        <label className="text-sm font-medium mb-1.5 block">Isi</label>
                                         <TipTapEditor 
                                             ref={editorRef}
                                             content={content} 
                                             onChange={setContent} 
-                                            placeholder="Start writing your post..." 
+                                            placeholder="Mulai menulis postingan..." 
                                             onRequestImage={() => setIsEditorMediaPickerOpen(true)}
                                         />
                                         {errors.content && <p className="text-xs text-danger mt-1.5">{errors.content}</p>}
@@ -346,7 +346,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <Save className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Publish
+Publikasi
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -355,15 +355,15 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <Select value={status} onValueChange={setStatus}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="draft">Draft</SelectItem>
-                                                <SelectItem value="published">Published</SelectItem>
-                                                <SelectItem value="scheduled">Scheduled</SelectItem>
+                                                <SelectItem value="draft">Draf</SelectItem>
+                                                <SelectItem value="published">Terbit</SelectItem>
+                                                <SelectItem value="scheduled">Terjadwal</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     {status === 'scheduled' && (
                                         <div className="space-y-1.5 mt-2">
-                                            <label className="text-sm font-medium">Schedule Time</label>
+                                            <label className="text-sm font-medium">Waktu Jadwal</label>
                                             <input 
                                                 type="datetime-local" 
                                                 value={scheduledAt} 
@@ -379,7 +379,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             onChange={(e) => setIsFeatured(e.target.checked)}
                                             className="w-4 h-4 rounded border-border-subtle text-primary focus:ring-primary"
                                         />
-                                        <span>Featured post</span>
+                                        <span>Postingan unggulan</span>
                                     </label>
                                     <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
                                         <input
@@ -388,7 +388,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             onChange={(e) => setIsPinned(e.target.checked)}
                                             className="w-4 h-4 rounded border-border-subtle text-primary focus:ring-primary"
                                         />
-                                        <span>Pinned post</span>
+                                        <span>Postingan disematkan</span>
                                     </label>
                                     <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
                                         <input
@@ -397,7 +397,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             onChange={(e) => setAllowComments(e.target.checked)}
                                             className="w-4 h-4 rounded border-border-subtle text-primary focus:ring-primary"
                                         />
-                                        <span>Allow comments</span>
+                                        <span>Izinkan komentar</span>
                                     </label>
                                     {slug && (
                                         <div className="text-xs text-muted-foreground bg-surface-muted rounded-md px-3 py-2 truncate">
@@ -410,7 +410,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                                         >
                                             <History className="w-3.5 h-3.5" />
-                                            View revision history
+                                            Lihat riwayat revisi
                                         </Link>
                                     )}
                                 </CardContent>
@@ -422,7 +422,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <ImageIcon className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Featured Image
+                                        Gambar Unggulan
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -444,8 +444,8 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             className="w-full h-28 border-2 border-dashed border-border-subtle rounded-lg flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground hover:border-primary hover:bg-surface-muted/30 transition-all cursor-pointer"
                                         >
                                             <Upload className="w-5 h-5" />
-                                            <span className="text-sm font-medium">Select or upload image</span>
-                                            <span className="text-xs">PNG, JPG, WebP up to 5MB</span>
+                                            <span className="text-sm font-medium">Pilih atau unggah gambar</span>
+                                            <span className="text-xs">PNG, JPG, WebP maks 5MB</span>
                                         </button>
                                     )}
                                     <input
@@ -465,7 +465,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <ImageIcon className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Category
+Kategori
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -476,7 +476,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                 onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                                             >
                                                 <span className={selectedCategories.length === 0 ? "text-muted-foreground" : "text-foreground"}>
-                                                    {selectedCategories.length === 0 ? "Select categories..." : `${selectedCategories.length} selected`}
+                                                    {selectedCategories.length === 0 ? "Pilih kategori..." : `${selectedCategories.length} terpilih`}
                                                 </span>
                                                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                             </div>
@@ -490,7 +490,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                                 <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                                 <input
                                                                     type="text"
-                                                                    placeholder="Search categories..."
+                                                                    placeholder="Cari kategori..."
                                                                     value={categorySearch}
                                                                     onChange={(e) => setCategorySearch(e.target.value)}
                                                                     className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-muted rounded border-transparent focus:bg-background focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
@@ -500,7 +500,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                         </div>
                                                         <div className="max-h-48 overflow-y-auto p-1.5 space-y-0.5">
                                                             {categories.length === 0 ? (
-                                                                <p className="text-xs text-muted-foreground p-2 text-center">No categories available</p>
+                                                                <p className="text-xs text-muted-foreground p-2 text-center">Tidak ada kategori</p>
                                                             ) : (
                                                                 categories
                                                                     .filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()) || c.parent_name?.toLowerCase().includes(categorySearch.toLowerCase()))
@@ -552,10 +552,10 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             <>
                                                 <div className="h-px bg-border my-3" />
                                                 <div className="space-y-2">
-                                                    <p className="text-xs font-semibold text-muted-foreground">Primary Category</p>
+                                                    <p className="text-xs font-semibold text-muted-foreground">Kategori Utama</p>
                                                     <Select value={primaryCategoryId} onValueChange={setPrimaryCategoryId}>
                                                         <SelectTrigger className="h-9 text-sm">
-                                                            <SelectValue placeholder="Select primary category" />
+                                                            <SelectValue placeholder="Pilih kategori utama" />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {categories
@@ -574,10 +574,10 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             <>
                                                 <div className="h-px bg-border my-3" />
                                                 <div className="space-y-2">
-                                                    <p className="text-xs font-semibold text-muted-foreground">Primary Category</p>
+                                                    <p className="text-xs font-semibold text-muted-foreground">Kategori Utama</p>
                                                     <p className="text-sm flex items-center gap-1.5 text-success p-1.5 bg-success/5 rounded-md border border-success/10">
                                                         <span className="w-4 h-4 rounded-full bg-success/20 flex items-center justify-center text-success text-[10px]">✓</span>
-                                                        {categories.find(c => c.id === selectedCategories[0])?.name} <span className="text-xs text-muted-foreground ml-1">(Auto)</span>
+                                                        {categories.find(c => c.id === selectedCategories[0])?.name} <span className="text-xs text-muted-foreground ml-1">(Otomatis)</span>
                                                     </p>
                                                 </div>
                                             </>
@@ -592,7 +592,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <ImageIcon className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Tags
+Tag
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -603,7 +603,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                 onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
                                             >
                                                 <span className="text-muted-foreground">
-                                                    Search {tags.length} tags...
+                                                    Cari {tags.length} tag...
                                                 </span>
                                                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                             </div>
@@ -617,7 +617,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                                 <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                                 <input
                                                                     type="text"
-                                                                    placeholder="Type to search..."
+                                                                    placeholder="Ketik untuk mencari..."
                                                                     value={tagSearch}
                                                                     onChange={(e) => setTagSearch(e.target.value)}
                                                                     className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-muted rounded border-transparent focus:bg-background focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
@@ -627,7 +627,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                         </div>
                                                         <div className="max-h-48 overflow-y-auto p-1.5 space-y-0.5">
                                                             {tags.length === 0 ? (
-                                                                <p className="text-xs text-muted-foreground p-2 text-center">No tags available</p>
+                                                                <p className="text-xs text-muted-foreground p-2 text-center">Tidak ada tag</p>
                                                             ) : (
                                                                 tags
                                                                     .filter(t => t.name.toLowerCase().includes(tagSearch.toLowerCase()))
@@ -644,7 +644,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                                     ))
                                                             )}
                                                             {tagSearch && tags.filter(t => t.name.toLowerCase().includes(tagSearch.toLowerCase())).length === 0 && (
-                                                                <p className="text-xs text-muted-foreground p-2 text-center">No matching tags found</p>
+                                                                <p className="text-xs text-muted-foreground p-2 text-center">Tidak ada tag yang cocok</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -682,7 +682,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <Globe className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        SEO Settings
+                                        Pengaturan SEO
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -693,12 +693,12 @@ export default function PostForm({ post, categories, tags }: Props) {
                                             onChange={(e) => setCustomizeSeo(e.target.checked)}
                                             className="w-4 h-4 rounded border-border-subtle text-primary focus:ring-primary"
                                         />
-                                        <span className="font-medium">Customize SEO Metadata</span>
+                                        <span className="font-medium">Sesuaikan Metadata SEO</span>
                                     </label>
                                     
                                     {!customizeSeo && (
                                         <p className="text-xs text-muted-foreground">
-                                            Automatic SEO generation is active. We will use your title, excerpt, and current URL.
+                                            Generasi SEO otomatis aktif. Kami akan menggunakan judul, cuplikan, dan URL Anda saat ini.
                                         </p>
                                     )}
 
@@ -706,8 +706,8 @@ export default function PostForm({ post, categories, tags }: Props) {
                                         <div className="space-y-4 pt-2 border-t border-border-subtle">
                                             <div>
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <label className="text-sm font-medium block">SEO Title (Optional)</label>
-                                                    {!seoTitle && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Auto Generated</span>}
+                                                    <label className="text-sm font-medium block">Judul SEO (Opsional)</label>
+                                                    {!seoTitle && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Otomatis</span>}
                                                 </div>
                                                 <Input
                                                     value={seoTitle}
@@ -715,25 +715,25 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                     error={errors.seo_title}
                                                     placeholder={generatedTitle}
                                                 />
-                                                <p className="text-xs text-muted-foreground mt-1.5">Leave empty to use the post title.</p>
+                                                <p className="text-xs text-muted-foreground mt-1.5">Kosongkan untuk menggunakan judul postingan.</p>
                                             </div>
                                             <div>
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <label className="text-sm font-medium block">SEO Description (Optional)</label>
-                                                    {!seoDescription && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Auto Generated</span>}
+                                                    <label className="text-sm font-medium block">Deskripsi SEO (Opsional)</label>
+                                                    {!seoDescription && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Otomatis</span>}
                                                 </div>
                                                 <Textarea
                                                     value={seoDescription}
                                                     onChange={(e) => setSeoDescription(e.target.value)}
-                                                    placeholder={excerpt || generatedExcerpt || "Brief description for search results"}
+                                                    placeholder={excerpt || generatedExcerpt || "Deskripsi singkat untuk hasil pencarian"}
                                                     rows={2}
                                                 />
-                                                <p className="text-xs text-muted-foreground mt-1.5">Leave empty to automatically generate from the article excerpt.</p>
+                                                <p className="text-xs text-muted-foreground mt-1.5">Kosongkan untuk menghasilkan otomatis dari cuplikan artikel.</p>
                                             </div>
                                             <div>
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <label className="text-sm font-medium block">Meta Keywords (Optional)</label>
-                                                    {!metaKeywords && selectedTags.length > 0 && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Auto Generated</span>}
+                                                    <label className="text-sm font-medium block">Kata Kunci Meta (Opsional)</label>
+                                                    {!metaKeywords && selectedTags.length > 0 && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Otomatis</span>}
                                                 </div>
                                                 <Input
                                                     value={metaKeywords}
@@ -741,12 +741,12 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                     error={errors.meta_keywords}
                                                     placeholder={generatedMetaKeywords || "laravel, php, tutorial"}
                                                 />
-                                                <p className="text-xs text-muted-foreground mt-1.5">Optional. Search engines generally ignore this field.</p>
+                                                <p className="text-xs text-muted-foreground mt-1.5">Opsional. Mesin pencari umumnya mengabaikan field ini.</p>
                                             </div>
                                             <div>
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <label className="text-sm font-medium block">Canonical URL (Optional)</label>
-                                                    {!canonicalUrl && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Auto Generated</span>}
+                                                    <label className="text-sm font-medium block">URL Kanonikal (Opsional)</label>
+                                                    {!canonicalUrl && <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">Otomatis</span>}
                                                 </div>
                                                 <Input
                                                     value={canonicalUrl}
@@ -754,7 +754,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                                     error={errors.canonical_url}
                                                     placeholder={generatedCanonical}
                                                 />
-                                                <p className="text-xs text-muted-foreground mt-1.5">Leave empty to use this post URL automatically.</p>
+                                                <p className="text-xs text-muted-foreground mt-1.5">Kosongkan untuk menggunakan URL postingan ini secara otomatis.</p>
                                             </div>
                                         </div>
                                     )}
@@ -767,7 +767,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                     onClick={() => window.history.back()}
                                     className="ml-auto inline-flex items-center justify-center flex-1 h-9 px-4 border border-border-strong bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted transition-all shadow-sm"
                                 >
-                                    Cancel
+                                    Batal
                                 </button>
                                 <Btn
                                     type="submit"
@@ -776,7 +776,7 @@ export default function PostForm({ post, categories, tags }: Props) {
                                     className="flex-1 h-9 px-4"
                                     icon={<Save className="w-4 h-4" />}
                                 >
-                                    {isEditing ? 'Update Post' : 'Publish Post'}
+                                    {isEditing ? 'Perbarui Postingan' : 'Terbitkan Postingan'}
                                 </Btn>
                             </div>
                         </div>
@@ -786,7 +786,7 @@ export default function PostForm({ post, categories, tags }: Props) {
             <MediaPicker 
                 open={isMediaPickerOpen} 
                 onOpenChange={setIsMediaPickerOpen} 
-                title="Select Post Thumbnail"
+                title="Pilih Thumbnail Postingan"
                 onSelect={(selected) => {
                     if (selected instanceof File) {
                         setThumbnailFile(selected);
@@ -802,10 +802,15 @@ export default function PostForm({ post, categories, tags }: Props) {
             <MediaPicker 
                 open={isEditorMediaPickerOpen} 
                 onOpenChange={setIsEditorMediaPickerOpen} 
-                title="Select Image for Post Content"
+                title="Pilih Gambar untuk Konten Postingan"
                 onSelect={(selected) => {
-                    const url = selected instanceof File ? URL.createObjectURL(selected) : selected.original_url;
-                    editorRef.current?.insertImage(url);
+                    if (!(selected instanceof File)) {
+                        editorRef.current?.insertImage(
+                            selected.thumbnail_url || selected.original_url, 
+                            selected.original_url, 
+                            selected.id
+                        );
+                    }
                 }} 
             />
         </DashboardLayout>

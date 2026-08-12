@@ -3,7 +3,7 @@
 namespace App\Authorization\Scopes;
 
 use App\Authorization\Contracts\VisibilityScope;
-use App\Models\User;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class ActivityLogVisibility implements VisibilityScope

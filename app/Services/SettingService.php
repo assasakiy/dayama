@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Setting;
+use Modules\System\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 
 /**

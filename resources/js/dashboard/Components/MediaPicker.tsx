@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Upload, Search, Check, Image as ImageIcon, LayoutGrid, X, RefreshCw, Lock, Globe } from 'lucide-react';
 import { Input } from './ui/input';
 import { usePage } from '@inertiajs/react';
+import axios from 'axios';
 
 interface MediaItem {
     id: number;
@@ -27,7 +28,7 @@ interface MediaPickerProps {
     title?: string;
 }
 
-export default function MediaPicker({ open, onOpenChange, onSelect, title = "Select Media" }: MediaPickerProps) {
+export default function MediaPicker({ open, onOpenChange, onSelect, title = "Pilih Media" }: MediaPickerProps) {
     const { auth } = usePage<any>().props;
     const [activeTab, setActiveTab] = useState('library');
     const [media, setMedia] = useState<MediaItem[]>([]);
@@ -37,6 +38,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
     const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -82,13 +84,30 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
         }
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (activeTab === 'library' && selectedItem) {
             onSelect(selectedItem);
             onOpenChange(false);
         } else if (activeTab === 'upload' && uploadFile) {
-            onSelect(uploadFile);
-            onOpenChange(false);
+            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', uploadFile);
+            
+            try {
+                const response = await axios.post('/media/api/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
+                // Add to media list so it appears in library next time
+                setMedia(prev => [response.data, ...prev]);
+                
+                onSelect(response.data);
+                onOpenChange(false);
+            } catch (error) {
+                console.error("Failed to upload media", error);
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -121,11 +140,11 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                         <TabsList className="grid w-full max-w-md grid-cols-2">
                             <TabsTrigger value="library" className="data-[state=active]:text-primary data-[state=active]:bg-primary/10 transition-colors gap-2">
                                 <LayoutGrid className="w-4 h-4" />
-                                Media Library
+                                Pustaka Media
                             </TabsTrigger>
                             <TabsTrigger value="upload" className="data-[state=active]:text-primary data-[state=active]:bg-primary/10 transition-colors gap-2">
                                 <Upload className="w-4 h-4" />
-                                Upload New
+                                Unggah Baru
                             </TabsTrigger>
                         </TabsList>
 
@@ -134,7 +153,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                 <Input 
                                     type="text"
-                                    placeholder="Search media..."
+                                    placeholder="Cari media..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="pl-9 h-9 text-sm bg-surface-muted border-transparent focus-visible:bg-background focus-visible:border-primary"
@@ -151,9 +170,9 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                         ) : media.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                                 <ImageIcon className="w-12 h-12 mb-4 opacity-50" />
-                                <p>No media found in your library.</p>
+                                <p>Tidak ada media di pustaka Anda.</p>
                                 <Btn variant="outline" className="mt-4" onClick={() => setActiveTab('upload')} icon={<Upload className="w-4 h-4" />}>
-                                    Upload New Media
+                                    Unggah Media Baru
                                 </Btn>
                             </div>
                         ) : (
@@ -186,28 +205,28 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                                 {item.model_type === 'App\\Models\\User' ? (
                                                     (item.model_id === auth.user.id || item.custom_properties?.uploaded_by === auth.user.id) ? (
                                                         item.custom_properties?.is_public ? (
-                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm flex items-center gap-1" title="Shared Publicly (Personal)">
+                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm flex items-center gap-1" title="Publik (Pribadi)">
                                                                 <Lock className="w-3 h-3 opacity-70" />
                                                                 <Globe className="w-3 h-3" />
                                                             </span>
                                                         ) : (
-                                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Personal)">
+                                                            <span className="p-1 text-[10px] bg-warning/80 text-white backdrop-blur-md rounded shadow-sm" title="Pribadi">
                                                                 <Lock className="w-3 h-3" />
                                                             </span>
                                                         )
                                                     ) : (
                                                         item.custom_properties?.is_public ? (
-                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Public (Personal)">
+                                                            <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Publik (Pribadi)">
                                                                 <Globe className="w-3 h-3" />
                                                             </span>
                                                         ) : (
-                                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Other User)">
+                                                            <span className="p-1 text-[10px] bg-warning/80 text-white backdrop-blur-md rounded shadow-sm" title="Pribadi (Pengguna Lain)">
                                                                 <Lock className="w-3 h-3" />
                                                             </span>
                                                         )
                                                     )
                                                 ) : (
-                                                    <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Public">
+                                                    <span className="p-1 text-[10px] bg-blue-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Publik">
                                                         <Globe className="w-3 h-3" />
                                                     </span>
                                                 )}
@@ -227,7 +246,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                                 fetchMedia(nextPage, searchQuery);
                                             }}
                                         >
-                                            Load More
+                                            Muat Lagi
                                         </Btn>
                                     </div>
                                 )}
@@ -245,9 +264,9 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                     <Upload className="w-8 h-8 text-primary" />
                                 </div>
-                                <h3 className="text-lg font-semibold mb-1">Click to Upload</h3>
+                                <h3 className="text-lg font-semibold mb-1">Klik untuk Unggah</h3>
                                 <p className="text-sm text-muted-foreground text-center">
-                                    Select an image from your computer to attach directly.
+                                    Pilih gambar dari komputer Anda untuk dilampirkan langsung.
                                 </p>
                             </div>
                         ) : (
@@ -263,7 +282,7 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
                                         <p className="text-xs text-muted-foreground">{(uploadFile.size / 1024 / 1024).toFixed(2)} MB</p>
                                     </div>
                                     <Btn variant="outline" size="sm" onClick={() => { setUploadFile(null); setUploadPreview(null); }} icon={<RefreshCw className="w-3 h-3" />}>
-                                        Change
+                                        Ganti
                                     </Btn>
                                 </div>
                             </div>
@@ -273,14 +292,15 @@ export default function MediaPicker({ open, onOpenChange, onSelect, title = "Sel
 
                 <DialogFooter>
                     <Btn variant="outline" onClick={() => onOpenChange(false)} icon={<X className="w-4 h-4" />}>
-                        Cancel
+                        Batal
                     </Btn>
                     <Btn 
                         onClick={handleConfirm} 
-                        disabled={(activeTab === 'library' && !selectedItem) || (activeTab === 'upload' && !uploadFile)}
+                        disabled={(activeTab === 'library' && !selectedItem) || (activeTab === 'upload' && !uploadFile) || isUploading}
+                        loading={isUploading}
                         icon={<Check className="w-4 h-4" />}
                     >
-                        Confirm Selection
+                        Konfirmasi Pilihan
                     </Btn>
                 </DialogFooter>
             </DialogContent>

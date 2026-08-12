@@ -18,7 +18,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('color', 20)->default('neutral');
             $table->string('icon')->nullable();
-            $table->string('image')->nullable();
             $table->string('seo_title', 160)->nullable();
             $table->text('seo_description')->nullable();
             $table->text('meta_keywords')->nullable();
@@ -28,6 +27,7 @@ return new class extends Migration
             $table->integer('posts_count')->default(0);
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
+            $table->uuid('deleted_by')->nullable();
             $table->softDeletes();
             $table->timestamps();
 

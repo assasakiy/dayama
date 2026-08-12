@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use App\Models\Bookmark;
-use App\Models\ReadingHistory;
-use App\Models\Reaction;
-use App\Models\PostView;
+use Modules\CMS\Models\Bookmark;
+use Modules\CMS\Models\ReadingHistory;
+use Modules\CMS\Models\Reaction;
+use Modules\CMS\Models\PostView;
 
 class IdentityMigrationService
 {

@@ -72,8 +72,8 @@ export default function SecurityIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Security" 
-            description="Manage your password and security settings."
+            title="Keamanan" 
+            description="Kelola kata sandi dan pengaturan keamanan Anda."
         >
             <div className="space-y-6">
                 {/* Change Password Section */}
@@ -81,13 +81,13 @@ export default function SecurityIndex() {
                     <CardHeader className="border-b border-border-subtle pb-4">
                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            Change Password
+                            Ubah Kata Sandi
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <form onSubmit={submit} className="space-y-5 w-full">
                             <div className="space-y-2.5">
-                                <label className="text-sm font-medium">Current Password</label>
+                                <label className="text-sm font-medium">Kata Sandi Saat Ini</label>
                                 <input
                                     type="password"
                                     value={data.current_password}
@@ -98,7 +98,7 @@ export default function SecurityIndex() {
                             </div>
 
                             <div className="space-y-2.5">
-                                <label className="text-sm font-medium">New Password</label>
+                                <label className="text-sm font-medium">Kata Sandi Baru</label>
                                 <input
                                     type="password"
                                     value={data.password}
@@ -109,7 +109,7 @@ export default function SecurityIndex() {
                             </div>
 
                             <div className="space-y-2.5">
-                                <label className="text-sm font-medium">Confirm New Password</label>
+                                <label className="text-sm font-medium">Konfirmasi Kata Sandi Baru</label>
                                 <input
                                     type="password"
                                     value={data.password_confirmation}
@@ -120,7 +120,7 @@ export default function SecurityIndex() {
 
                             <div className="flex items-center justify-end gap-4 pt-2">
                                 {recentlySuccessful && (
-                                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">Password updated.</p>
+                                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">Kata sandi diperbarui.</p>
                                 )}
                                 <Btn 
                                     type="submit" 
@@ -128,7 +128,7 @@ export default function SecurityIndex() {
                                     disabled={!isDirty || processing}
                                     icon={<Save className="w-4 h-4" />}
                                 >
-                                    Update Password
+                                    Perbarui Kata Sandi
                                 </Btn>
                             </div>
                         </form>
@@ -140,19 +140,19 @@ export default function SecurityIndex() {
                     <CardHeader className="border-b border-border-subtle pb-4">
                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                            Two-Factor Authentication (2FA)
+                            Autentikasi Dua Faktor (2FA)
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-border-subtle bg-surface-muted/50 rounded-lg">
                             <div>
                                 <h3 className="text-sm font-semibold mb-1">
-                                    {two_factor_enabled ? 'Two-factor authentication is enabled' : 'Protect your account'}
+                                    {two_factor_enabled ? 'Autentikasi dua faktor telah aktif' : 'Lindungi akun Anda'}
                                 </h3>
                                 <p className="text-sm text-muted-foreground">
                                     {two_factor_enabled 
-                                        ? "Your account is protected. You will be prompted for a secure code during sign in." 
-                                        : "Add an extra layer of security to your account by enabling two-factor authentication."}
+                                        ? "Akun Anda terlindungi. Anda akan dimintai kode aman saat masuk." 
+                                        : "Tambahkan lapisan keamanan ekstra ke akun Anda dengan mengaktifkan autentikasi dua faktor."}
                                 </p>
                             </div>
                             {two_factor_enabled ? (
@@ -161,7 +161,7 @@ export default function SecurityIndex() {
                                     type="button" 
                                     className="w-full sm:w-auto px-4 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors whitespace-nowrap"
                                 >
-                                    Disable 2FA
+                                    Nonaktifkan 2FA
                                 </button>
                             ) : (
                                 <button 
@@ -171,7 +171,7 @@ export default function SecurityIndex() {
                                     className="w-full sm:w-auto px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors whitespace-nowrap flex items-center justify-center gap-2"
                                 >
                                     {isGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Enable 2FA
+                                    Aktifkan 2FA
                                 </button>
                             )}
                         </div>
@@ -183,14 +183,14 @@ export default function SecurityIndex() {
             <Dialog open={is2FADialogOpen} onOpenChange={setIs2FADialogOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Set up Two-Factor Authentication</DialogTitle>
+                        <DialogTitle>Atur Autentikasi Dua Faktor</DialogTitle>
                         <DialogDescription>
-                            Configure your authenticator app to get started.
+                            Konfigurasi aplikasi autentikator Anda untuk memulai.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center py-4 space-y-4">
                         <div className="text-sm text-center">
-                            Scan the following QR code using your phone's authenticator application (such as Google Authenticator).
+                            Pindai kode QR berikut menggunakan aplikasi autentikator di ponsel Anda (seperti Google Authenticator).
                         </div>
                         
                         {qrCodeSvg && (
@@ -199,7 +199,7 @@ export default function SecurityIndex() {
                         
                         {secret && (
                             <div className="text-xs text-center text-muted-foreground">
-                                <p className="mb-1">Or enter this setup key manually:</p>
+                                <p className="mb-1">Atau masukkan kunci setup secara manual:</p>
                                 <code className="px-2 py-1 bg-surface-muted rounded text-foreground font-mono">{secret}</code>
                             </div>
                         )}
@@ -207,12 +207,12 @@ export default function SecurityIndex() {
                     
                     <form onSubmit={confirm2FA} className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Authentication Code</label>
+                            <label className="text-sm font-medium">Kode Autentikasi</label>
                             <input
                                 type="text"
                                 value={twoFactorCode}
                                 onChange={e => setTwoFactorCode(e.target.value)}
-                                placeholder="Enter 6-digit code"
+                                placeholder="Masukkan kode 6 digit"
                                 className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                                 required
                             />
@@ -223,7 +223,7 @@ export default function SecurityIndex() {
                                 onClick={() => setIs2FADialogOpen(false)}
                                 className="px-4 py-2 bg-surface-muted text-foreground rounded-lg text-sm font-medium hover:bg-border/50 transition-colors"
                             >
-                                Cancel
+                                Batal
                             </button>
                             <Btn 
                                 type="submit" 
@@ -231,7 +231,7 @@ export default function SecurityIndex() {
                                 disabled={isConfirming || twoFactorCode.length < 6}
                                 icon={<Check className="w-4 h-4" />}
                             >
-                                Verify & Enable
+                                Verifikasi & Aktifkan
                             </Btn>
                         </DialogFooter>
                     </form>
@@ -241,9 +241,9 @@ export default function SecurityIndex() {
             <ConfirmDialog
                 open={isDisableConfirmOpen}
                 onOpenChange={setIsDisableConfirmOpen}
-                title="Disable Two-Factor Authentication"
-                message="Are you sure you want to disable two-factor authentication? This will reduce the security of your account."
-                confirmLabel="Disable 2FA"
+                title="Nonaktifkan Autentikasi Dua Faktor"
+                message="Apakah Anda yakin ingin menonaktifkan autentikasi dua faktor? Ini akan mengurangi keamanan akun Anda."
+                confirmLabel="Nonaktifkan 2FA"
                 variant="danger"
                 onConfirm={confirmDisable2FA}
             />

@@ -44,8 +44,8 @@ export default function Login() {
                                     {siteName.charAt(0)}
                                 </div>
                             )}
-                            <h1 className="text-xl font-semibold tracking-tight">Welcome back</h1>
-                            <p className="text-sm text-muted-foreground mt-1.5">Sign in to your dashboard</p>
+                            <h1 className="text-xl font-semibold tracking-tight">Selamat Datang Kembali</h1>
+                            <p className="text-sm text-muted-foreground mt-1.5">Masuk ke dasbor Anda</p>
                         </div>
 
                         <form onSubmit={submit} className="space-y-5">
@@ -69,7 +69,7 @@ export default function Login() {
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium mb-1.5 text-foreground">Password</label>
+                                <label htmlFor="password" className="block text-sm font-medium mb-1.5 text-foreground">Kata Sandi</label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     <input
@@ -78,7 +78,7 @@ export default function Login() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="w-full h-10 pl-9 pr-10 text-sm bg-surface border border-border-subtle rounded-md outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                                        placeholder="Enter your password"
+                                        placeholder="Masukkan kata sandi"
                                         required
                                         autoComplete="current-password"
                                     />
@@ -101,10 +101,10 @@ export default function Login() {
                                         onChange={(e) => setRemember(e.target.checked)}
                                         className="w-4 h-4 rounded border-border-subtle text-primary focus:ring-primary bg-surface"
                                     />
-                                    Remember me
+                                    Ingat saya
                                 </label>
                                 <button type="button" className="text-sm text-primary hover:underline transition-colors">
-                                    Forgot password?
+                                    Lupa kata sandi?
                                 </button>
                             </div>
 
@@ -115,14 +115,14 @@ export default function Login() {
                                 className="w-full h-10"
                                 icon={<LogIn className="w-4 h-4" />}
                             >
-                                {submitting ? 'Signing in...' : 'Sign in'}
+                                {submitting ? 'Memasuki...' : 'Masuk'}
                             </Btn>
                         </form>
                     </div>
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                    &copy; {new Date().getFullYear()} ModernBlog. All rights reserved.
+                    &copy; {new Date().getFullYear()} ModernBlog. Hak cipta dilindungi.
                 </p>
             </div>
         </div>

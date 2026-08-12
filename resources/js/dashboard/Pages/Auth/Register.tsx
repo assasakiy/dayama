@@ -45,13 +45,13 @@ export default function Register() {
                                     {siteName.charAt(0)}
                                 </div>
                             )}
-                            <h1 className="text-xl font-semibold tracking-tight">Create an account</h1>
-                            <p className="text-sm text-muted-foreground mt-1.5">Sign up for a new account</p>
+                            <h1 className="text-xl font-semibold tracking-tight">Buat Akun</h1>
+                            <p className="text-sm text-muted-foreground mt-1.5">Daftar untuk akun baru</p>
                         </div>
 
                         <form onSubmit={submit} className="space-y-5">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium mb-1.5 text-foreground">Name</label>
+                                <label htmlFor="name" className="block text-sm font-medium mb-1.5 text-foreground">Nama</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     <input
@@ -88,7 +88,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium mb-1.5 text-foreground">Password</label>
+                                <label htmlFor="password" className="block text-sm font-medium mb-1.5 text-foreground">Kata Sandi</label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     <input
@@ -97,7 +97,7 @@ export default function Register() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="w-full h-10 pl-9 pr-10 text-sm bg-surface border border-border-subtle rounded-md outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                                        placeholder="Create a password"
+                                        placeholder="Buat kata sandi"
                                         required
                                         autoComplete="new-password"
                                     />
@@ -114,7 +114,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <label htmlFor="password_confirmation" className="block text-sm font-medium mb-1.5 text-foreground">Confirm Password</label>
+                                <label htmlFor="password_confirmation" className="block text-sm font-medium mb-1.5 text-foreground">Konfirmasi Kata Sandi</label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     <input
@@ -123,7 +123,7 @@ export default function Register() {
                                         value={password_confirmation}
                                         onChange={(e) => setPasswordConfirmation(e.target.value)}
                                         className="w-full h-10 pl-9 pr-10 text-sm bg-surface border border-border-subtle rounded-md outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                                        placeholder="Confirm your password"
+                                        placeholder="Konfirmasi kata sandi Anda"
                                         required
                                         autoComplete="new-password"
                                     />
@@ -137,21 +137,21 @@ export default function Register() {
                                 className="w-full h-10"
                                 icon={<UserPlus className="w-4 h-4" />}
                             >
-                                {submitting ? 'Signing up...' : 'Sign up'}
+                                {submitting ? 'Mendaftar...' : 'Daftar'}
                             </Btn>
                         </form>
 
                         <div className="mt-6 text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
+                            Sudah punya akun?{' '}
                             <Link href="/login" className="text-primary hover:underline transition-colors font-medium">
-                                Sign in
+                                Masuk
                             </Link>
                         </div>
                     </div>
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                    &copy; {new Date().getFullYear()} ModernBlog. All rights reserved.
+                    &copy; {new Date().getFullYear()} ModernBlog. Hak cipta dilindungi.
                 </p>
             </div>
         </div>

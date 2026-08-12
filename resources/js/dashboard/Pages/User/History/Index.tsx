@@ -8,20 +8,20 @@ export default function HistoryIndex({ history }: { history: any }) {
     const { blog_url } = usePage().props as any;
     return (
         <DashboardLayout>
-            <Head title="Reading History" />
+            <Head title="Riwayat Baca" />
             <div className="space-y-5">
                 <div className="hidden md:block">
-                    <h1 className="text-xl font-semibold tracking-tight">Reading History</h1>
-                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Articles you've read recently.</p>
+                    <h1 className="text-xl font-semibold tracking-tight">Riwayat Baca</h1>
+                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Artikel yang baru Anda baca.</p>
                 </div>
 
                 {history.data.length === 0 ? (
                     <div className="bg-background border border-border-subtle rounded-lg flex flex-col items-center justify-center py-16 text-center">
                         <BookOpen className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                        <p className="text-sm font-medium text-foreground">No reading history yet</p>
-                        <p className="text-xs text-muted-foreground mt-1">Start reading articles and they'll appear here.</p>
+                        <p className="text-sm font-medium text-foreground">Belum ada riwayat baca</p>
+                        <p className="text-xs text-muted-foreground mt-1">Mulai membaca artikel dan akan muncul di sini.</p>
                         <SmartLink href={blog_url} className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
-                            <BookOpen className="w-3.5 h-3.5" /> Browse Articles
+                            <BookOpen className="w-3.5 h-3.5" /> Jelajahi Artikel
                         </SmartLink>
                     </div>
                 ) : (
@@ -29,11 +29,11 @@ export default function HistoryIndex({ history }: { history: any }) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                    <th className="text-left px-4 py-3 font-medium">Article</th>
-                                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Category</th>
-                                    <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Last Read</th>
-                                    <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Times</th>
-                                    <th className="text-right px-4 py-3 font-medium">Open</th>
+                                    <th className="text-left px-4 py-3 font-medium">Artikel</th>
+                                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Kategori</th>
+                                    <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Terakhir Dibaca</th>
+                                    <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Kali</th>
+                                    <th className="text-right px-4 py-3 font-medium">Buka</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
@@ -88,7 +88,7 @@ export default function HistoryIndex({ history }: { history: any }) {
                                                     href={`/post/${post.slug}`}
                                                     target="_blank"
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors inline-flex"
-                                                    title="Open article"
+                                                    title="Buka artikel"
                                                 >
                                                     <ExternalLink className="w-3.5 h-3.5" />
                                                 </a>
@@ -102,7 +102,7 @@ export default function HistoryIndex({ history }: { history: any }) {
                         {history.last_page > 1 && (
                             <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">
-                                    Showing {history.from}–{history.to} of {history.total}
+                                    Menampilkan {history.from}–{history.to} dari {history.total}
                                 </span>
                                 <div className="flex items-center gap-1">
                                     {history.links.map((link: any, i: number) => (

@@ -3,15 +3,15 @@
 namespace App\Livewire\Web;
 
 use App\Enums\CommentStatus;
-use App\Models\Comment;
-use App\Models\CommentReaction;
+use Modules\CMS\Models\Comment;
+use Modules\CMS\Models\CommentReaction;
 use App\Services\CommentService;
 use App\Services\IdentityService;
 use Livewire\Component;
 
 class PostComments extends Component
 {
-    public \App\Models\Post $post;
+    public \Modules\CMS\Models\Post $post;
 
     public string $content = '';
     public string $guest_name = '';
@@ -25,7 +25,7 @@ class PostComments extends Component
     public int $totalComments = 0;
     public bool $hasCommentedAsGuest = false;
 
-    public function mount(\App\Models\Post $post)
+    public function mount(\Modules\CMS\Models\Post $post)
     {
         $this->post = $post;
         

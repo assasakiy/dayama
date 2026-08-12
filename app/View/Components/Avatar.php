@@ -2,7 +2,7 @@
 
 namespace App\View\Components;
 
-use App\Models\User;
+use Modules\Core\Models\User;
 use Illuminate\View\Component;
 
 class Avatar extends Component

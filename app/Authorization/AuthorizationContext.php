@@ -2,7 +2,7 @@
 
 namespace App\Authorization;
 
-use App\Models\User;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class AuthorizationContext

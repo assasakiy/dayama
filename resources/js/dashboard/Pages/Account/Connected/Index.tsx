@@ -44,8 +44,8 @@ export default function ConnectedIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Connected Accounts" 
-            description="Manage third-party accounts linked to your profile."
+            title="Akun Terhubung" 
+            description="Kelola akun pihak ketiga yang terhubung ke profil Anda."
         >
             <div className="space-y-6">
                 
@@ -61,10 +61,10 @@ export default function ConnectedIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Social & OAuth Accounts
+                            Akun Sosial & OAuth
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Connect your accounts to enable single sign-on (SSO) and share your content.
+                            Hubungkan akun Anda untuk mengaktifkan single sign-on (SSO) dan bagikan konten Anda.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -83,11 +83,11 @@ export default function ConnectedIndex() {
                                                 <h4 className="text-sm font-semibold">{provider.name}</h4>
                                                 {connected ? (
                                                     <p className="text-xs text-muted-foreground mt-0.5 break-all">
-                                                        Connected as {connected.email || 'linked'}
+                                                        Terhubung sebagai {connected.email || 'tertaut'}
                                                     </p>
                                                 ) : (
                                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                                        Not connected
+                                                        Belum terhubung
                                                     </p>
                                                 )}
                                             </div>
@@ -100,7 +100,7 @@ export default function ConnectedIndex() {
                                                     disabled={isLoading}
                                                     className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-md transition-colors border border-transparent hover:border-destructive/20 disabled:opacity-50 flex items-center justify-center gap-2"
                                                 >
-                                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disconnect'}
+                                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Putuskan'}
                                                 </button>
                                             ) : (
                                                 <button 
@@ -109,7 +109,7 @@ export default function ConnectedIndex() {
                                                     className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-foreground bg-background border border-border rounded-md hover:bg-surface-muted shadow-sm transition-colors disabled:opacity-50"
                                                 >
                                                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                                    {isLoading ? 'Connecting...' : 'Connect'}
+                                                    {isLoading ? 'Menghubungkan...' : 'Hubungkan'}
                                                 </button>
                                             )}
                                         </div>
@@ -123,9 +123,9 @@ export default function ConnectedIndex() {
             <ConfirmDialog
                 open={!!disconnectTarget}
                 onOpenChange={(open) => { if (!open) setDisconnectTarget(null); }}
-                title="Disconnect Account"
-                message="Are you sure you want to disconnect this account?"
-                confirmLabel="Disconnect"
+                title="Putuskan Akun"
+                message="Apakah Anda yakin ingin memutuskan akun ini?"
+                confirmLabel="Putuskan"
                 variant="danger"
                 onConfirm={confirmDisconnect}
             />

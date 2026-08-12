@@ -4,70 +4,58 @@ declare(strict_types=1);
 
 namespace App\Services\Account;
 
-use App\Models\User;
+use Modules\Core\Models\Person;
+use Modules\Core\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 class UpdateProfileService
 {
-    /**
-     * Update user profile information.
-     *
-     * @param User $user
-     * @param array<string, mixed> $data
-     * @return User
-     */
     public function update(User $user, array $data): User
     {
-        $user->fill([
-            'name' => $data['name'],
-            'username' => $data['username'] ?? null,
-        ]);
+        // Note: the person names are now kept intact.
+        // The display names (full_name and nickname) are stored in the profile.
+        
+        if (isset($data['username'])) {
+            $user->update([
+                'username' => $data['username']
+            ]);
+        }
 
         $profileData = [
+            'full_name' => $data['full_name'] ?? null,
+            'nickname'  => $data['nickname'] ?? null,
             'biography' => $data['biography'] ?? null,
             'website' => $data['website'] ?? null,
             'social_links' => $data['social_links'] ?? null,
         ];
 
         if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
-            // Delete old legacy avatar if it exists
             if ($user->profile && $user->profile->avatar) {
                 Storage::disk('public')->delete($user->profile->avatar);
-                $profileData['avatar'] = null;
             }
-            
-            // Delete old spatie avatar and add new one
+            $profileData['avatar'] = $data['avatar']->store("users/{$user->id}/avatars", 'public');
             $user->clearMediaCollection('avatars');
-            $user->addMedia($data['avatar'])->toMediaCollection('avatars');
-            
         } elseif (!empty($data['delete_avatar'])) {
             if ($user->profile && $user->profile->avatar) {
                 Storage::disk('public')->delete($user->profile->avatar);
-                $profileData['avatar'] = null;
             }
+            $profileData['avatar'] = null;
             $user->clearMediaCollection('avatars');
         }
 
         if (isset($data['banner']) && $data['banner'] instanceof \Illuminate\Http\UploadedFile) {
-            // Delete old legacy banner
-            if ($user->banner) {
-                Storage::disk('public')->delete($user->banner);
-                $user->banner = null;
+            if ($user->profile && $user->profile->banner) {
+                Storage::disk('public')->delete($user->profile->banner);
             }
-            
-            // Delete old spatie banner and add new one
+            $profileData['banner'] = $data['banner']->store("users/{$user->id}/banners", 'public');
             $user->clearMediaCollection('banners');
-            $user->addMedia($data['banner'])->toMediaCollection('banners');
-            
         } elseif (!empty($data['delete_banner'])) {
-            if ($user->banner) {
-                Storage::disk('public')->delete($user->banner);
-                $user->banner = null;
+            if ($user->profile && $user->profile->banner) {
+                Storage::disk('public')->delete($user->profile->banner);
             }
+            $profileData['banner'] = null;
             $user->clearMediaCollection('banners');
         }
-
-        $user->save();
 
         if ($user->profile) {
             $user->profile->update($profileData);

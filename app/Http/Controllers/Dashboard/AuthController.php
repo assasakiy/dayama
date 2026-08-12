@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Models\User;
+use Modules\Core\Models\Person;
+use Modules\Core\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,15 @@ class AuthController
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $nameParts = explode(' ', $validated['name'], 2);
+        $person = Person::create([
+            'nama_depan' => $nameParts[0],
+            'nama_belakang' => $nameParts[1] ?? null,
+            'nama_lengkap' => $validated['name'],
+        ]);
+
         $user = User::create([
-            'name' => $validated['name'],
+            'person_id' => $person->id,
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'status' => 'active',
@@ -60,7 +68,7 @@ class AuthController
             $request->session()->regenerate();
 
             $user = Auth::user();
-            if ($user->hasRole('super-admin') || $user->hasPermissionTo('dashboard.view')) {
+            if ($user->is_primary_super_admin || $user->hasPermissionTo('dashboard.view')) {
                 $dashboardDomain = config('projects.core.dashboard');
                 $url = $request->getScheme() . '://' . $dashboardDomain . '/';
 

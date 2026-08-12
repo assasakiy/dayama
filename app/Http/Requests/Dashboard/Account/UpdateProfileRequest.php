@@ -25,7 +25,8 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'full_name' => ['nullable', 'string', 'max:255'],
+            'nickname' => ['nullable', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'max:2048'],
             'banner' => ['nullable', 'image', 'max:5120'],
             'delete_avatar' => ['nullable', 'boolean'],
@@ -35,7 +36,7 @@ class UpdateProfileRequest extends FormRequest
                 'string', 
                 'max:255', 
                 'alpha_dash', 
-                Rule::unique('users')->ignore($this->user()->id)
+                Rule::unique('core_users')->ignore($this->user()->id)
             ],
             'biography' => ['nullable', 'string', 'max:1000'],
             'website' => ['nullable', 'url', 'max:255'],

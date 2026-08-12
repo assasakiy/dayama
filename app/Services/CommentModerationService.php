@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use App\Services\Moderation\Checkers\DuplicateChecker;
 use App\Services\Moderation\Checkers\FinalDecisionChecker;
 use App\Services\Moderation\Checkers\NormalizeChecker;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Post;
-use App\Models\Comment;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\IdentityService;
@@ -53,7 +53,7 @@ class PostController
             // Atomic unique check using Cache
             if (Cache::add($cacheKey, true, now()->addHours(24))) {
                 try {
-                    \App\Models\PostView::create([
+                    \Modules\CMS\Models\PostView::create([
                         'post_id' => $post->id,
                         'user_id' => $identity['user_id'],
                         'identity_key' => $identity['key'],

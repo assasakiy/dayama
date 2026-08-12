@@ -15,7 +15,7 @@ class CheckDashboardAccess
             return redirect()->route('login');
         }
 
-        if (! $request->user()->hasRole('super-admin') && ! $request->user()->hasPermissionTo('dashboard.view')) {
+        if (! $request->user()->is_primary_super_admin && ! $request->user()->hasPermissionTo('dashboard.view')) {
             $blogDomain = config('projects.projects.blog.domain');
             $url = $request->getScheme() . '://' . $blogDomain . '/';
 

@@ -9,6 +9,9 @@ Route::middleware(['auth', 'dashboard.access'])->name('dashboard.')->group(funct
 
     Route::post('/logout', [\App\Http\Controllers\Dashboard\AuthController::class, 'logout'])->name('logout');
 
+    // ─── Institution Switcher ───────────────────────────────────────────
+    Route::post('/set-active-institution', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'switchActive'])->name('set-active-institution');
+
     Route::get('/', [\App\Http\Controllers\Dashboard\DashboardController::class, 'index'])->name('index');
 
     // ─── Posts ────────────────────────────────────────────────
@@ -51,11 +54,14 @@ Route::middleware(['auth', 'dashboard.access'])->name('dashboard.')->group(funct
 
     // ─── Media ─────────────────────────────────────────────────
     Route::get('/media', [\App\Http\Controllers\Dashboard\MediaController::class, 'index'])->name('media.index');
-    Route::post('/media/upload', [\App\Http\Controllers\Dashboard\MediaController::class, 'upload'])->name('media.upload');
+    Route::post('/media/api/upload', [\App\Http\Controllers\Dashboard\MediaController::class, 'apiStore'])->name('media.api.upload');
     Route::post('/media', [\App\Http\Controllers\Dashboard\MediaController::class, 'store'])->name('media.store');
     Route::get('/media/api/index', [\App\Http\Controllers\Dashboard\MediaController::class, 'apiIndex'])->name('media.api.index');
     Route::put('/media/{medium}', [\App\Http\Controllers\Dashboard\MediaController::class, 'update'])->name('media.update');
     Route::delete('/media/{medium}', [\App\Http\Controllers\Dashboard\MediaController::class, 'destroy'])->name('media.destroy');
+
+    // ─── Icons ─────────────────────────────────────────────────
+    Route::post('/icons/upload', [\App\Http\Controllers\Dashboard\IconUploadController::class, 'upload'])->name('icons.upload');
 
     // ─── Settings ──────────────────────────────────────────────
     Route::get('/settings/{context}/{group?}', [\App\Http\Controllers\Dashboard\SettingController::class, 'show'])->name('settings.show');
@@ -158,4 +164,145 @@ Route::middleware(['auth', 'dashboard.access'])->name('dashboard.')->group(funct
     Route::get('/bookmarks', [\App\Http\Controllers\Dashboard\User\BookmarkController::class, 'index'])->name('bookmarks.index');
     Route::delete('/bookmarks/{postId}', [\App\Http\Controllers\Dashboard\User\BookmarkController::class, 'destroy'])->name('bookmarks.destroy');
     Route::get('/history', [\App\Http\Controllers\Dashboard\User\ReadingHistoryController::class, 'index'])->name('history.index');
+
+    // ─── Landing Management ───────────────────────────────────
+    Route::prefix('landing')->name('landing.')->group(function (): void {
+        // Pages
+        Route::get('/pages', [\App\Http\Controllers\Dashboard\Landing\PageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/{page}/edit', [\App\Http\Controllers\Dashboard\Landing\PageController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{page}', [\App\Http\Controllers\Dashboard\Landing\PageController::class, 'update'])->name('pages.update');
+        Route::patch('/pages/{page}/section', [\App\Http\Controllers\Dashboard\Landing\PageController::class, 'updateSection'])->name('pages.update-section');
+
+        // FAQs
+        Route::get('/faqs', [\App\Http\Controllers\Dashboard\Landing\FaqController::class, 'index'])->name('faqs.index');
+        Route::post('/faqs', [\App\Http\Controllers\Dashboard\Landing\FaqController::class, 'store'])->name('faqs.store');
+        Route::put('/faqs/{faq}', [\App\Http\Controllers\Dashboard\Landing\FaqController::class, 'update'])->name('faqs.update');
+        Route::delete('/faqs/{faq}', [\App\Http\Controllers\Dashboard\Landing\FaqController::class, 'destroy'])->name('faqs.destroy');
+        Route::post('/faqs/reorder', [\App\Http\Controllers\Dashboard\Landing\FaqController::class, 'reorder'])->name('faqs.reorder');
+
+        // CTAs
+        Route::get('/ctas', [\App\Http\Controllers\Dashboard\Landing\CtaController::class, 'index'])->name('ctas.index');
+        Route::post('/ctas', [\App\Http\Controllers\Dashboard\Landing\CtaController::class, 'store'])->name('ctas.store');
+        Route::put('/ctas/{cta}', [\App\Http\Controllers\Dashboard\Landing\CtaController::class, 'update'])->name('ctas.update');
+        Route::delete('/ctas/{cta}', [\App\Http\Controllers\Dashboard\Landing\CtaController::class, 'destroy'])->name('ctas.destroy');
+
+        // Stats
+        Route::get('/stats', [\App\Http\Controllers\Dashboard\Landing\StatController::class, 'index'])->name('stats.index');
+        Route::post('/stats', [\App\Http\Controllers\Dashboard\Landing\StatController::class, 'store'])->name('stats.store');
+        Route::put('/stats/{statGroup}', [\App\Http\Controllers\Dashboard\Landing\StatController::class, 'update'])->name('stats.update');
+        Route::delete('/stats/{statGroup}', [\App\Http\Controllers\Dashboard\Landing\StatController::class, 'destroy'])->name('stats.destroy');
+
+        // Settings
+        Route::get('/settings/{group?}', [\App\Http\Controllers\Dashboard\SettingController::class, 'show'])
+            ->defaults('context', 'landing')
+            ->name('settings.show');
+        Route::put('/settings/{group?}', [\App\Http\Controllers\Dashboard\SettingController::class, 'update'])
+            ->defaults('context', 'landing')
+            ->name('settings.update');
+    });
+
+    // ─── Institutions Management (Module Terpisah) ─────────────────────────
+    Route::prefix('institutions')->name('institutions.')->group(function (): void {
+        Route::get('/', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'store'])->name('store');
+        Route::middleware('institution.scope')->group(function (): void {
+            Route::get('/{institution}/edit', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'edit'])->name('edit');
+            Route::put('/{institution}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'update'])->name('update');
+            Route::delete('/{institution}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'destroy'])->name('destroy');
+
+            Route::put('/{institution}/legality', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'updateLegality'])->name('legality.update');
+            Route::put('/{institution}/address', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'updateAddress'])->name('address.update');
+            Route::post('/{institution}/contacts', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'storeContact'])->name('contacts.store');
+            Route::put('/{institution}/contacts/{contact}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'updateContact'])->name('contacts.update');
+            Route::delete('/{institution}/contacts/{contact}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'destroyContact'])->name('contacts.destroy');
+        });
+    });
+
+    // ─── Persons Management ────────────────────────────────────────────────
+    Route::prefix('persons')->name('persons.')->group(function (): void {
+        Route::get('/', [\App\Http\Controllers\Dashboard\PersonController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Dashboard\PersonController::class, 'store'])->name('store');
+        Route::get('/{person}/edit', [\App\Http\Controllers\Dashboard\PersonController::class, 'edit'])->name('edit');
+        Route::put('/{person}', [\App\Http\Controllers\Dashboard\PersonController::class, 'update'])->name('update');
+        Route::delete('/{person}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroy'])->name('destroy');
+        Route::post('/{person}/positions', [\App\Http\Controllers\Dashboard\PersonController::class, 'addPosition'])->name('positions.add');
+        Route::delete('/{person}/positions/{position}', [\App\Http\Controllers\Dashboard\PersonController::class, 'removePosition'])->name('positions.remove');
+        Route::post('/{person}/create-account', [\App\Http\Controllers\Dashboard\PersonController::class, 'createAccount'])->name('create-account');
+
+        Route::post('/{person}/contacts', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeContact'])->name('contacts.store');
+        Route::put('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateContact'])->name('contacts.update');
+        Route::delete('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyContact'])->name('contacts.destroy');
+
+        Route::post('/{person}/addresses', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeAddress'])->name('addresses.store');
+        Route::put('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateAddress'])->name('addresses.update');
+        Route::delete('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyAddress'])->name('addresses.destroy');
+
+        Route::post('/{person}/educations', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeEducation'])->name('educations.store');
+        Route::put('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateEducation'])->name('educations.update');
+        Route::delete('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyEducation'])->name('educations.destroy');
+
+        Route::post('/{person}/skills', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeSkill'])->name('skills.store');
+        Route::put('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateSkill'])->name('skills.update');
+        Route::delete('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroySkill'])->name('skills.destroy');
+
+        Route::post('/{person}/languages', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeLanguage'])->name('languages.store');
+        Route::delete('/{person}/languages/{language}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyLanguage'])->name('languages.destroy');
+
+        Route::post('/{person}/family', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeFamily'])->name('family.store');
+        Route::delete('/{person}/family/{relatedPerson}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyFamily'])->name('family.destroy');
+
+        Route::post('/{person}/certificates', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeCertificate'])->name('certificates.store');
+        Route::put('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateCertificate'])->name('certificates.update');
+        Route::delete('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyCertificate'])->name('certificates.destroy');
+
+        Route::get('/check-nik/{nik}', [\App\Http\Controllers\Dashboard\PersonController::class, 'checkNik'])->name('check-nik');
+        Route::post('/copy-from', [\App\Http\Controllers\Dashboard\PersonController::class, 'copyFromInstitution'])->name('copy-from');
+    });
+
+    // ─── Academic Management ────────────────────────────────────────────────
+    Route::prefix('academic')->name('academic.')->group(function (): void {
+        Route::resource('years', \App\Http\Controllers\Dashboard\Academic\AcademicYearController::class);
+        Route::resource('semesters', \App\Http\Controllers\Dashboard\Academic\SemesterController::class);
+        Route::resource('classes', \App\Http\Controllers\Dashboard\Academic\ClassController::class);
+        Route::resource('rombel', \App\Http\Controllers\Dashboard\Academic\RombelController::class);
+        Route::post('rombel/{rombel}/students', [\App\Http\Controllers\Dashboard\Academic\RombelController::class, 'addStudent'])->name('rombel.students.store');
+        Route::delete('rombel/{rombel}/students/{student}', [\App\Http\Controllers\Dashboard\Academic\RombelController::class, 'removeStudent'])->name('rombel.students.destroy');
+        Route::post('rombel/{rombel}/teaching-assignments', [\App\Http\Controllers\Dashboard\Academic\RombelController::class, 'storeTeachingAssignment'])->name('rombel.teaching-assignments.store');
+        Route::delete('rombel/{rombel}/teaching-assignments/{assignment}', [\App\Http\Controllers\Dashboard\Academic\RombelController::class, 'destroyTeachingAssignment'])->name('rombel.teaching-assignments.destroy');
+        Route::resource('subjects', \App\Http\Controllers\Dashboard\Academic\SubjectController::class);
+        Route::resource('students', \App\Http\Controllers\Dashboard\Academic\StudentController::class);
+        Route::resource('attendance', \App\Http\Controllers\Dashboard\Academic\AttendanceController::class);
+        Route::resource('grades', \App\Http\Controllers\Dashboard\Academic\GradeController::class);
+    });
+
+    // ─── HR Management ──────────────────────────────────────────────────────
+    Route::prefix('hr')->name('hr.')->group(function (): void {
+        Route::get('employees', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('employees/create', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('employees', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('employees/{employee}/edit', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'edit'])->name('employees.edit');
+        Route::put('employees/{employee}', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'update'])->name('employees.update');
+        Route::delete('employees/{employee}', [\App\Http\Controllers\Dashboard\HR\EmployeeController::class, 'destroy'])->name('employees.destroy');
+        Route::resource('positions', \App\Http\Controllers\Dashboard\HR\PositionController::class);
+        Route::resource('departments', \App\Http\Controllers\Dashboard\HR\DepartmentController::class);
+        Route::resource('attendance', \App\Http\Controllers\Dashboard\HR\AttendanceController::class);
+    });
+
+    // ─── Yayasan Management ─────────────────────────────────────────────────
+    Route::prefix('yayasan')->name('yayasan.')->group(function (): void {
+        Route::get('institutions', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'index'])->name('institutions.index');
+        Route::post('institutions', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'store'])->name('institutions.store');
+        Route::get('institutions/{institution}/edit', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'edit'])->name('institutions.edit');
+        Route::put('institutions/{institution}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'update'])->name('institutions.update');
+        Route::delete('institutions/{institution}', [\App\Http\Controllers\Dashboard\InstitutionController::class, 'destroy'])->name('institutions.destroy');
+        Route::get('index', [\App\Http\Controllers\Dashboard\Yayasan\PersonIndexController::class, 'index'])->name('index');
+        Route::get('transfer-logs', [\App\Http\Controllers\Dashboard\Yayasan\TransferLogController::class, 'index'])->name('transfer-logs.index');
+        Route::get('stats', [\App\Http\Controllers\Dashboard\Yayasan\StatsController::class, 'index'])->name('stats.index');
+    });
+
+    // ─── CMS Pages ──────────────────────────────────────────────────────────
+    Route::get('/pages', fn () => \Inertia\Inertia::render('Cms/Pages/Index'))->name('pages.index');
+
+    // ─── Analytics ──────────────────────────────────────────────────────────
+    Route::get('/analytics', fn () => \Inertia\Inertia::render('System/Analytics/Index'))->name('analytics.index');
 });

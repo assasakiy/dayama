@@ -26,16 +26,33 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useTailwind();
 
-        // Register custom policies for third-party models
-        // Register custom policies for third-party models
-        Gate::policy(\Spatie\MediaLibrary\MediaCollections\Models\Media::class, \App\Policies\MediaPolicy::class);
+        // Primary Super Admin bypass — hanya user dengan is_primary_super_admin=true yang bypass
+        // Semua user lain (termasuk yg punya role super-admin) harus melalui permission system
+        Gate::before(function ($user, $ability) {
+            return $user->is_primary_super_admin ? true : null;
+        });
 
-        \App\Models\User::observe(\App\Observers\UserObserver::class);
-        \App\Models\Post::observe(\App\Observers\PostObserver::class);
-        \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
-        \App\Models\Tag::observe(\App\Observers\TagObserver::class);
-        \App\Models\PostView::observe(\App\Observers\PostViewObserver::class);
-        \App\Models\Reaction::observe(\App\Observers\ReactionObserver::class);
+        // Register custom policies for third-party models
+        Gate::policy(\Modules\Core\Models\Media::class, \App\Policies\MediaPolicy::class);
+
+        // Tell Laravel how to discover policies for models located in the Modules folder
+        Gate::guessPolicyNamesUsing(function ($modelClass) {
+            if (str_starts_with($modelClass, 'Modules\\')) {
+                // Modules\Core\Models\User -> App\Policies\UserPolicy
+                $classBasename = class_basename($modelClass);
+                return 'App\\Policies\\' . $classBasename . 'Policy';
+            }
+            // Fallback for models inside app/Models
+            return 'App\\Policies\\' . class_basename($modelClass) . 'Policy';
+        });
+
+        \Modules\Core\Models\User::observe(\App\Observers\UserObserver::class);
+        \Modules\CMS\Models\Post::observe(\App\Observers\PostObserver::class);
+        \Modules\CMS\Models\Category::observe(\App\Observers\CategoryObserver::class);
+        \Modules\CMS\Models\Tag::observe(\App\Observers\TagObserver::class);
+        \Modules\CMS\Models\PostView::observe(\App\Observers\PostViewObserver::class);
+        \Modules\CMS\Models\Reaction::observe(\App\Observers\ReactionObserver::class);
+        \Modules\Core\Models\Person::observe(\App\Observers\PersonObserver::class);
 
         Event::listen(Login::class, \App\Listeners\MigrateGuestDataToUser::class);
         Event::listen(Login::class, function (Login $event) {

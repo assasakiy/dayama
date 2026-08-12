@@ -15,7 +15,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => \App\Models\Permission::class,
+        'permission' => \Modules\Core\Models\Permission::class,
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -26,7 +26,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => \App\Models\Role::class,
+        'role' => \Modules\Core\Models\Role::class,
 
         /*
          * When using the "Teams" feature from this package, we need to know which
@@ -51,7 +51,7 @@ return [
          * default value but you may easily change it to any table you like.
          */
 
-        'roles' => 'roles',
+        'roles' => 'core_roles',
 
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
@@ -59,7 +59,7 @@ return [
          * default value but you may easily change it to any table you like.
          */
 
-        'permissions' => 'permissions',
+        'permissions' => 'core_permissions',
 
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
@@ -67,7 +67,7 @@ return [
          * basic default value but you may easily change it to any table you like.
          */
 
-        'model_has_permissions' => 'model_has_permissions',
+        'model_has_permissions' => 'core_model_has_permissions',
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -75,7 +75,7 @@ return [
          * basic default value but you may easily change it to any table you like.
          */
 
-        'model_has_roles' => 'model_has_roles',
+        'model_has_roles' => 'core_model_has_roles',
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -83,7 +83,7 @@ return [
          * basic default value but you may easily change it to any table you like.
          */
 
-        'role_has_permissions' => 'role_has_permissions',
+        'role_has_permissions' => 'core_role_has_permissions',
     ],
 
     'column_names' => [

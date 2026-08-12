@@ -20,11 +20,16 @@ return new class extends Migration
         $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
 
-        throw_if(empty($tableNames), 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
+        throw_if(empty($tableNames), \Exception::class, 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
 
         Schema::create($tableNames['permissions'], static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->string('module', 60)->nullable();
+            $table->string('action', 60)->nullable();
+            $table->string('scope', 30)->nullable();
+            $table->text('description')->nullable();
+            $table->unsignedInteger('sort_order')->default(0);
             $table->string('guard_name');
             $table->timestamps();
             $table->unique(['name', 'guard_name']);
@@ -37,9 +42,15 @@ return new class extends Migration
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
             }
             $table->string('name');
+            $table->string('slug')->nullable();
             $table->string('guard_name');
             $table->string('display_name', 100)->nullable();
             $table->string('description')->nullable();
+            $table->unsignedInteger('rank')->default(10);
+            $table->string('color', 20)->nullable();
+            $table->string('icon', 50)->nullable();
+            $table->boolean('is_system')->default(false);
+            $table->string('status', 20)->default('active');
             $table->unsignedInteger('sort_order')->default(0);
             $table->unsignedInteger('users_count')->default(0);
             $table->timestamps();
@@ -123,6 +134,34 @@ return new class extends Migration
             $table->primary([$pivotPermission, $pivotRole], 'role_has_permissions_permission_id_role_id');
         });
 
+        Schema::create('permission_groups', static function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('icon', 50)->nullable();
+            $table->string('color', 20)->nullable();
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('permission_group_permission', static function (Blueprint $table) use ($tableNames): void {
+            $table->uuid('permission_group_id');
+            $table->uuid('permission_id');
+
+            $table->foreign('permission_group_id')
+                ->references('id')
+                ->on('permission_groups')
+                ->cascadeOnDelete();
+
+            $table->foreign('permission_id')
+                ->references('id')
+                ->on($tableNames['permissions'])
+                ->cascadeOnDelete();
+
+            $table->primary(['permission_group_id', 'permission_id'], 'pgp_primary');
+        });
+
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
@@ -132,8 +171,12 @@ return new class extends Migration
     {
         $tableNames = config('permission.table_names');
 
-        throw_if(empty($tableNames), 'Error: config/permission.php not found.');
+        if (empty($tableNames)) {
+            throw new \Exception('Error: config/permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
+        }
 
+        Schema::dropIfExists('permission_group_permission');
+        Schema::dropIfExists('permission_groups');
         Schema::dropIfExists($tableNames['role_has_permissions']);
         Schema::dropIfExists($tableNames['model_has_roles']);
         Schema::dropIfExists($tableNames['model_has_permissions']);

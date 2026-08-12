@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Tag;
+use Modules\CMS\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 

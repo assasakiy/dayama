@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use App\Models\User;
+use Modules\Core\Models\Media;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 use App\Authorization\AuthorizationService;
 

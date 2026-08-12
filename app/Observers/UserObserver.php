@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\User;
+use Modules\Core\Models\User;
 
 class UserObserver
 {
@@ -46,8 +46,8 @@ class UserObserver
                 $newUrl = parse_url($media->getUrl(), PHP_URL_PATH);
                 
                 if ($oldUrl && $newUrl && $oldUrl !== $newUrl) {
-                    \App\Models\Post::where('content', 'LIKE', '%' . $oldUrl . '%')
-                        ->each(function (\App\Models\Post $post) use ($oldUrl, $newUrl) {
+                    \Modules\CMS\Models\Post::where('content', 'LIKE', '%' . $oldUrl . '%')
+                        ->each(function (\Modules\CMS\Models\Post $post) use ($oldUrl, $newUrl) {
                             $post->content = str_replace($oldUrl, $newUrl, $post->content);
                             $post->save();
                         }, 100);

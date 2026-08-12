@@ -11,10 +11,10 @@ const eventBadge = (event: string) => {
         created: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300',
         updated: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300',
         deleted: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300',
-        restored: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
+        restored: 'bg-success/10 text-success border-success/20 dark:bg-emerald-950/40 dark:text-emerald-300',
     };
     const key = Object.keys(map).find((k) => event?.toLowerCase().includes(k)) ?? '';
-    const cls = map[key] ?? 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300';
+    const cls = map[key] ?? 'bg-warning/10 text-warning border-warning/20 dark:bg-yellow-950/40 dark:text-yellow-300';
     return (
         <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-full border ${cls}`}>
             {event ?? '—'}
@@ -23,9 +23,10 @@ const eventBadge = (event: string) => {
 };
 
 function UserAvatar({ user }: { user: any }) {
-    const initials = user.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+    const safeName = user.name || 'Pengguna Tidak Diketahui';
+    const initials = safeName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
     const colors = ['from-violet-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500', 'from-orange-500 to-amber-500', 'from-pink-500 to-rose-500'];
-    const color = colors[(user.name?.charCodeAt(0) ?? 0) % colors.length];
+    const color = colors[safeName.charCodeAt(0) % colors.length];
     if (user.avatar_url) return <img src={user.avatar_url} alt={user.name} className="w-7 h-7 rounded-full object-cover ring-2 ring-background" />;
     return <div className={`w-7 h-7 rounded-full bg-gradient-to-tr ${color} flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-background shrink-0`}>{initials}</div>;
 }
@@ -97,17 +98,17 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
 
     return (
         <DashboardLayout>
-            <Head title="Activity Logs" />
+            <Head title="Log Aktivitas" />
             <div className="space-y-5">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="hidden md:block">
                         <h1 className="text-xl font-semibold tracking-tight flex items-center gap-2">
-                            Activity Logs
+                            Log Aktivitas
                         </h1>
                         <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">
-                            {can.see_all ? 'Audit trail of all system activity.' : 'Your recent account activity.'}
+                            {can.see_all ? 'Jejak audit semua aktivitas sistem.' : 'Aktivitas akun Anda baru-baru ini.'}
                         </p>
                     </div>
                 </div>
@@ -115,13 +116,13 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                 {/* Filter bar */}
                 <div className="bg-background border border-border-subtle rounded-lg p-3 flex flex-col md:flex-row md:items-end gap-3">
                     <div className="w-full md:flex-1 md:min-w-[150px]">
-                        <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Event Type</label>
+                        <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Tipe Kejadian</label>
                         <Select value={filterEvent} onValueChange={v => updateFilters('event', v)}>
                             <SelectTrigger className="w-full bg-background">
-                                <SelectValue placeholder="All Events" />
+                                <SelectValue placeholder="Semua Kejadian" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Events</SelectItem>
+                                <SelectItem value="all">Semua Kejadian</SelectItem>
                                 {events.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                             </SelectContent>
                         </Select>
@@ -129,12 +130,12 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                     
                     <div className="flex gap-3 w-full md:w-auto">
                         <div className="flex-1 md:min-w-[140px]">
-                            <label className="text-xs text-muted-foreground font-medium mb-1.5 block">From Date</label>
+                            <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Dari Tanggal</label>
                             <input type="date" value={filterDateFrom} onChange={e => updateFilters('date_from', e.target.value)}
                                 className="w-full h-9 flex items-center justify-between rounded-md border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary hover:border-primary" />
                         </div>
                         <div className="flex-1 md:min-w-[140px]">
-                            <label className="text-xs text-muted-foreground font-medium mb-1.5 block">To Date</label>
+                            <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Ke Tanggal</label>
                             <input type="date" value={filterDateTo} onChange={e => updateFilters('date_to', e.target.value)}
                                 className="w-full h-9 flex items-center justify-between rounded-md border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary hover:border-primary" />
                         </div>
@@ -146,13 +147,13 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                     {/* Bulk Actions */}
                     {selectedIds.length > 0 && can.delete && (
                         <div className="absolute top-0 left-0 w-full h-12 bg-surface border-b border-border-subtle flex items-center justify-between px-4 z-10">
-                            <span className="text-xs font-medium text-muted-foreground">{selectedIds.length} logs selected</span>
+                            <span className="text-xs font-medium text-muted-foreground">{selectedIds.length} log terpilih</span>
                             <div className="flex items-center gap-2">
                                 <button onClick={() => setSelectedIds([])} className="h-8 px-3 bg-surface-muted text-muted-foreground rounded-md text-xs font-medium hover:bg-surface hover:text-foreground transition-colors border border-border-subtle">
-                                    Unselect All
+                                    Batalkan Semua
                                 </button>
                                 <button onClick={() => setIsBulkDeleteOpen(true)} className="h-8 px-3 bg-danger text-danger-foreground rounded-md text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity">
-                                    <Trash2 className="w-3.5 h-3.5" /> Delete Selected
+                                    <Trash2 className="w-3.5 h-3.5" /> Hapus Terpilih
                                 </button>
                             </div>
                         </div>
@@ -171,12 +172,12 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                                         />
                                     </th>
                                 )}
-                                <th className="text-left px-4 py-3 font-medium">Time</th>
-                                {can.see_all && <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Actor</th>}
-                                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Event</th>
-                                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Subject</th>
-                                <th className="text-left px-4 py-3 font-medium">Description</th>
-                                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium">Waktu</th>
+                                {can.see_all && <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Pelaku</th>}
+                                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Kejadian</th>
+                                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Subjek</th>
+                                <th className="text-left px-4 py-3 font-medium">Deskripsi</th>
+                                <th className="text-right px-4 py-3 font-medium">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -184,9 +185,9 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                                 <tr>
                                     <td colSpan={can.delete ? 7 : 5} className="px-4 py-14 text-center">
                                         <Activity className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                                        <p className="text-sm font-medium text-foreground">No activity found</p>
+                                        <p className="text-sm font-medium text-foreground">Tidak ada aktivitas</p>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            {hasFilter ? 'Try removing filters.' : 'Activity will appear here as actions are performed.'}
+                                            {hasFilter ? 'Coba hapus filter.' : 'Aktivitas akan muncul di sini saat tindakan dilakukan.'}
                                         </p>
                                     </td>
                                 </tr>
@@ -215,7 +216,7 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                                                     <UserAvatar user={log.causer} />
                                                     <span className="text-xs font-medium">{log.causer.name}</span>
                                                 </div>
-                                            ) : <span className="text-muted-foreground text-xs">System</span>}
+                                            ) : <span className="text-muted-foreground text-xs">Sistem</span>}
                                         </td>
                                     )}
                                     <td className="px-4 py-3 hidden sm:table-cell">{eventBadge(log.event)}</td>
@@ -229,7 +230,7 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                                         <button
                                             onClick={() => setSelectedLog(log)}
                                             className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors mr-1"
-                                            title="View details"
+                                            title="Lihat detail"
                                         >
                                             <Eye className="w-3.5 h-3.5" />
                                         </button>
@@ -237,7 +238,7 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                                             <button
                                                 onClick={() => setDeleteId(log.id)}
                                                 className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                title="Delete log"
+                                                title="Hapus log"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
@@ -252,7 +253,7 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
                     {logs.last_page > 1 && (
                         <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">
-                                Showing {logs.from}–{logs.to} of {logs.total}
+                                Menampilkan {logs.from}–{logs.to} dari {logs.total}
                             </span>
                             <div className="flex items-center gap-1">
                                 {logs.links.map((link: any, i: number) => (
@@ -274,9 +275,9 @@ export default function ActivityLogsIndex({ logs, events, filters, can }: {
             <ConfirmDialog
                 open={!!deleteId}
                 onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-                title="Delete Log Entry"
-                message="Are you sure you want to permanently delete this activity log? This action cannot be undone."
-                confirmLabel="Delete"
+                title="Hapus Entri Log"
+                message="Apakah Anda yakin ingin menghapus log aktivitas ini secara permanen? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

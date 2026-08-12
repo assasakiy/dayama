@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\EmailTemplate;
+use Modules\Core\Models\EmailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;

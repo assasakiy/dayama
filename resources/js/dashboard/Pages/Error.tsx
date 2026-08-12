@@ -3,18 +3,18 @@ import { Button } from '@dashboard/Components/ui/button';
     
 export default function Error({ status }: { status: number }) {
     const title = {
-        503: 'Service Unavailable',
-        500: 'Server Error',
-        404: 'Page Not Found',
-        403: 'Forbidden',
-    }[status] || 'Error';
+        503: 'Layanan Tidak Tersedia',
+        500: 'Kesalahan Server',
+        404: 'Halaman Tidak Ditemukan',
+        403: 'Dilarang Akses',
+    }[status] || 'Kesalahan';
 
     const description = {
-        503: 'Sorry, we are doing some maintenance. Please check back soon.',
-        500: 'Whoops, something went wrong on our servers.',
-        404: 'Sorry, the page you are looking for could not be found.',
-        403: 'Sorry, you are forbidden from accessing this page.',
-    }[status] || 'An unexpected error occurred. Please try again later.';
+        503: 'Maaf, kami sedang melakukan pemeliharaan. Silakan coba lagi nanti.',
+        500: 'Maaf, terjadi kesalahan pada server.',
+        404: 'Maaf, halaman yang Anda cari tidak ditemukan.',
+        403: 'Maaf, Anda tidak diizinkan mengakses halaman ini.',
+    }[status] || 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
 
     return (
         <div className="flex flex-col min-h-screen antialiased bg-background text-foreground items-center justify-center p-6">
@@ -31,10 +31,10 @@ export default function Error({ status }: { status: number }) {
 
                 <div className="pt-6 flex items-center justify-center gap-4">
                     <Button onClick={() => router.visit('/')}>
-                        Go Home
+                        Ke Beranda
                     </Button>
                     <Button variant="outline" onClick={() => window.location.reload()}>
-                        Try Again
+                        Coba Lagi
                     </Button>
                 </div>
             </div>

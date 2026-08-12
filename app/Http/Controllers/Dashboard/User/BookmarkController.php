@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\User;
 
-use App\Models\Bookmark;
-use App\Models\Post;
+use Modules\CMS\Models\Bookmark;
+use Modules\CMS\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;

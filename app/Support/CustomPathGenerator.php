@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Models\Post;
-use App\Models\User;
+use Modules\CMS\Models\Post;
+use Modules\Core\Models\User;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
@@ -54,11 +54,11 @@ class CustomPathGenerator implements PathGenerator
             return "posts/{$modelId}/{$mediaId}";
         }
         
-        if ($modelType === \App\Models\SystemAsset::class) {
+        if ($modelType === \Modules\System\Models\SystemAsset::class) {
             return "systemassets/{$collectionName}/{$mediaId}";
         }
         
-        if ($modelType === \App\Models\Category::class) {
+        if ($modelType === \Modules\CMS\Models\Category::class) {
             return "categories/{$mediaId}";
         }
         

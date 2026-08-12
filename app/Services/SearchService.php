@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Post;
-use App\Models\Category;
-use App\Models\User;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Category;
+use Modules\Core\Models\User;
 use Illuminate\Support\Collection;
 
 class SearchService

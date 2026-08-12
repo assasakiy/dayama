@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Models\Setting;
-use App\Models\SettingGroup;
+use Modules\System\Models\Setting;
+use Modules\System\Models\SettingGroup;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,24 +56,26 @@ class SettingController
         ]);
 
         $settingsToSave = [];
-        $asset = \App\Models\SystemAsset::firstOrCreate(['id' => 1]);
+        $asset = \Modules\System\Models\SystemAsset::firstOrCreate(['id' => 1]);
 
         // Check if there are any media files or media IDs submitted
         $mediaFields = ['general.logo_url', 'general.favicon_url', 'seo.og_image_url'];
 
         foreach ($mediaFields as $field) {
+            $collectionName = $context === 'global' ? $field : "{$context}_{$field}";
+            
             if (isset($data['settings'][$field]) && $data['settings'][$field] instanceof \Illuminate\Http\UploadedFile) {
                 // Handle file upload
-                $asset->clearMediaCollection($field);
-                $media = $asset->addMedia($data['settings'][$field])->toMediaCollection($field);
+                $asset->clearMediaCollection($collectionName);
+                $media = $asset->addMedia($data['settings'][$field])->toMediaCollection($collectionName);
                 $settingsToSave[$field] = parse_url($media->getUrl(), PHP_URL_PATH);
             } elseif (isset($data['settings'][$field . '_media_id'])) {
                 // Handle selected media from library
                 $mediaId = $data['settings'][$field . '_media_id'];
-                $sourceMedia = \App\Models\Media::find($mediaId);
+                $sourceMedia = \Modules\Core\Models\Media::find($mediaId);
                 if ($sourceMedia) {
-                    $asset->clearMediaCollection($field);
-                    $media = $sourceMedia->copy($asset, $field);
+                    $asset->clearMediaCollection($collectionName);
+                    $media = $sourceMedia->copy($asset, $collectionName);
                     $settingsToSave[$field] = parse_url($media->getUrl(), PHP_URL_PATH);
                 }
             }

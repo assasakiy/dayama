@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 

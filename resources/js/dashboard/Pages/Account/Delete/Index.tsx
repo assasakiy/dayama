@@ -26,8 +26,8 @@ export default function DeleteIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Delete Account" 
-            description="Permanently remove your account and all associated data."
+            title="Hapus Akun" 
+            description="Hapus akun dan semua data terkait secara permanen."
         >
             <div className="space-y-6">
                 
@@ -37,29 +37,29 @@ export default function DeleteIndex() {
                             <span className="w-6 h-6 rounded bg-destructive/10 flex items-center justify-center">
                                 <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
                             </span>
-                            Danger Zone
+                            Zona Berbahaya
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8 text-destructive/80">
-                            Proceed with extreme caution.
+                            Lanjutkan dengan sangat hati-hati.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
                         
                         <div className="space-y-6">
                             <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg space-y-2">
-                                <h4 className="text-sm font-semibold text-destructive">This action cannot be undone</h4>
+                                <h4 className="text-sm font-semibold text-destructive">Tindakan ini tidak dapat dibatalkan</h4>
                                 <ul className="text-sm text-destructive/90 list-disc list-inside space-y-1">
-                                    <li>All your published posts and drafts will be permanently deleted.</li>
-                                    <li>Your profile, comments, and interactions will be removed.</li>
-                                    <li>Your username will become available for others to register.</li>
-                                    <li>Any active subscriptions will be canceled immediately.</li>
+                                    <li>Semua postingan dan draf yang dipublikasikan akan dihapus permanen.</li>
+                                    <li>Profil, komentar, dan interaksi Anda akan dihapus.</li>
+                                    <li>Username Anda akan tersedia untuk didaftarkan orang lain.</li>
+                                    <li>Semua langganan aktif akan dibatalkan segera.</li>
                                 </ul>
                             </div>
 
                             <form onSubmit={handleDelete} className="space-y-4 max-w-md">
                                 <div className="space-y-2.5">
                                     <label className="text-sm font-medium">
-                                        Please type <span className="font-bold font-mono bg-surface-muted px-1 py-0.5 rounded text-foreground">{requiredWord}</span> to confirm
+                                        Ketik <span className="font-bold font-mono bg-surface-muted px-1 py-0.5 rounded text-foreground">{requiredWord}</span> untuk konfirmasi
                                     </label>
                                     <input
                                         type="text"
@@ -72,13 +72,13 @@ export default function DeleteIndex() {
 
                                 <div className="space-y-2.5">
                                     <label className="text-sm font-medium">
-                                        Current Password
+                                        Kata Sandi Saat Ini
                                     </label>
                                     <input
                                         type="password"
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
-                                        placeholder="Enter your password"
+                                        placeholder="Masukkan kata sandi"
                                         className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-destructive/20 focus:border-destructive text-sm transition-all"
                                     />
                                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
@@ -92,7 +92,7 @@ export default function DeleteIndex() {
                                     className="w-full"
                                     icon={<Trash2 className="w-4 h-4" />}
                                 >
-                                    Permanently Delete Account
+                                    Hapus Akun Permanen
                                 </Btn>
                             </form>
                         </div>

@@ -6,15 +6,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     icon?: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
     size?: 'sm' | 'md' | 'lg';
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 const variantClasses = {
     primary:   'bg-primary text-primary-foreground hover:bg-primary/90 border border-transparent shadow-sm',
-    secondary: 'bg-surface-muted text-foreground hover:bg-border/50 border border-border',
+    secondary: 'bg-surface-muted text-foreground hover:bg-border/50 border border-border-subtle',
     danger:    'bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20',
     ghost:     'text-muted-foreground hover:text-foreground hover:bg-surface-muted border border-transparent',
-    outline:   'bg-background text-foreground hover:bg-surface-muted border border-border shadow-sm',
+    outline:   'bg-background text-foreground hover:bg-surface-muted border border-border-subtle shadow-sm',
 };
 
 const sizeClasses = {
@@ -55,12 +55,14 @@ export function Btn({
             ].join(' ')}
         >
             {/* Icon area — always the same width to prevent layout shift */}
-            <span className="w-4 h-4 flex items-center justify-center shrink-0">
-                {loading
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : icon ?? null
-                }
-            </span>
+            {(loading || icon) && (
+                <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                    {loading
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : icon
+                    }
+                </span>
+            )}
             {children}
         </button>
     );

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Authorization\AuthorizationService;
 use App\Authorization\VisibilityManager;
-use App\Models\ActivityLog;
+use Modules\System\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

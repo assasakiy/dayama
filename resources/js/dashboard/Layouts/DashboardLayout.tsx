@@ -23,6 +23,7 @@ import {
     User,
     Moon,
     Sun,
+    BarChart3,
     Newspaper,
     Globe,
     Shield,
@@ -36,7 +37,24 @@ import {
     BookOpen,
     Mail,
     LayoutTemplate,
-    Palette,
+    Home,
+    HelpCircle,
+    Megaphone,
+    PanelsTopLeft,
+    GraduationCap,
+    School,
+    BookOpenCheck,
+    UserCheck,
+    UserCog,
+    Calendar,
+    Library,
+    Landmark,
+    GitCompare,
+    FileSearch,
+    Building2,
+    Cog,
+    ChevronLast,
+    Briefcase,
 } from 'lucide-react';
 import { Toaster } from '../Components/ui/toaster';
 import { GlobalToast } from '../Components/GlobalToast';
@@ -71,78 +89,182 @@ interface MenuGroup {
     icon?: React.ComponentType<{ className?: string }>;
     items: MenuItem[];
     key: string;
+    permission?: string;
 }
 
-const menuGroups: MenuGroup[] = [
+const baseMenuGroups: MenuGroup[] = [
     {
-        label: 'Dashboard',
+        label: 'Dasbor',
         key: 'dashboard',
         items: [
-            { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-        ]
+            { label: 'Dasbor', href: '/', icon: LayoutDashboard },
+        ],
     },
     {
-        label: 'Media',
-        key: 'media',
+        label: 'Data Inti',
+        key: 'core',
         items: [
+            { label: 'Data Orang', href: '/persons', icon: Users, permission: 'persons.view' },
+            { label: 'Lembaga', href: '/institutions', icon: Building2, permission: 'institutions.view' },
+            { label: 'Kategori', href: '/categories', icon: FolderTree, permission: 'categories.view' },
+            { label: 'Tag', href: '/tags', icon: Tags, permission: 'tags.view' },
+        ],
+    },
+    {
+        label: 'Akademik',
+        key: 'academic',
+        items: [
+            {
+                label: 'Tahun Ajaran',
+                href: '/academic/years',
+                icon: Calendar,
+                permission: 'academic.years.view',
+            },
+            {
+                label: 'Semester',
+                href: '/academic/semesters',
+                icon: Library,
+                permission: 'academic.semesters.view',
+            },
+            {
+                label: 'Kelas',
+                href: '/academic/classes',
+                icon: School,
+                permission: 'academic.classes.view',
+            },
+            {
+                label: 'Rombel',
+                href: '/academic/rombel',
+                icon: Users,
+                permission: 'academic.rombel.view',
+            },
+            {
+                label: 'Mata Pelajaran',
+                href: '/academic/subjects',
+                icon: BookOpenCheck,
+                permission: 'academic.subjects.view',
+            },
+            {
+                label: 'Siswa',
+                href: '/academic/students',
+                icon: GraduationCap,
+                permission: 'academic.students.view',
+            },
+            {
+                label: 'Presensi',
+                href: '/academic/attendance',
+                icon: CheckCircle2,
+                permission: 'academic.attendance.view',
+            },
+            {
+                label: 'Nilai',
+                href: '/academic/grades',
+                icon: BarChart3,
+                permission: 'academic.grades.view',
+            },
+        ],
+    },
+    {
+        label: 'Kepegawaian',
+        key: 'hr',
+        items: [
+            {
+                label: 'Guru & Staf',
+                href: '/hr/employees',
+                icon: UserCog,
+                permission: 'hr.employees.view',
+            },
+            {
+                label: 'Jabatan',
+                href: '/hr/positions',
+                icon: Briefcase,
+                permission: 'hr.positions.view',
+            },
+            {
+                label: 'Departemen',
+                href: '/hr/departments',
+                icon: Building2,
+                permission: 'hr.departments.view',
+            },
+            {
+                label: 'Presensi & Cuti',
+                href: '/hr/attendance',
+                icon: Clock,
+                permission: 'hr.attendance.view',
+            },
+        ],
+    },
+    {
+        label: 'Konten',
+        key: 'cms',
+        items: [
+            {
+                label: 'Postingan',
+                icon: Newspaper,
+                permission: 'posts.view',
+                items: [
+                    { label: 'Semua Postingan', href: '/posts', icon: Newspaper, permission: 'posts.view' },
+                    { label: 'Draf', href: '/posts?status=draft', icon: Clock, permission: 'posts.view' },
+                    { label: 'Terbit', href: '/posts?status=published', icon: CheckCircle2, permission: 'posts.view' },
+                    { label: 'Sampah', href: '/posts?status=trash', icon: Trash2, permission: 'posts.view' },
+                ],
+            },
+            { label: 'Halaman', href: '/pages', icon: FileText, permission: 'pages.view' },
             { label: 'Media', href: '/media', icon: ImageIcon, permission: 'media.view' },
-        ]
-    },
-    {
-        label: 'Post Management',
-        key: 'post',
-        items: [
-            { label: 'All Posts', href: '/posts', icon: Newspaper, permission: 'posts.view' },
-            { label: 'Drafts', href: '/posts?status=draft', icon: Clock, permission: 'posts.view' },
-            { label: 'Published', href: '/posts?status=published', icon: CheckCircle2, permission: 'posts.view' },
-            { label: 'Trash', href: '/posts?status=trash', icon: Trash2, permission: 'posts.view' },
-            { label: 'Categories', href: '/categories', icon: FolderTree, permission: 'categories.view' },
-            { label: 'Tags', href: '/tags', icon: Tags, permission: 'tags.view' },
-            { label: 'Comments', href: '/comments', icon: MessageSquare, permission: 'comments.view' },
+            { label: 'Komentar', href: '/comments', icon: MessageSquare, permission: 'comments.view' },
+            { label: 'Pengaturan Blog', href: '/settings/blog', icon: Settings2, permission: 'settings.view' },
         ],
     },
     {
-        label: 'My Content',
-        key: 'my-content',
+        label: 'Halaman Depan',
+        key: 'landing',
+        icon: PanelsTopLeft,
         items: [
-            { label: 'My Bookmarks',    href: '/bookmarks', icon: Bookmark,  permission: 'bookmarks.view.own' },
-            { label: 'Reading History', href: '/history',   icon: BookOpen,  permission: 'reading_history.view.own' },
+            { label: 'Halaman', href: '/landing/pages', icon: Home, permission: 'settings.view' },
+            { label: 'Statistik', href: '/landing/stats', icon: BarChart3, permission: 'settings.view' },
+            { label: 'FAQ', href: '/landing/faqs', icon: HelpCircle, permission: 'settings.view' },
+            { label: 'CTA', href: '/landing/ctas', icon: Megaphone, permission: 'settings.view' },
+            { label: 'Pengaturan', href: '/landing/settings', icon: LayoutTemplate, permission: 'settings.view' },
         ],
     },
     {
-        label: 'Activity',
-        key: 'activity',
+        label: 'Yayasan',
+        key: 'yayasan',
+        permission: 'yayasan.view',
         items: [
-            { label: 'Activity Logs', href: '/activity-logs', icon: Activity, permission: 'activity_logs.view' },
+            { label: 'Manajemen Lembaga', href: '/yayasan/institutions', icon: Building2, permission: 'yayasan.institutions.view' },
+            { label: 'Index Pencarian', href: '/yayasan/index', icon: FileSearch, permission: 'yayasan.index.view' },
+            { label: 'Log Transfer Data', href: '/yayasan/transfer-logs', icon: GitCompare, permission: 'yayasan.transfer-logs.view' },
+            { label: 'Statistik Gabungan', href: '/yayasan/stats', icon: BarChart3, permission: 'yayasan.stats.view' },
         ],
     },
     {
-        label: 'Management Settings',
+        label: 'Sistem',
         key: 'system',
         items: [
-            { label: 'Global Settings', href: '/settings/global', icon: Globe, permission: 'settings.view' },
-            { label: 'Blog Settings', href: '/settings/blog', icon: Newspaper, permission: 'settings.view' },
-            { label: 'Landing Settings', href: '/settings/landing', icon: LayoutTemplate, permission: 'settings.view' },
+            {
+                label: 'Akses',
+                icon: ShieldCheck,
+                items: [
+                    { label: 'Pengguna', href: '/users', icon: Users, permission: 'users.view' },
+                    { label: 'Peran', href: '/roles', icon: ShieldCheck, permission: 'roles.view' },
+                    { label: 'Izin', href: '/permissions', icon: KeyRound, permission: 'roles.view' },
+                    { label: 'Grup Izin', href: '/permission-groups', icon: Layers, permission: 'roles.view' },
+                ],
+            },
+            { label: 'Pengaturan Global', href: '/settings/global', icon: Globe, permission: 'settings.view' },
+            { label: 'Analitik', href: '/analytics', icon: BarChart3, permission: 'analytics.view' },
+            { label: 'Log Aktivitas', href: '/activity-logs', icon: Activity, permission: 'activity_logs.view' },
         ],
     },
     {
-        label: 'Mail Management',
-        key: 'mail-management',
+        label: 'Ruang Kerja',
+        key: 'workspace',
         items: [
-            { label: 'Mail (SMTP)', href: '/settings/global/mail', icon: Mail, permission: 'settings.view' },
-            { label: 'Email Templates', href: '/email-templates', icon: LayoutTemplate, permission: 'settings.view' },
+            { label: 'Markah', href: '/bookmarks', icon: Bookmark, permission: 'bookmarks.view.own' },
+            { label: 'Riwayat Baca', href: '/history', icon: BookOpen, permission: 'reading_history.view.own' },
         ],
     },
-    {
-        label: 'Access Management',
-        key: 'access',
-        items: [
-            { label: 'Users', href: '/users', icon: Users, permission: 'users.view' },
-            { label: 'Roles', href: '/roles', icon: ShieldCheck, permission: 'roles.view' },
-            { label: 'Permissions', href: '/permissions', icon: KeyRound, permission: 'roles.view' },
-            { label: 'Permission Groups', href: '/permission-groups', icon: Layers, permission: 'roles.view' },
-        ],
-    }
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -153,11 +275,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const siteName = settings.site_name || 'ModernBlog';
     const logoUrl = settings.logo_url || null;
 
+    // Filter menu groups directly without injecting dynamic pages
+    const menuGroups = baseMenuGroups;
+
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ content: true });
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ content: true, landing: true });
 
     const toggleGroup = (key: string) => {
         setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
@@ -179,7 +304,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const filteredGroups = menuGroups.map(group => ({
         ...group,
         items: filterItems(group.items)
-    })).filter(group => group.items.length > 0);
+    })).filter(group => {
+        if (group.items.length === 0) return false;
+        if (group.permission && !can(group.permission)) return false;
+        return true;
+    });
 
     // Load state from local storage on mount
     useEffect(() => {
@@ -189,9 +318,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         // Auto-expand groups that contain the active url
-        const initialExpanded: Record<string, boolean> = { post: true };
+        const initialExpanded: Record<string, boolean> = {};
         
-        // Helper to check if a menu item or its children match the URL
         const matchesUrl = (items: MenuItem[]): boolean => {
             return items.some(item => {
                 if (item.href && url.startsWith(item.href)) return true;
@@ -202,11 +330,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         try {
             filteredGroups.forEach(group => {
-                if (!['dashboard', 'media'].includes(group.key) && matchesUrl(group.items)) {
+                if (group.key !== 'dashboard' && matchesUrl(group.items)) {
                     initialExpanded[group.key] = true;
                 }
                 
-                // Also expand sub-menus
                 const expandSubMenus = (items: MenuItem[]) => {
                     items.forEach(item => {
                         if (item.items && matchesUrl(item.items)) {
@@ -356,7 +483,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {/* Navigation */}
                     <nav className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-hide">
                         {filteredGroups.map(group => {
-                            if (['dashboard', 'media'].includes(group.key)) {
+                            if (['dashboard'].includes(group.key)) {
                                 const item = group.items[0];
                                 const active = item.href ? (url.startsWith(item.href) && (item.href !== '/' || url === '/')) : false;
                                 return (
@@ -387,7 +514,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         onClick={() => toggleGroup(group.key)}
                                         className={`flex items-center justify-between w-full px-3 pb-2 pt-1 group ${sidebarCollapsed ? 'lg:hidden' : ''}`}
                                     >
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 group-hover:text-muted-foreground transition-colors text-left">
+                                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 group-hover:text-muted-foreground transition-colors text-left">
                                             {group.label}
                                         </span>
                                         {isExpanded ? (
@@ -415,7 +542,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             className={`hidden lg:flex items-center gap-3 w-full p-2 rounded-lg text-muted-foreground hover:bg-surface-muted hover:text-foreground transition-all ${sidebarCollapsed ? 'justify-center' : 'justify-start'}`}
                         >
                             {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-                            {!sidebarCollapsed && <span className="text-sm font-medium">Collapse</span>}
+                            {!sidebarCollapsed && <span className="text-sm font-medium">Ciutkan</span>}
                         </button>
                     </div>
                 </aside>
@@ -440,7 +567,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <input 
                                     type="text" 
-                                    placeholder="Search..." 
+                                    placeholder="Cari..." 
                                     className="w-full h-10 pl-10 pr-4 rounded-full bg-surface-muted border-transparent focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm transition-all outline-none"
                                 />
                             </div>
@@ -455,7 +582,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-transform active:scale-95"
                             >
                                 <Plus className="w-4 h-4" />
-                                <span>New Post</span>
+                                <span>Posting Baru</span>
                             </Link>
 
                             {/* Mobile New Post Icon */}
@@ -481,9 +608,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-80 p-0 rounded-xl overflow-hidden shadow-lg border-border-subtle">
                                     <div className="p-4 border-b border-border-subtle flex items-center justify-between bg-surface/50">
-                                        <span className="font-semibold text-sm">Notifications</span>
+                                        <span className="font-semibold text-sm">Notifikasi</span>
                                         {(user?.unread_notifications_count ?? 0) > 0 && (
-                                            <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary hover:bg-primary/20">{user?.unread_notifications_count} New</Badge>
+                                            <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary hover:bg-primary/20">{user?.unread_notifications_count} Baru</Badge>
                                         )}
                                     </div>
                                     <div className="max-h-80 overflow-y-auto">
@@ -503,13 +630,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                             ))
                                         ) : (
                                             <div className="p-4 text-center text-sm text-muted-foreground">
-                                                No new notifications
+                                                Tidak ada notifikasi baru
                                             </div>
                                         )}
                                     </div>
                                     <div className="p-2 border-t border-border-subtle bg-surface/50">
                                         <Link href="/notifications" className="block text-center w-full py-2 text-sm text-primary font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                                            View all notifications
+                                            Lihat Semua Notifikasi
                                         </Link>
                                     </div>
                                 </DropdownMenuContent>
@@ -540,19 +667,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         <Link href="/account/profile" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <User className="w-4 h-4 mr-2 text-muted-foreground" />
-                                                Personal
+                                                Pribadi
                                             </DropdownMenuItem>
                                         </Link>
                                         <Link href="/account/security" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <Shield className="w-4 h-4 mr-2 text-muted-foreground" />
-                                                Security & Privacy
+                                                Keamanan & Privasi
                                             </DropdownMenuItem>
                                         </Link>
                                         <Link href="/account/appearance" className="w-full">
                                             <DropdownMenuItem className="rounded-lg cursor-pointer">
                                                 <Settings className="w-4 h-4 mr-2 text-muted-foreground" />
-                                                Preferences
+                                                Preferensi
                                             </DropdownMenuItem>
                                         </Link>
                                         <DropdownMenuSeparator />
@@ -561,7 +688,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                             onClick={() => router.post('/logout')}
                                         >
                                             <LogOut className="w-4 h-4 mr-2" />
-                                            Logout
+                                            Keluar
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -608,19 +735,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     
                     <div className="space-y-1">
                         <Link href="/account/profile" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                            <User className="w-5 h-5 mr-3 text-muted-foreground" /> Personal
+                            <User className="w-5 h-5 mr-3 text-muted-foreground" /> Pribadi
                         </Link>
                         <Link href="/account/security" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                            <Shield className="w-5 h-5 mr-3 text-muted-foreground" /> Security & Privacy
+                            <Shield className="w-5 h-5 mr-3 text-muted-foreground" /> Keamanan & Privasi
                         </Link>
                         <Link href="/account" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                            <Settings2 className="w-5 h-5 mr-3 text-muted-foreground" /> Account Settings
+                            <Settings2 className="w-5 h-5 mr-3 text-muted-foreground" /> Pengaturan Akun
                         </Link>
                         <Link href="/account/appearance" onClick={() => setIsUserMenuOpen(false)} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                            <Settings className="w-5 h-5 mr-3 text-muted-foreground" /> Preferences
+                            <Settings className="w-5 h-5 mr-3 text-muted-foreground" /> Preferensi
                         </Link>
                         <button onClick={() => { setIsUserMenuOpen(false); router.post('/logout'); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
-                            <LogOut className="w-5 h-5 mr-3" /> Logout
+                            <LogOut className="w-5 h-5 mr-3" /> Keluar
                         </button>
                     </div>
                 </BottomSheet>

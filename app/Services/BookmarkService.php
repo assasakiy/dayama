@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Bookmark;
-use App\Models\Post;
+use Modules\CMS\Models\Bookmark;
+use Modules\CMS\Models\Post;
 
 class BookmarkService
 {

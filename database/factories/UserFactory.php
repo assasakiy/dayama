@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\User;
+use Modules\Core\Models\Person;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -22,8 +23,10 @@ class UserFactory extends Factory
             $username .= fake()->randomDigit();
         }
 
+        $nama_lengkap = fake()->name();
+        $nameParts = explode(' ', $nama_lengkap, 2);
+
         return [
-            'name' => fake()->name(),
             'username' => $username,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -35,6 +38,18 @@ class UserFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
+            $nameParts = explode(' ', $user->name ?? fake()->name(), 2);
+            $person = Person::firstOrCreate(
+                ['nama_lengkap' => $user->name ?? fake()->name()],
+                [
+                    'nama_depan' => $nameParts[0],
+                    'nama_belakang' => $nameParts[1] ?? null,
+                    'nama_lengkap' => $user->name ?? fake()->name(),
+                ]
+            );
+            $user->person_id = $person->id;
+            $user->save();
+
             $user->profile()->create([
                 'biography' => fake()->sentence(12),
                 'website' => 'https://' . fake()->domainName(),
@@ -57,7 +72,6 @@ class UserFactory extends Factory
     public function superAdmin(): static
     {
         return $this->state(fn () => [
-            'name' => 'Super Admin',
             'username' => 'superadmin',
             'email' => 'superadmin@blog.com',
         ]);

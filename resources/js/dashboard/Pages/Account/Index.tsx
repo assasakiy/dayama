@@ -14,8 +14,8 @@ export default function AccountIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Settings" 
-            description="Manage your account settings and preferences."
+            title="Pengaturan" 
+            description="Kelola pengaturan dan preferensi akun Anda."
         >
             <div className="hidden md:block space-y-8">
                 {filteredMenuGroups.map((group, groupIndex) => (
@@ -36,7 +36,7 @@ export default function AccountIndex() {
                                                     {item.label}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    Manage your {item.label.toLowerCase()} settings and configurations.
+                                                    Kelola pengaturan dan konfigurasi {item.label.toLowerCase()} Anda.
                                                 </p>
                                             </div>
                                         </CardContent>

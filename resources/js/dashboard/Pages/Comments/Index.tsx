@@ -22,19 +22,19 @@ import {
 } from 'lucide-react';
 
 const STATUS_TABS = [
-    { label: 'All', value: 'all', href: '/comments' },
-    { label: 'Review', value: 'review', href: '/comments?status=review' },
-    { label: 'Published', value: 'published', href: '/comments?status=published' },
+    { label: 'Semua', value: 'all', href: '/comments' },
+    { label: 'Tinjau', value: 'review', href: '/comments?status=review' },
+    { label: 'Terbit', value: 'published', href: '/comments?status=published' },
     { label: 'Spam', value: 'spam', href: '/comments?status=spam' },
-    { label: 'Rejected', value: 'rejected', href: '/comments?status=rejected' },
+    { label: 'Ditolak', value: 'rejected', href: '/comments?status=rejected' },
 ];
 
 const statusBadge = (status: string) => {
     const map: Record<string, { icon: React.ReactNode; className: string; label: string }> = {
-        review: { icon: <Clock className="w-3 h-3" />, className: 'bg-warning/10 text-warning border-warning/20', label: 'Review' },
-        published: { icon: <CheckCircle2 className="w-3 h-3" />, className: 'bg-success/10 text-success border-success/20', label: 'Published' },
+        review: { icon: <Clock className="w-3 h-3" />, className: 'bg-warning/10 text-warning border-warning/20', label: 'Tinjau' },
+        published: { icon: <CheckCircle2 className="w-3 h-3" />, className: 'bg-success/10 text-success border-success/20', label: 'Terbit' },
         spam: { icon: <ShieldAlert className="w-3 h-3" />, className: 'bg-danger/10 text-danger border-danger/20', label: 'Spam' },
-        rejected: { icon: <XCircle className="w-3 h-3" />, className: 'bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20', label: 'Rejected' },
+        rejected: { icon: <XCircle className="w-3 h-3" />, className: 'bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20', label: 'Ditolak' },
     };
     const config = map[status] ?? map.review;
     return (
@@ -71,11 +71,11 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
 
     return (
         <DashboardLayout>
-            <Head title="Comments" />
+            <Head title="Komentar" />
             <div className="space-y-5">
                 <div className="hidden md:block">
-                    <h1 className="text-xl font-semibold tracking-tight">Comments</h1>
-                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Manage reader comments</p>
+                    <h1 className="text-xl font-semibold tracking-tight">Komentar</h1>
+                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Kelola komentar pembaca</p>
                 </div>
 
                 {/* Filter Tabs */}
@@ -99,12 +99,12 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                     <table className="w-full text-sm min-w-[1000px]">
                         <thead>
                             <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                <th className="text-left px-4 py-3 font-medium">Content</th>
-                                <th className="text-left px-4 py-3 font-medium">Author</th>
-                                <th className="text-left px-4 py-3 font-medium">Post</th>
+                                <th className="text-left px-4 py-3 font-medium">Konten</th>
+                                <th className="text-left px-4 py-3 font-medium">Penulis</th>
+                                <th className="text-left px-4 py-3 font-medium">Postingan</th>
                                 <th className="text-left px-4 py-3 font-medium">Status</th>
-                                <th className="text-left px-4 py-3 font-medium">Date</th>
-                                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium">Tanggal</th>
+                                <th className="text-right px-4 py-3 font-medium">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -125,7 +125,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                             </div>
                                             {comment.replies_count > 0 && (
                                                 <span className="text-[10px] bg-surface-muted border border-border-subtle rounded-md px-1.5 py-0.5 w-fit">
-                                                    {comment.replies_count} replies
+                                                    {comment.replies_count} balasan
                                                 </span>
                                             )}
                                         </div>
@@ -134,9 +134,9 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                         <div className="flex flex-col gap-1">
                                             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                                                 <User className="w-3.5 h-3.5" />
-                                                <span className="font-medium text-foreground">{comment.author?.name ?? comment.guest_name ?? 'Anonymous'}</span>
+                                                <span className="font-medium text-foreground">{comment.author?.name ?? comment.guest_name ?? 'Anonim'}</span>
                                                 {comment.created_as_guest && (
-                                                    <span className="text-[9px] bg-surface-muted border border-border-subtle px-1 rounded uppercase tracking-wider">Guest</span>
+                                                    <span className="text-[9px] bg-surface-muted border border-border-subtle px-1 rounded uppercase tracking-wider">Tamu</span>
                                                 )}
                                             </span>
                                             {comment.guest_email && (
@@ -161,8 +161,8 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                         <div className="flex flex-col gap-1.5 items-start">
                                             {statusBadge(comment.status)}
                                             {comment.moderation_score !== null && (
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 mt-1" title={comment.moderation_flags ? JSON.stringify(comment.moderation_flags) : 'No flags'}>
-                                                    <Info className="w-3 h-3" /> Score: {comment.moderation_score}
+                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 mt-1" title={comment.moderation_flags ? JSON.stringify(comment.moderation_flags) : 'Tidak ada flag'}>
+                                                    <Info className="w-3 h-3" /> Skor: {comment.moderation_score}
                                                 </div>
                                             )}
                                         </div>
@@ -190,7 +190,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                                 <button
                                                     onClick={() => handleStatusChange(comment.id, 'published')}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
-                                                    title="Publish"
+                                                    title="Terbitkan"
                                                 >
                                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -199,7 +199,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                                 <button
                                                     onClick={() => handlePinChange(comment.id)}
                                                     className={`p-1.5 rounded-md transition-colors ${comment.is_pinned ? 'text-primary bg-primary/10 hover:bg-primary/20' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}
-                                                    title={comment.is_pinned ? "Unpin" : "Pin"}
+                                                    title={comment.is_pinned ? "Lepas semat" : "Semat"}
                                                 >
                                                     {comment.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
                                                 </button>
@@ -208,7 +208,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                                 <button
                                                     onClick={() => handleStatusChange(comment.id, 'rejected')}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-warning hover:bg-warning/10 transition-colors"
-                                                    title="Reject"
+                                                    title="Tolak"
                                                 >
                                                     <XCircle className="w-3.5 h-3.5" />
                                                 </button>
@@ -217,7 +217,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                                 <button
                                                     onClick={() => handleStatusChange(comment.id, 'spam')}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                    title="Mark as Spam"
+                                                    title="Tandai Spam"
                                                 >
                                                     <ShieldAlert className="w-3.5 h-3.5" />
                                                 </button>
@@ -225,7 +225,7 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                                             <button
                                                 onClick={() => setDeleteId(comment.id)}
                                                 className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                title="Delete"
+                                                title="Hapus"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
@@ -239,11 +239,11 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
                     {comments.data.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <MessageSquare className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                            <p className="text-sm font-medium text-foreground">No comments found</p>
+                            <p className="text-sm font-medium text-foreground">Tidak ada komentar</p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 {currentStatus === 'all'
-                                    ? 'Comments from readers will appear here.'
-                                    : `No ${currentStatus} comments at this time.`}
+                                    ? 'Komentar dari pembaca akan muncul di sini.'
+                                    : `Tidak ada komentar ${currentStatus} saat ini.`}
                             </p>
                         </div>
                     )}
@@ -253,9 +253,9 @@ export default function CommentIndex({ comments, currentStatus }: { comments: an
             <ConfirmDialog
                 open={!!deleteId}
                 onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-                title="Delete Comment"
-                message="Are you sure you want to delete this comment? This action cannot be undone."
-                confirmLabel="Delete"
+                title="Hapus Komentar"
+                message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

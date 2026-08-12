@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Dashboard\Account;
 
 use App\Http\Controllers\Controller;
 use App\Mail\VerifySecondaryEmail;
-use App\Models\UserEmail;
+use Modules\Core\Models\UserEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

@@ -27,7 +27,7 @@ interface ShowUserData {
     social_links: { github?: string; twitter?: string; linkedin?: string } | null;
     posts_count: number;
     created_at: string;
-    roles: { id: string; name: string; color: string }[];
+    roles: { id: string; name: string; display_name?: string; color: string }[];
     email_verified_at: string | null;
     is_verified: boolean;
     updated_at: string;
@@ -72,7 +72,7 @@ export default function UserShow({ user }: Props) {
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
                     >
                         <Pencil className="w-4 h-4" />
-                        Edit User
+                        Edit Pengguna
                     </Link>
                 </div>
 
@@ -103,7 +103,7 @@ export default function UserShow({ user }: Props) {
                                                 style={role.color ? { backgroundColor: `${role.color}15`, color: role.color } : {}}
                                             >
                                                 <ShieldCheck className="w-3 h-3" />
-                                                {role.name}
+                                                {role.display_name || role.name}
                                             </span>
                                         ))}
                                     </div>
@@ -120,14 +120,14 @@ export default function UserShow({ user }: Props) {
                                 <CardContent className="pt-4 pb-3 text-center">
                                     <FileText className="w-5 h-5 text-primary mx-auto mb-1.5" />
                                     <p className="text-lg font-semibold">{user.posts_count}</p>
-                                    <p className="text-xs text-muted-foreground">Posts</p>
+                                    <p className="text-xs text-muted-foreground">Postingan</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="pt-4 pb-3 text-center">
                                     <BadgeCheck className={`w-5 h-5 mx-auto mb-1.5 ${user.is_verified ? 'text-primary' : 'text-muted-foreground/40'}`} />
-                                    <p className="text-lg font-semibold">{user.is_verified ? 'Yes' : 'No'}</p>
-                                    <p className="text-xs text-muted-foreground">Verified</p>
+                                    <p className="text-lg font-semibold">{user.is_verified ? 'Ya' : 'Tidak'}</p>
+                                    <p className="text-xs text-muted-foreground">Terverifikasi</p>
                                 </CardContent>
                             </Card>
                         </div>
@@ -142,7 +142,7 @@ export default function UserShow({ user }: Props) {
                                     <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                         <Mail className="w-3 h-3 text-muted-foreground" />
                                     </span>
-                                    Contact Information
+                                    Informasi Kontak
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
@@ -161,7 +161,7 @@ export default function UserShow({ user }: Props) {
                                             <Globe className="w-4 h-4 text-muted-foreground" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground">Website</p>
+                                            <p className="text-xs text-muted-foreground">Situs Web</p>
                                             <a href={user.website} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-primary transition-colors">
                                                 {new URL(user.website).hostname}
                                             </a>
@@ -178,7 +178,7 @@ export default function UserShow({ user }: Props) {
                                     <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                         <Globe className="w-3 h-3 text-muted-foreground" />
                                     </span>
-                                    Social Links
+                                    Tautan Sosial
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -201,7 +201,7 @@ export default function UserShow({ user }: Props) {
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No social links configured.</p>
+                                <p className="text-sm text-muted-foreground">Tidak ada tautan sosial yang dikonfigurasi.</p>
                             )}
                             </CardContent>
                         </Card>
@@ -213,7 +213,7 @@ export default function UserShow({ user }: Props) {
                                     <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                         <CalendarDays className="w-3 h-3 text-muted-foreground" />
                                     </span>
-                                    Account
+                                    Akun
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
@@ -222,7 +222,7 @@ export default function UserShow({ user }: Props) {
                                         <CalendarDays className="w-4 h-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Member since</p>
+                                        <p className="text-xs text-muted-foreground">Anggota sejak</p>
                                         <p className="font-medium">{joinedDate}</p>
                                     </div>
                                 </div>

@@ -37,7 +37,7 @@ export default function MediaViewer({ media, onClose, onDelete, canDelete, onNex
 
     const handleCopyLink = () => {
         copyToClipboard(new URL(media.original_url, window.location.origin).href);
-        toast.success('Media URL copied to clipboard');
+        toast.success('URL Media disalin ke clipboard');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -63,17 +63,17 @@ export default function MediaViewer({ media, onClose, onDelete, canDelete, onNex
                     <div className="flex items-center gap-1 shrink-0">
                         {/* Desktop Only Actions */}
                         <div className="hidden sm:flex items-center gap-1">
-                            <button title="Copy Link" onClick={handleCopyLink} className="p-2 text-muted-foreground hover:text-foreground hover:bg-surface-muted rounded-md transition-colors">
-                                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <LinkIcon className="w-4 h-4" />}
+                            <button title="Salin Tautan" onClick={handleCopyLink} className="p-2 text-muted-foreground hover:text-foreground hover:bg-surface-muted rounded-md transition-colors">
+                                {copied ? <Check className="w-4 h-4 text-success" /> : <LinkIcon className="w-4 h-4" />}
                             </button>
                             <button title="Info File" onClick={() => setShowInfo(!showInfo)} className={`p-2 rounded-md transition-colors ${showInfo ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-surface-muted'}`}>
                                 <Info className="w-4 h-4" />
                             </button>
-                            <button title="Download" onClick={handleDownload} className="p-2 text-muted-foreground hover:text-foreground hover:bg-surface-muted rounded-md transition-colors">
+                            <button title="Unduh" onClick={handleDownload} className="p-2 text-muted-foreground hover:text-foreground hover:bg-surface-muted rounded-md transition-colors">
                                 <Download className="w-4 h-4" />
                             </button>
                             {canDelete && (
-                                <button title="Delete" onClick={onDelete} className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors">
+                                <button title="Hapus" onClick={onDelete} className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             )}
@@ -81,7 +81,7 @@ export default function MediaViewer({ media, onClose, onDelete, canDelete, onNex
                         </div>
 
                         {/* Always visible (Mobile & Desktop) */}
-                        <button title="Close" onClick={onClose} className="p-1.5 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors">
+                        <button title="Tutup" onClick={onClose} className="p-1.5 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors">
                             <X className="w-5 h-5 sm:w-5 sm:h-5" />
                         </button>
                     </div>
@@ -129,18 +129,18 @@ export default function MediaViewer({ media, onClose, onDelete, canDelete, onNex
                 </div>
 
                 {/* MOBILE FOOTER (Only visible on small screens) */}
-                <div className="sm:hidden flex items-center justify-around px-1 py-1.5 border-t border-border-subtle bg-surface-muted/50 z-20">
-                    <button title="Copy Link" onClick={handleCopyLink} className="p-2 text-muted-foreground hover:text-foreground rounded-full transition-colors flex flex-col items-center gap-1">
-                        {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <LinkIcon className="w-5 h-5" />}
+                    <div className="sm:hidden flex items-center justify-around px-1 py-1.5 border-t border-border-subtle bg-surface-muted/50 z-20">
+                    <button title="Salin Tautan" onClick={handleCopyLink} className="p-2 text-muted-foreground hover:text-foreground rounded-full transition-colors flex flex-col items-center gap-1">
+                        {copied ? <Check className="w-5 h-5 text-success" /> : <LinkIcon className="w-5 h-5" />}
                     </button>
-                    <button title="Download" onClick={handleDownload} className="p-2 text-muted-foreground hover:text-foreground rounded-full transition-colors flex flex-col items-center gap-1">
+                    <button title="Unduh" onClick={handleDownload} className="p-2 text-muted-foreground hover:text-foreground rounded-full transition-colors flex flex-col items-center gap-1">
                         <Download className="w-5 h-5" />
                     </button>
                     <button title="Info File" onClick={() => setShowInfo(!showInfo)} className={`p-2 rounded-full transition-colors flex flex-col items-center gap-1 ${showInfo ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}>
                         <Info className="w-5 h-5" />
                     </button>
                     {canDelete && (
-                        <button title="Delete" onClick={onDelete} className="p-2 text-muted-foreground hover:text-destructive rounded-full transition-colors flex flex-col items-center gap-1">
+                        <button title="Hapus" onClick={onDelete} className="p-2 text-muted-foreground hover:text-destructive rounded-full transition-colors flex flex-col items-center gap-1">
                             <Trash2 className="w-5 h-5" />
                         </button>
                     )}
@@ -161,33 +161,33 @@ export default function MediaViewer({ media, onClose, onDelete, canDelete, onNex
 
                             <div className="p-5 sm:p-6 pt-5 sm:pt-6 space-y-4 sm:space-y-6">
                                 <div className="border-b border-border-subtle pb-3 sm:pb-4">
-                                    <h3 className="font-bold text-base sm:text-lg text-foreground">Metadata Asset</h3>
+                                    <h3 className="font-bold text-base sm:text-lg text-foreground">Metadata Aset</h3>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 sm:gap-5">
                                     <div className="col-span-2">
-                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Display Name</span>
+                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Nama Tampilan</span>
                                         <span className="font-medium text-sm sm:text-base text-foreground">{media.name}</span>
                                     </div>
                                     <div className="col-span-2">
-                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">File Name</span>
+                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Nama File</span>
                                         <span className="break-all text-xs sm:text-sm font-mono text-foreground">{media.file_name}</span>
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Size</span>
+                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Ukuran</span>
                                         <span className="text-sm sm:text-base text-foreground">{media.human_readable_size}</span>
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Mime Type</span>
+                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Tipe Mime</span>
                                         <span className="text-sm sm:text-base text-foreground">{media.mime_type}</span>
                                     </div>
                                     <div className="col-span-2">
-                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Attached To</span>
-                                        <span className="text-xs sm:text-sm text-foreground">{media.attached_to || 'System Asset (Global)'}</span>
+                                        <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Terlampir Pada</span>
+                                        <span className="text-xs sm:text-sm text-foreground">{media.attached_to || 'Aset Sistem (Global)'}</span>
                                     </div>
                                     {media.uploader && (
                                         <div className="col-span-2">
-                                            <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Uploader</span>
+                                            <span className="block text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-0.5 sm:mb-1">Pengunggah</span>
                                             <span className="text-sm sm:text-base text-foreground flex items-center gap-2">
                                                 <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] sm:text-xs font-bold">
                                                     {media.uploader.name.charAt(0)}

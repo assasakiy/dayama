@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, ChevronRight, CheckSquare, Square, MinusSquare } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, CheckSquare, Square, MinusSquare, Layers, List } from 'lucide-react';
 
 interface PermissionItem {
     id: string;
@@ -14,41 +14,51 @@ interface GroupedPermissions {
     [module: string]: PermissionItem[];
 }
 
+interface PermissionGroupItem {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string;
+    color?: string;
+    permissions: PermissionItem[];
+}
+
 interface PermissionMatrixProps {
     groupedPermissions: GroupedPermissions;
+    permissionGroups?: PermissionGroupItem[];
     selected: string[];
     onChange: (selected: string[]) => void;
 }
 
 const MODULE_LABELS: Record<string, string> = {
-    dashboard: 'Dashboard',
-    posts: 'Posts',
-    pages: 'Pages',
+    dashboard: 'Dasbor',
+    posts: 'Postingan',
+    pages: 'Halaman',
     media: 'Media',
-    comments: 'Comments',
-    categories: 'Categories',
-    tags: 'Tags',
-    users: 'Users',
-    roles: 'Roles',
-    settings: 'Settings',
-    analytics: 'Analytics',
-    other: 'Other',
+    comments: 'Komentar',
+    categories: 'Kategori',
+    tags: 'Tag',
+    users: 'Pengguna',
+    roles: 'Peran',
+    settings: 'Pengaturan',
+    analytics: 'Analitik',
+    other: 'Lainnya',
 };
 
 const ACTION_COLORS: Record<string, string> = {
     view: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
     create: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800',
-    edit: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    edit: 'bg-warning/10 text-warning border-warning/20 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
     delete: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800',
     publish: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
-    moderate: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
-    upload: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800',
+    moderate: 'bg-warning/10 text-warning border-warning/20 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
+    upload: 'bg-info/10 text-info border-info/20 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800',
     restore: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800',
     update: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
     reply: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
 };
 
-const SCOPE_LABELS: Record<string, string> = { own: 'Own', all: 'All', assigned: 'Assigned' };
+const SCOPE_LABELS: Record<string, string> = { own: 'Sendiri', all: 'Semua', assigned: 'Ditugaskan' };
 
 function TriCheckbox({ state, onChange }: { state: 'all' | 'some' | 'none'; onChange: () => void }) {
     if (state === 'all') return (
@@ -68,29 +78,49 @@ function TriCheckbox({ state, onChange }: { state: 'all' | 'some' | 'none'; onCh
     );
 }
 
-export default function PermissionMatrix({ groupedPermissions, selected, onChange }: PermissionMatrixProps) {
+export default function PermissionMatrix({ groupedPermissions, permissionGroups, selected, onChange }: PermissionMatrixProps) {
     const [search, setSearch] = useState('');
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+    const [viewMode, setViewMode] = useState<'module' | 'group'>('module');
+
+    const hasGroups = !!permissionGroups && permissionGroups.length > 0;
+
+    const entries = useMemo(() => {
+        if (viewMode === 'group' && hasGroups) {
+            const result: { label: string; items: PermissionItem[] }[] = permissionGroups.map((g) => ({
+                label: g.name,
+                items: g.permissions,
+            }));
+            return result;
+        }
+        return Object.entries(groupedPermissions).map(([mod, perms]) => ({
+            label: MODULE_LABELS[mod] || mod,
+            items: perms,
+        }));
+    }, [groupedPermissions, permissionGroups, viewMode, hasGroups]);
+
     const allPermNames = useMemo(
-        () => Object.values(groupedPermissions).flat().map((p) => p.name),
-        [groupedPermissions]
+        () => entries.flatMap((e) => e.items.map((p) => p.name)),
+        [entries]
     );
 
     const filtered = useMemo(() => {
-        if (!search.trim()) return groupedPermissions;
+        if (!search.trim()) return entries;
         const q = search.toLowerCase();
-        const result: GroupedPermissions = {};
-        for (const [mod, perms] of Object.entries(groupedPermissions)) {
-            const matched = perms.filter(
-                (p) => p.name.toLowerCase().includes(q) || (p.action || '').toLowerCase().includes(q)
-            );
-            if (matched.length > 0) result[mod] = matched;
-        }
-        return result;
-    }, [groupedPermissions, search]);
+        return entries
+            .map((e) => ({
+                ...e,
+                items: e.items.filter(
+                    (p) => p.name.toLowerCase().includes(q) || (p.action || '').toLowerCase().includes(q)
+                ),
+            }))
+            .filter((e) => e.items.length > 0);
+    }, [entries, search]);
 
-    const toggleModule = (module: string) => {
-        const perms = (filtered[module] || []).map((p) => p.name);
+    const toggleGroup = (groupLabel: string) => {
+        const group = entries.find((e) => e.label === groupLabel);
+        if (!group) return;
+        const perms = group.items.map((p) => p.name);
         const allSel = perms.every((n) => selected.includes(n));
         if (allSel) {
             onChange(selected.filter((s) => !perms.includes(s)));
@@ -109,10 +139,10 @@ export default function PermissionMatrix({ groupedPermissions, selected, onChang
         }
     };
 
-    const toggleCollapse = (module: string) => {
+    const toggleCollapse = (label: string) => {
         setCollapsed((prev) => {
             const next = new Set(prev);
-            next.has(module) ? next.delete(module) : next.add(module);
+            next.has(label) ? next.delete(label) : next.add(label);
             return next;
         });
     };
@@ -120,8 +150,10 @@ export default function PermissionMatrix({ groupedPermissions, selected, onChang
     const selectAll = () => onChange(allPermNames);
     const clearAll = () => onChange([]);
 
-    const getModuleState = (module: string): 'all' | 'some' | 'none' => {
-        const perms = (filtered[module] || []).map((p) => p.name);
+    const getGroupState = (groupLabel: string): 'all' | 'some' | 'none' => {
+        const group = entries.find((e) => e.label === groupLabel);
+        if (!group) return 'none';
+        const perms = group.items.map((p) => p.name);
         const selCount = perms.filter((p) => selected.includes(p)).length;
         if (selCount === 0) return 'none';
         if (selCount === perms.length) return 'all';
@@ -142,7 +174,6 @@ export default function PermissionMatrix({ groupedPermissions, selected, onChang
 
     return (
         <div className="flex flex-col gap-2">
-            {/* Toolbar */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -150,55 +181,71 @@ export default function PermissionMatrix({ groupedPermissions, selected, onChang
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search permissions..."
+                        placeholder="Cari izin..."
                         className="w-full h-8 pl-8 pr-3 text-xs rounded-md border border-border-subtle bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                     />
                 </div>
+                {hasGroups && (
+                    <div className="flex items-center gap-1 bg-surface-muted/50 rounded-md p-0.5 border border-border-subtle">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('module')}
+                            className={`h-7 px-2.5 text-xs font-medium rounded transition-colors flex items-center gap-1 ${viewMode === 'module' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <List className="w-3 h-3" />
+                            Modul
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('group')}
+                            className={`h-7 px-2.5 text-xs font-medium rounded transition-colors flex items-center gap-1 ${viewMode === 'group' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <Layers className="w-3 h-3" />
+                            Grup
+                        </button>
+                    </div>
+                )}
                 <button type="button" onClick={selectAll} className="h-8 px-3 text-xs font-medium text-primary hover:bg-primary/10 rounded-md transition-colors border border-transparent hover:border-primary/20">
-                    Select All
+                    Pilih Semua
                 </button>
                 <button type="button" onClick={clearAll} className="h-8 px-3 text-xs font-medium text-muted-foreground hover:bg-surface-muted rounded-md transition-colors border border-transparent hover:border-border-subtle">
-                    Clear
+                    Bersihkan
                 </button>
             </div>
 
-            {/* Selected count */}
             <p className="text-xs text-muted-foreground px-0.5">
-                {selected.length} of {allPermNames.length} permission{allPermNames.length !== 1 ? 's' : ''} selected
+                {selected.length} dari {allPermNames.length} izin terpilih
             </p>
 
-            {/* Module groups */}
             <div className="border border-border-subtle rounded-lg overflow-hidden divide-y divide-border-subtle">
-                {Object.entries(filtered).length === 0 && (
-                    <div className="py-8 text-center text-sm text-muted-foreground">No permissions match your search.</div>
+                {filtered.length === 0 && (
+                    <div className="py-8 text-center text-sm text-muted-foreground">Tidak ada izin yang cocok dengan pencarian.</div>
                 )}
-                {Object.entries(filtered).map(([module, perms]) => {
-                    const state = getModuleState(module);
-                    const isCollapsed = collapsed.has(module);
+                {filtered.map(({ label, items }) => {
+                    const state = getGroupState(label);
+                    const isCollapsed = collapsed.has(label);
                     return (
-                        <div key={module}>
-                            {/* Module header */}
+                        <div key={label}>
                             <div className="flex items-center gap-2 px-3 py-2.5 bg-surface-muted/50 hover:bg-surface-muted transition-colors">
-                                <TriCheckbox state={state} onChange={() => toggleModule(module)} />
+                                <TriCheckbox state={state} onChange={() => toggleGroup(label)} />
                                 <span className="flex-1 text-xs font-semibold uppercase tracking-wider text-foreground">
-                                    {MODULE_LABELS[module] || module}
+                                    {label}
                                 </span>
                                 <span className="text-xs text-muted-foreground mr-1">
-                                    {perms.filter((p) => selected.includes(p.name)).length}/{perms.length}
+                                    {items.filter((p) => selected.includes(p.name)).length}/{items.length}
                                 </span>
                                 <button
                                     type="button"
-                                    onClick={() => toggleCollapse(module)}
+                                    onClick={() => toggleCollapse(label)}
                                     className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </button>
                             </div>
 
-                            {/* Permission chips */}
                             {!isCollapsed && (
                                 <div className="flex flex-wrap gap-1.5 px-4 py-3 bg-background">
-                                    {perms.map((perm) => {
+                                    {items.map((perm) => {
                                         const active = selected.includes(perm.name);
                                         return (
                                             <button

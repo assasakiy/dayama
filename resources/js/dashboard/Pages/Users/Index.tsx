@@ -15,8 +15,15 @@ import {
 interface Role {
     id: string;
     name: string;
+    display_name?: string;
     color?: string;
     icon?: string;
+    scope?: string | null;
+}
+
+interface Institution {
+    id: string;
+    name: string;
 }
 
 interface UserItem {
@@ -61,15 +68,16 @@ interface Filters {
 }
 
 const STATUS_CONFIG = {
-    active:   { label: 'Active',   className: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300' },
-    inactive: { label: 'Inactive', className: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300' },
-    banned:   { label: 'Banned',   className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300' },
+    active:   { label: 'Aktif',   className: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300' },
+    inactive: { label: 'Nonaktif', className: 'bg-warning/10 text-warning border-warning/20 dark:bg-yellow-950/40 dark:text-yellow-300' },
+    banned:   { label: 'Diblokir',   className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300' },
 };
 
 function UserAvatar({ user }: { user: UserItem }) {
-    const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+    const safeName = user.name || 'Pengguna Tidak Diketahui';
+    const initials = safeName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
     const colors = ['from-violet-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500', 'from-orange-500 to-amber-500', 'from-pink-500 to-rose-500'];
-    const color = colors[user.name.charCodeAt(0) % colors.length];
+    const color = colors[safeName.charCodeAt(0) % colors.length];
 
     if (user.avatar_url) {
         return <img src={user.avatar_url} alt={user.name} className="w-8 h-8 rounded-full object-cover ring-2 ring-background" />;
@@ -81,7 +89,7 @@ function UserAvatar({ user }: { user: UserItem }) {
     );
 }
 
-export default function UserIndex({ users, roles, filters }: { users: PaginatedUsers; roles: Role[]; filters: Filters }) {
+export default function UserIndex({ users, roles, filters, institutions }: { users: PaginatedUsers; roles: Role[]; filters: Filters; institutions?: Institution[] }) {
     const [showCreate, setShowCreate] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
     const [selected, setSelected] = useState<string[]>([]);
@@ -93,15 +101,18 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+    const [institutionId, setInstitutionId] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
+
+    const hasLembagaRole = roles.some((r) => r.scope === 'lembaga' && selectedRoles.includes(r.name));
 
     // Filter state
     const [searchInput, setSearchInput] = useState(filters.search || '');
 
     const resetForm = () => {
         setName(''); setEmail(''); setPassword('');
-        setSelectedRoles([]); setErrors({}); setSubmitting(false);
+        setSelectedRoles([]); setInstitutionId(''); setErrors({}); setSubmitting(false);
     };
 
     const toggleRole = (roleName: string) => {
@@ -111,7 +122,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
-        router.post('/users', { name, email, password, roles: selectedRoles }, {
+        router.post('/users', { name, email, password, roles: selectedRoles, institution_id: hasLembagaRole ? institutionId || undefined : undefined }, {
             onError: (errs) => { setErrors(errs); setSubmitting(false); },
             onSuccess: () => { setShowCreate(false); resetForm(); },
             onFinish: () => setSubmitting(false),
@@ -158,15 +169,15 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
 
     return (
         <DashboardLayout>
-            <Head title="Users" />
+            <Head title="Pengguna" />
             <div className="space-y-5">
 
                 {/* Header */}
                 <div className="flex items-center justify-end md:justify-between gap-4 flex-wrap w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Users</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">Pengguna</h1>
                         <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">
-                            {users.total} user{users.total !== 1 ? 's' : ''} total
+                            Total {users.total} pengguna
                         </p>
                     </div>
                     <button
@@ -174,7 +185,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                     >
                         <Plus className="w-4 h-4" />
-                        New User
+                        Pengguna Baru
                     </button>
                 </div>
 
@@ -187,7 +198,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && applySearch()}
-                            placeholder="Search users..."
+                            placeholder="Cari pengguna..."
                             className="w-full h-9 pl-9 pr-3 text-sm rounded-md border border-border-subtle bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                         />
                     </div>
@@ -197,8 +208,8 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                         onChange={(e) => applyFilter('role', e.target.value)}
                         className="h-9 px-3 text-sm rounded-md border border-border-subtle bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                     >
-                        <option value="">All Roles</option>
-                        {roles.map((r) => <option key={r.id} value={r.name}>{r.name}</option>)}
+                        <option value="">Semua Peran</option>
+                        {roles.map((r) => <option key={r.id} value={r.name}>{r.display_name || r.name}</option>)}
                     </select>
 
                     <select
@@ -206,10 +217,10 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                         onChange={(e) => applyFilter('status', e.target.value)}
                         className="h-9 px-3 text-sm rounded-md border border-border-subtle bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                     >
-                        <option value="">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="banned">Banned</option>
+                        <option value="">Semua Status</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Nonaktif</option>
+                        <option value="banned">Diblokir</option>
                     </select>
 
                     <select
@@ -217,30 +228,30 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                         onChange={(e) => applyFilter('verified', e.target.value)}
                         className="h-9 px-3 text-sm rounded-md border border-border-subtle bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                     >
-                        <option value="">All Users</option>
-                        <option value="verified">Email Verified</option>
-                        <option value="unverified">Unverified</option>
+                        <option value="">Semua Pengguna</option>
+                        <option value="verified">Email Terverifikasi</option>
+                        <option value="unverified">Belum Terverifikasi</option>
                     </select>
                 </div>
 
                 {/* Bulk actions toolbar */}
                 {selected.length > 0 && (
                     <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-lg">
-                        <span className="text-sm font-medium text-primary">{selected.length} selected</span>
+                        <span className="text-sm font-medium text-primary">{selected.length} terpilih</span>
                         <div className="flex items-center gap-2 ml-auto">
                             <button
                                 onClick={() => setShowBulkRoleModal(true)}
                                 className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-md bg-background border border-border-subtle hover:bg-surface-muted transition-colors"
                             >
                                 <ShieldCheck className="w-3.5 h-3.5" />
-                                Assign Role
+                                Tetapkan Peran
                             </button>
                             <button
                                 onClick={handleBulkDelete}
                                 className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-md bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
-                                Delete
+                                Hapus
                             </button>
                             <button onClick={() => setSelected([])} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                                 <X className="w-4 h-4" />
@@ -262,12 +273,12 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                         className="w-4 h-4 rounded border-border-subtle accent-primary cursor-pointer"
                                     />
                                 </th>
-                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground">User</th>
-                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Roles</th>
+                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground">Pengguna</th>
+                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Peran</th>
                                 <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Status</th>
-                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden xl:table-cell">Activity</th>
-                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Joined</th>
-                                <th className="text-right px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden xl:table-cell">Aktivitas</th>
+                                <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Bergabung</th>
+                                <th className="text-right px-4 py-3 font-medium text-xs uppercase tracking-wider text-muted-foreground">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -299,7 +310,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                             {user.name}
                                                         </Link>
                                                         {user.is_verified && (
-                                                            <span title="Verified User" className="shrink-0 text-blue-500">
+                                                            <span title="Pengguna Terverifikasi" className="shrink-0 text-blue-500">
                                                                 <CheckCircle2 className="w-3.5 h-3.5 fill-blue-500 text-white" />
                                                             </span>
                                                         )}
@@ -307,17 +318,17 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                                                 </div>
                                                 {user.is_primary_super_admin ? (
-                                                    <span title="Primary Super Admin" className="hidden sm:flex shrink-0 px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-200 rounded text-[10px] font-bold uppercase tracking-wider">
-                                                        Primary
+                                                    <span title="Super Admin Utama" className="hidden sm:flex shrink-0 px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-200 rounded text-[10px] font-bold uppercase tracking-wider">
+                                                        Utama
                                                     </span>
                                                 ) : user.is_protected ? (
-                                                    <span title="Protected Account" className="hidden sm:flex shrink-0 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded text-[10px] font-bold uppercase tracking-wider gap-1 items-center">
-                                                        <Lock className="w-3 h-3" /> Protected
+                                                    <span title="Akun Terlindungi" className="hidden sm:flex shrink-0 px-1.5 py-0.5 bg-warning/15 text-warning border border-warning/20 rounded text-[10px] font-bold uppercase tracking-wider gap-1 items-center">
+                                                        <Lock className="w-3 h-3" /> Terlindungi
                                                     </span>
                                                 ) : user.email_verified_at ? (
-                                                    <span title="Email verified" className="hidden sm:flex shrink-0"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /></span>
+                                                    <span title="Email terverifikasi" className="hidden sm:flex shrink-0"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /></span>
                                                 ) : (
-                                                    <span title="Email not verified" className="hidden sm:flex shrink-0"><XCircle className="w-3.5 h-3.5 text-yellow-500" /></span>
+                                                    <span title="Email belum terverifikasi" className="hidden sm:flex shrink-0"><XCircle className="w-3.5 h-3.5 text-warning" /></span>
                                                 )}
                                             </div>
                                         </td>
@@ -331,11 +342,11 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                             style={r.color ? { backgroundColor: r.color + '20', color: r.color } : {}}
                                                         >
                                                             <ShieldCheck className="w-2.5 h-2.5" />
-                                                            {r.name}
+                                                            {r.display_name || r.name}
                                                         </span>
                                                     ))
                                                 ) : (
-                                                    <span className="text-xs text-muted-foreground">No roles</span>
+                                                    <span className="text-xs text-muted-foreground">Tidak ada peran</span>
                                                 )}
                                             </div>
                                         </td>
@@ -346,10 +357,10 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                         </td>
                                         <td className="px-4 py-3 hidden xl:table-cell">
                                             <div className="text-xs text-muted-foreground space-y-0.5">
-                                                <div>{user.posts_count} post{user.posts_count !== 1 ? 's' : ''}</div>
+                                                <div>{user.posts_count} postingan</div>
                                                 <div className="flex items-center gap-1 text-muted-foreground/70">
                                                     <Clock className="w-3 h-3" />
-                                                    {user.last_login_at ? formatDate(user.last_login_at) : 'Never'}
+                                                    {user.last_login_at ? formatDate(user.last_login_at) : 'Tidak Pernah'}
                                                 </div>
                                             </div>
                                         </td>
@@ -361,7 +372,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                 <Link
                                                     href={`/users/${user.id}`}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
-                                                    title="View"
+                                                    title="Lihat"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
                                                 </Link>
@@ -378,7 +389,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                     <button
                                                         onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                                        title="Delete"
+                                                        title="Hapus"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
@@ -394,8 +405,8 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                     {users.data.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <UsersIcon className="w-12 h-12 text-muted-foreground/20 mb-4" />
-                            <p className="text-sm font-medium">No users found</p>
-                            <p className="text-xs text-muted-foreground mt-1">Try adjusting your search or filters.</p>
+                            <p className="text-sm font-medium">Tidak ada pengguna</p>
+                            <p className="text-xs text-muted-foreground mt-1">Coba sesuaikan pencarian atau filter Anda.</p>
                         </div>
                     )}
                 </div>
@@ -404,7 +415,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                 {users.last_page > 1 && (
                     <div className="flex items-center justify-end md:justify-between gap-4 text-sm w-full">
                         <p className="text-muted-foreground text-xs">
-                            Showing {users.from}–{users.to} of {users.total} users
+                            Menampilkan {users.from}–{users.to} dari {users.total} pengguna
                         </p>
                         <div className="flex items-center gap-1">
                             {users.links.map((link, i) => {
@@ -429,18 +440,18 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
             <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) resetForm(); }}>
                 <DialogContent className="flex flex-col p-0 gap-0 max-h-[90vh] max-w-md">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">Create User</DialogTitle>
+                        <DialogTitle className="text-base">Buat Pengguna</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
                     </DialogHeader>
                     <form onSubmit={handleCreate} className="flex flex-col flex-1 min-h-0">
                         <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
-                            <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="John Doe" />
+                            <Input label="Nama Lengkap" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="John Doe" />
                             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="john@example.com" />
-                            <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} required placeholder="Min. 8 characters" />
+                            <Input label="Kata Sandi" type="password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} required placeholder="Min. 8 karakter" />
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Roles</label>
+                                <label className="text-sm font-medium">Peran</label>
                                 <div className="flex flex-wrap gap-2 pt-1">
                                     {roles.map((role) => {
                                         const active = selectedRoles.includes(role.name);
@@ -453,16 +464,33 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                                 style={active && role.color ? { backgroundColor: role.color, borderColor: role.color } : {}}
                                             >
                                                 <ShieldCheck className="w-3 h-3" />
-                                                {role.name}
+                                                {role.display_name || role.name}
                                             </button>
                                         );
                                     })}
                                 </div>
                                 {errors.roles && <p className="text-xs text-destructive">{errors.roles}</p>}
                             </div>
+
+                            {hasLembagaRole && institutions && institutions.length > 0 && (
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Lembaga <span className="text-destructive">*</span></label>
+                                    <select
+                                        value={institutionId}
+                                        onChange={(e) => setInstitutionId(e.target.value)}
+                                        className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    >
+                                        <option value="">Pilih lembaga...</option>
+                                        {institutions.map((inst) => (
+                                            <option key={inst.id} value={inst.id}>{inst.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.institution_id && <p className="text-xs text-destructive">{errors.institution_id}</p>}
+                                </div>
+                            )}
                         </div>
                         <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle mt-0 shrink-0">
-                            <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+                            <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Batal</Button>
                             <Btn
                                 type="submit"
                                 disabled={!name || !email || !password || submitting}
@@ -470,7 +498,7 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                 icon={<Plus className="w-4 h-4" />}
                                 className="h-9 px-4 shadow-sm"
                             >
-                                Create User
+                                Buat Pengguna
                             </Btn>
                         </DialogFooter>
                     </form>
@@ -481,13 +509,13 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
             <Dialog open={showBulkRoleModal} onOpenChange={setShowBulkRoleModal}>
                 <DialogContent className="max-w-sm p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle shrink-0">
-                        <DialogTitle className="text-base">Assign Role to {selected.length} User{selected.length !== 1 ? 's' : ''}</DialogTitle>
+                        <DialogTitle className="text-base">Tetapkan Peran ke {selected.length} Pengguna</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
                     </DialogHeader>
                     <div className="px-6 py-4 space-y-3">
-                        <p className="text-sm text-muted-foreground">Select a role to assign to the selected users.</p>
+                        <p className="text-sm text-muted-foreground">Pilih peran untuk ditetapkan ke pengguna terpilih.</p>
                         <div className="flex flex-wrap gap-2">
                             {roles.map((role) => (
                                 <button
@@ -497,21 +525,21 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${bulkRole === role.name ? 'bg-primary text-primary-foreground border-primary shadow-sm' : 'bg-background text-muted-foreground border-border-subtle hover:border-primary/50'}`}
                                 >
                                     <ShieldCheck className="w-3 h-3" />
-                                    {role.name}
+                                    {role.display_name || role.name}
                                 </button>
                             ))}
                         </div>
                     </div>
                     <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle">
-                        <Button type="button" variant="outline" onClick={() => setShowBulkRoleModal(false)}>Cancel</Button>
-                        <Btn
-                            onClick={handleBulkRole}
-                            disabled={!bulkRole}
-                            icon={<ShieldCheck className="w-4 h-4" />}
-                            className="h-9 px-4 shadow-sm"
-                        >
-                            Assign Role
-                        </Btn>
+                            <Button type="button" variant="outline" onClick={() => setShowBulkRoleModal(false)}>Batal</Button>
+                            <Btn
+                                onClick={handleBulkRole}
+                                disabled={!bulkRole}
+                                icon={<ShieldCheck className="w-4 h-4" />}
+                                className="h-9 px-4 shadow-sm"
+                            >
+                                Tetapkan Peran
+                            </Btn>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -519,9 +547,9 @@ export default function UserIndex({ users, roles, filters }: { users: PaginatedU
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete User"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.` : ''}
-                confirmLabel="Delete"
+                title="Hapus Pengguna"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Tindakan ini tidak dapat dibatalkan.` : ''}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

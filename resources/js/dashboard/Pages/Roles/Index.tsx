@@ -32,8 +32,10 @@ interface Role {
     icon?: string | null;
     is_system: boolean;
     status: string;
+    scope?: string | null;
     sort_order: number;
     permissions_count: number;
+    permission_names?: string[];
     users_count: number;
     rank: number;
     created_at: string;
@@ -74,7 +76,16 @@ function RoleIcon({ icon, color, size = 5 }: { icon?: string | null; color?: str
     }
 }
 
-export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]; groupedPermissions: GroupedPermissions }) {
+interface PermissionGroupItem {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string;
+    color?: string;
+    permissions: PermissionItem[];
+}
+
+export default function RoleIndex({ roles, groupedPermissions, permissionGroups }: { roles: Role[]; groupedPermissions: GroupedPermissions; permissionGroups?: PermissionGroupItem[] }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [editRole, setEditRole] = useState<Role | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -87,6 +98,7 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
     const [color, setColor] = useState('#7c3aed');
     const [icon, setIcon] = useState('shield');
     const [status, setStatus] = useState('active');
+    const [scope, setScope] = useState('');
     const [rank, setRank] = useState(10);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [initialPermissions, setInitialPermissions] = useState<string[]>([]);
@@ -103,14 +115,15 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
             color !== (editRole?.color ?? '#7c3aed') ||
             icon !== (editRole?.icon ?? 'shield') ||
             status !== (editRole?.status ?? 'active') ||
+            scope !== (editRole?.scope ?? '') ||
             rank !== (editRole?.rank ?? 10) ||
             JSON.stringify([...selectedPermissions].sort()) !== JSON.stringify([...initialPermissions].sort())
         )
-        : (!!name || !!displayName || !!description || selectedPermissions.length > 0);
+        : (!!name || !!displayName || !!description || !!scope || selectedPermissions.length > 0);
 
     const resetForm = () => {
         setName(''); setDisplayName(''); setDescription('');
-        setColor('#7c3aed'); setIcon('shield'); setStatus('active'); setRank(10);
+        setColor('#7c3aed'); setIcon('shield'); setStatus('active'); setScope(''); setRank(10);
         setSelectedPermissions([]); setInitialPermissions([]); setErrors({}); setSubmitting(false); setEditRole(null);
     };
 
@@ -124,13 +137,12 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
         setColor(role.color || '#7c3aed');
         setIcon(role.icon || 'shield');
         setStatus(role.status);
+        setScope(role.scope || '');
         setRank(role.rank);
         
-        // Fetch permissions for the role
-        fetch(`/roles/${role.id}/permissions`).then(r => r.json()).then(data => {
-            setSelectedPermissions(data.permissions);
-            setInitialPermissions(data.permissions);
-        }).finally(() => setSubmitting(false));
+        setSelectedPermissions(role.permission_names || []);
+        setInitialPermissions(role.permission_names || []);
+        setSubmitting(false);
         setModalOpen(true);
         setOpenMenuId(null);
     };
@@ -140,7 +152,7 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
         setSubmitting(true);
         const data = {
             name, display_name: displayName, description,
-            color, icon, status, rank, permissions: selectedPermissions
+            color, icon, status, scope: scope || null, rank, permissions: selectedPermissions
         }; 
         if (isEdit) {
             router.put(`/roles/${editRole!.id}`, data, {
@@ -170,19 +182,19 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
 
     return (
         <DashboardLayout>
-            <Head title="Roles" />
+            <Head title="Peran" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Roles</h1>
-                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{roles.length} role{roles.length !== 1 ? 's' : ''} configured</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Peran</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{roles.length} peran dikonfigurasi</p>
                     </div>
                     <button
                         onClick={openCreate}
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                     >
                         <Plus className="w-4 h-4" />
-                        New Role
+                        Peran Baru
                     </button>
                 </div>
 
@@ -205,9 +217,16 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                                         <div className="flex items-center gap-1.5">
                                             <p className="font-semibold text-sm">{role.display_name || role.name}</p>
                                             {role.is_system && (
-                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning border border-warning/20 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                                                     <Lock className="w-2.5 h-2.5" />
-                                                    System
+                                                    Sistem
+                                                </span>
+                                            )}
+                                            {role.scope && (
+                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                                                    role.scope === 'yayasan' ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800' : 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800'
+                                                }`}>
+                                                    {role.scope === 'yayasan' ? 'Yayasan' : 'Lembaga'}
                                                 </span>
                                             )}
                                         </div>
@@ -234,21 +253,21 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                                                             onClick={() => { openEdit(role); setOpenMenuId(null); }}
                                                             className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-surface-muted flex items-center gap-2"
                                                         >
-                                                            <Pencil className="w-4 h-4" /> Edit Role
+                                                            <Pencil className="w-4 h-4" /> Edit Peran
                                                         </button>
                                                     )}
                                                     <button
                                                         onClick={() => { handleDuplicate(role.id); setOpenMenuId(null); }}
                                                         className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-surface-muted flex items-center gap-2"
                                                     >
-                                                        <Copy className="w-4 h-4" /> Duplicate
+                                                        <Copy className="w-4 h-4" /> Duplikat
                                                     </button>
                                                     {role.can.delete && !role.is_system && (
                                                         <button
                                                             onClick={() => { setDeleteTarget({ id: role.id, name: role.name }); setOpenMenuId(null); }}
                                                             className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 flex items-center gap-2"
                                                         >
-                                                            <Trash2 className="w-4 h-4" /> Delete Role
+                                                            <Trash2 className="w-4 h-4" /> Hapus Peran
                                                         </button>
                                                     )}
                                                 </div>
@@ -265,11 +284,11 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                             <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 pt-3 border-t border-border-subtle">
                                 <span className="inline-flex items-center gap-1">
                                     <Lock className="w-3 h-3" />
-                                    {role.permissions_count} permissions
+                                    {role.permissions_count} izin
                                 </span>
                                 <span className="inline-flex items-center gap-1">
                                     <Users className="w-3 h-3" />
-                                    {role.users_count} users
+                                    {role.users_count} pengguna
                                 </span>
                                 <span className="ml-auto font-medium">Rank: {role.rank}</span>
                             </div>
@@ -281,7 +300,7 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
             <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
                 <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">{isEdit ? 'Edit Role' : 'Create Role'}</DialogTitle>
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Peran' : 'Buat Peran'}</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -290,23 +309,37 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                         <div className="space-y-5 px-6 py-4 overflow-y-auto flex-1">
                             <div className="grid grid-cols-2 gap-4">
-                                <Input label="Name (slug)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="e.g. editor" disabled={isEdit && editRole?.is_system} />
-                                <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={errors.display_name} placeholder="e.g. Editor" />
+                                <Input label="Nama (slug)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="cth. editor" disabled={isEdit && editRole?.is_system} />
+                                <Input label="Nama Tampilan" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={errors.display_name} placeholder="cth. Editor" />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Description</label>
+                                <label className="text-sm font-medium">Deskripsi</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Optional description of this role..."
+                                    placeholder="Deskripsi opsional peran ini..."
                                     rows={2}
                                     className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 />
                             </div>
 
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Cakupan <span className="text-muted-foreground font-normal">(opsional)</span></label>
+                                <select
+                                    value={scope}
+                                    onChange={(e) => setScope(e.target.value)}
+                                    className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                    <option value="">Global (tanpa cakupan)</option>
+                                    <option value="yayasan">Yayasan</option>
+                                    <option value="lembaga">Lembaga</option>
+                                </select>
+                                {errors.scope && <p className="text-xs text-destructive">{errors.scope}</p>}
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-medium">Role Color</label>
+                                    <label className="text-sm font-medium">Warna Peran</label>
                                     <div className="flex flex-wrap gap-2">
                                         {ROLE_COLORS.map((c) => (
                                             <button
@@ -317,7 +350,7 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                                                 style={{ backgroundColor: c }}
                                             />
                                         ))}
-                                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border border-border-subtle" title="Custom color" />
+                                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border border-border-subtle" title="Warna kustom" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -328,8 +361,8 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                                             onChange={(e) => setStatus(e.target.value)}
                                             className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                                         >
-                                            <option value="active">Active</option>
-                                            <option value="inactive">Inactive</option>
+                                            <option value="active">Aktif</option>
+                                            <option value="inactive">Nonaktif</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
@@ -347,10 +380,11 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Permissions</label>
+                                <label className="text-sm font-medium">Izin</label>
                                 {errors.permissions && <p className="text-xs text-destructive">{errors.permissions}</p>}
                                 <PermissionMatrix
                                     groupedPermissions={groupedPermissions}
+                                    permissionGroups={permissionGroups}
                                     selected={selectedPermissions}
                                     onChange={setSelectedPermissions}
                                 />
@@ -358,14 +392,14 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
                         </div>
 
                         <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle mt-0 shrink-0">
-                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Cancel</Button>
+                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Batal</Button>
                             <Btn
                                 type="submit"
                                 loading={submitting}
                                 disabled={!isDirty || submitting}
                                 icon={<Save className="w-4 h-4" />}
                             >
-                                {isEdit ? 'Update Role' : 'Create Role'}
+                                {isEdit ? 'Perbarui Peran' : 'Buat Peran'}
                             </Btn>
                         </DialogFooter>
                     </form>
@@ -375,9 +409,9 @@ export default function RoleIndex({ roles, groupedPermissions }: { roles: Role[]
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Role"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Users with this role may lose permissions.` : ''}
-                confirmLabel="Delete"
+                title="Hapus Peran"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Pengguna dengan peran ini mungkin kehilangan izin.` : ''}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

@@ -10,16 +10,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('bank_ups', function (Blueprint $table): void {
+        Schema::create('backups', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuidMorphs('bankupable');
+            $table->string('backupable_type')->nullable();
+            $table->uuid('backupable_id')->nullable();
+            $table->string('type', 20)->default('full'); // full|database|files
             $table->string('status', 20)->default('pending'); // pending|completed|failed
             $table->string('filename', 200)->nullable();
+            $table->string('path', 255)->nullable();
+            $table->string('disk', 50)->default('local');
             $table->unsignedBigInteger('size')->default(0);
+            $table->unsignedInteger('duration')->nullable();
             $table->json('files')->nullable();
             $table->json('metadata')->nullable();
+            $table->json('options')->nullable();
             $table->text('logs')->nullable();
             $table->uuid('created_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
 
@@ -37,6 +45,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('jobs_queue_status');
-        Schema::dropIfExists('bank_ups');
+        Schema::dropIfExists('backups');
     }
 };

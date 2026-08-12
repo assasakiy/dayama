@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', [\App\Http\Controllers\Web\LandingController::class, 'index'])->name('home');
 
 // Rute Utama Blog (Home)
-Route::get('/', [\App\Http\Controllers\Web\HomeController::class, '__invoke'])->name('home');
+Route::get('/', [HomeController::class, '__invoke'])->name('home');
 
 Route::post('/cookie-consent', [\App\Http\Controllers\Web\CookieConsentController::class, 'store'])->name('cookie-consent.store');
 
@@ -46,7 +46,9 @@ Route::post('/notifications/read-all', [\App\Http\Controllers\Web\NotificationCo
 
 // SEO feeds
 Route::get('/sitemap.xml', [SitemapController::class, '__invoke'])->name('sitemap');
+Route::get('/sitemap-blog.xsl', [SitemapController::class, 'blogXsl'])->name('blog.sitemap.xsl');
 
+Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
 Route::get('/sitemap-posts.xml', [SitemapController::class, 'posts'])->name('sitemap.posts');
 Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
 Route::get('/sitemap-tags.xml', [SitemapController::class, 'tags'])->name('sitemap.tags');

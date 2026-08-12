@@ -49,13 +49,13 @@ export default function PostIndex({ posts }: { posts: any }) {
 
     return (
         <DashboardLayout>
-            <Head title="Posts" />
+            <Head title="Postingan" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">{isTrash ? 'Trash' : 'Posts'}</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">{isTrash ? 'Sampah' : 'Postingan'}</h1>
                         <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">
-                            {isTrash ? 'Manage deleted posts' : 'Manage your blog posts'}
+                            {isTrash ? 'Kelola postingan yang dihapus' : 'Kelola postingan blog'}
                         </p>
                     </div>
                     {!isTrash ? (
@@ -64,7 +64,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                             className="ml-auto inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
-                            New Post
+                            Posting Baru
                         </Link>
                     ) : posts.data.length > 0 ? (
                         <button
@@ -72,7 +72,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                             className="ml-auto inline-flex items-center gap-2 h-9 px-4 bg-danger text-danger-foreground rounded-md text-sm font-medium hover:bg-danger/90 transition-all shadow-sm"
                         >
                             <Trash2 className="w-4 h-4" />
-                            Empty Trash
+Kosongkan Sampah
                         </button>
                     ) : null}
                 </div>
@@ -81,12 +81,12 @@ export default function PostIndex({ posts }: { posts: any }) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                <th className="text-left px-4 py-3 font-medium w-12">Image</th>
-                                <th className="text-left px-4 py-3 font-medium">Title</th>
-                                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Author</th>
+                                <th className="text-left px-4 py-3 font-medium w-12">Gambar</th>
+                                <th className="text-left px-4 py-3 font-medium">Judul</th>
+                                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Penulis</th>
                                 <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Status</th>
-                                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Date</th>
-                                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Tanggal</th>
+                                <th className="text-right px-4 py-3 font-medium">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -128,14 +128,14 @@ export default function PostIndex({ posts }: { posts: any }) {
                                                     <button
                                                         onClick={() => handleRestore(post.id)}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
-                                                        title="Restore"
+                                                        title="Pulihkan"
                                                     >
                                                         <RotateCcw className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setDeleteTarget({ id: post.id, title: post.title, force: true })}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                        title="Delete Permanently"
+                                                        title="Hapus Permanen"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
@@ -145,7 +145,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                                                     <Link
                                                         href={`/post/${post.slug}`}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
-                                                        title="View"
+                                                        title="Lihat"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
                                                     </Link>
@@ -159,7 +159,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                                                     <button
                                                         onClick={() => setDeleteTarget({ id: post.id, title: post.title })}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                        title="Move to Trash"
+                                                        title="Pindah ke Sampah"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
@@ -175,9 +175,9 @@ export default function PostIndex({ posts }: { posts: any }) {
                     {posts.data.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <FileText className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                            <p className="text-sm font-medium text-foreground">{isTrash ? 'Trash is empty' : 'No posts yet'}</p>
+                            <p className="text-sm font-medium text-foreground">{isTrash ? 'Sampah kosong' : 'Belum ada postingan'}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                                {isTrash ? 'There are no deleted posts in the trash.' : 'Get started by creating your first post.'}
+                                {isTrash ? 'Tidak ada postingan di sampah.' : 'Mulai dengan membuat postingan pertama.'}
                             </p>
                             {!isTrash && (
                                 <Link
@@ -185,7 +185,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                                     className="ml-auto inline-flex items-center gap-2 mt-4 h-8 px-3 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 transition-all"
                                 >
                                     <Plus className="w-3.5 h-3.5" />
-                                    Create Post
+                                    Buat Postingan
                                 </Link>
                             )}
                         </div>
@@ -196,7 +196,7 @@ export default function PostIndex({ posts }: { posts: any }) {
                 {posts.links && posts.links.length > 3 && (
                     <div className="flex items-center justify-end md:justify-between text-sm w-full">
                         <p className="text-xs text-muted-foreground">
-                            Showing {posts.from} to {posts.to} of {posts.total} posts
+                            Menampilkan {posts.from} hingga {posts.to} dari {posts.total} postingan
                         </p>
                         <div className="flex items-center gap-1">
                             {posts.links.map((link: any, i: number) => (
@@ -222,9 +222,9 @@ export default function PostIndex({ posts }: { posts: any }) {
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title={deleteTarget?.force ? "Permanently Delete Post" : "Move to Trash"}
-                message={deleteTarget ? `Are you sure you want to ${deleteTarget.force ? 'permanently delete' : 'move'} "${deleteTarget.title}"${deleteTarget.force ? '? This action cannot be undone.' : ' to trash?'}` : ''}
-                confirmLabel="Delete"
+                title={deleteTarget?.force ? "Hapus Postingan Permanen" : "Pindah ke Sampah"}
+message={deleteTarget ? `Apakah Anda yakin ingin ${deleteTarget.force ? 'menghapus permanen' : 'memindahkan'} "${deleteTarget.title}"${deleteTarget.force ? '? Tindakan ini tidak dapat dibatalkan.' : ' ke sampah?'}` : ''}
+                                                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />
@@ -232,9 +232,9 @@ export default function PostIndex({ posts }: { posts: any }) {
             <ConfirmDialog
                 open={showEmptyTrashConfirm}
                 onOpenChange={setShowEmptyTrashConfirm}
-                title="Empty Trash"
-                message="Are you sure you want to permanently delete all posts in the trash? This action cannot be undone."
-                confirmLabel="Empty Trash"
+                title="Kosongkan Sampah"
+                message="Apakah Anda yakin ingin menghapus permanen semua postingan di sampah? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Kosongkan Sampah"
                 variant="danger"
                 onConfirm={handleEmptyTrash}
             />

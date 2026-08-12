@@ -5,8 +5,8 @@ namespace App\Authorization\Rules;
 use App\Authorization\AuthorizationContext;
 use App\Authorization\Contracts\AuthorizationRule;
 use App\Authorization\Contracts\HasRankOwner;
-use App\Models\Role;
-use App\Models\User;
+use Modules\Core\Models\Role;
+use Modules\Core\Models\User;
 use Closure;
 
 class RankRule implements AuthorizationRule

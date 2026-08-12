@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Category;
-use App\Models\User;
+use Modules\CMS\Models\Category;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 use App\Authorization\AuthorizationService;
 

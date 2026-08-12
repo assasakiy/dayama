@@ -19,8 +19,12 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/media-library
 /storage/pail
 /vendor
+/cookies.txt
+/current_schema.sql
+/database/modern_blog.sql
 _ide_helper.php
 Homestead.json
 Homestead.yaml

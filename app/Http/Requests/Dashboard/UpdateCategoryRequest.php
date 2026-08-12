@@ -16,10 +16,10 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:120|unique:categories,name,' . $this->route('category')?->id,
+            'name' => 'required|string|max:120|unique:cms_categories,name,' . $this->route('category')?->id,
             'title' => 'nullable|string|max:160',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|exists:cms_categories,id',
             'color' => 'nullable|string|max:20',
             'icon' => 'nullable|string|max:255',
             'seo_title' => 'nullable|string|max:160',
@@ -28,7 +28,7 @@ class UpdateCategoryRequest extends FormRequest
             'is_visible' => 'boolean',
             'sort_order' => 'integer',
             'image' => 'nullable|image|max:5120',
-            'image_media_id' => 'nullable|exists:media,id',
+            'image_media_id' => 'nullable|exists:core_media,id',
             'remove_image' => 'nullable|boolean',
         ];
     }

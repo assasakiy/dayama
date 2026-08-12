@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 
 #[Signature('app:publish-scheduled-posts')]
 #[Description('Publish scheduled posts that are due')]

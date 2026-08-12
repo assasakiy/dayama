@@ -18,8 +18,8 @@ export default function ExportIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Export Data" 
-            description="Download a copy of your personal data and content."
+            title="Ekspor Data" 
+            description="Unduh salinan data pribadi dan konten Anda."
         >
             <div className="space-y-6">
                 
@@ -29,10 +29,10 @@ export default function ExportIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <Download className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Data Archive Request
+                            Permintaan Arsip Data
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Request a complete archive of your account data.
+                            Minta arsip lengkap data akun Anda.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -40,23 +40,23 @@ export default function ExportIndex() {
                         {!requestSent ? (
                             <div className="space-y-6">
                                 <p className="text-sm text-muted-foreground">
-                                    You can request a file containing your personal data, preferences, and connected accounts. 
-                                    Your archive will be prepared and downloaded instantly to your device.
+                                    Anda dapat meminta file yang berisi data pribadi, preferensi, dan akun terhubung. 
+                                    Arsip Anda akan disiapkan dan diunduh langsung ke perangkat Anda.
                                 </p>
                                 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="flex items-start gap-3 p-4 border border-border-subtle rounded-lg bg-surface-muted/30">
                                         <FileJson className="w-5 h-5 text-primary mt-0.5" />
                                         <div>
-                                            <h4 className="text-sm font-medium">Machine Readable</h4>
-                                            <p className="text-xs text-muted-foreground mt-1">Data is exported in JSON and CSV formats.</p>
+                                            <h4 className="text-sm font-medium">Dapat Dibaca Mesin</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">Data diekspor dalam format JSON dan CSV.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-4 border border-border-subtle rounded-lg bg-surface-muted/30">
                                         <Download className="w-5 h-5 text-primary mt-0.5" />
                                         <div>
-                                            <h4 className="text-sm font-medium">Instant Download</h4>
-                                            <p className="text-xs text-muted-foreground mt-1">Your file will be downloaded directly to your device.</p>
+                                            <h4 className="text-sm font-medium">Unduh Instan</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">File Anda akan diunduh langsung ke perangkat Anda.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -70,20 +70,20 @@ export default function ExportIndex() {
                                             disabled={processing}
                                             icon={<HardDriveDownload className="w-4 h-4" />}
                                         >
-                                            Request Data Archive
+                                            Minta Arsip Data
                                         </Btn>
                                     </form>
                                 </div>
                             </div>
                         ) : (
                             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
-                                <h3 className="text-lg font-bold">Request Downloaded</h3>
+                                <h3 className="text-lg font-bold">Permintaan Diunduh</h3>
                                 <div className="mt-4 flex gap-4">
                                     <button 
                                         onClick={() => setRequestSent(false)}
                                         className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                                     >
-                                        Go back
+                                        Kembali
                                     </button>
                                 </div>
                             </div>

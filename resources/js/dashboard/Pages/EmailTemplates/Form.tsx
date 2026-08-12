@@ -38,7 +38,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                     <div>
                         <div className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
                             <Link href="/email-templates" className="hover:text-foreground flex items-center gap-1 transition-colors">
-                                <ArrowLeft className="w-3.5 h-3.5" /> Back to templates
+                                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke template
                             </Link>
                         </div>
                         <h1 className="text-2xl font-semibold text-foreground tracking-tight">Edit: {template.name}</h1>
@@ -53,7 +53,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-70"
                     >
                         <Save className="w-4 h-4" />
-                        {processing ? 'Saving...' : 'Save Template'}
+                        {processing ? 'Menyimpan...' : 'Simpan Template'}
                     </button>
                 </div>
 
@@ -63,7 +63,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                         <form id="template-form" onSubmit={submit} className="bg-background border border-border-subtle rounded-lg p-6 space-y-5 shadow-sm">
                             
                             <div>
-                                <label className="block text-sm font-medium text-foreground mb-1.5">Template Subject</label>
+                                <label className="block text-sm font-medium text-foreground mb-1.5">Subjek Template</label>
                                 <input
                                     type="text"
                                     value={data.subject}
@@ -75,7 +75,7 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
 
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center justify-between">
-                                    <span>HTML Body</span>
+                                    <span>Bodi HTML</span>
                                 </label>
                                 <textarea
                                     value={data.body}
@@ -94,18 +94,18 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                                         onChange={e => setData('is_active', e.target.checked)}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-9 h-5 bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 border border-border-subtle"></div>
-                                    <span className="ml-3 text-sm font-medium text-foreground">Active Template</span>
+                                    <div className="w-9 h-5 bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-success/100 border border-border-subtle"></div>
+                                    <span className="ml-3 text-sm font-medium text-foreground">Template Aktif</span>
                                 </label>
                             </div>
                         </form>
 
                         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                             <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-2">
-                                <Info className="w-4 h-4" /> Available Variables
+                                <Info className="w-4 h-4" /> Variabel Tersedia
                             </h3>
                             <p className="text-xs text-muted-foreground mb-3">
-                                You can use the following variables in the subject or body. Wrap them in double curly braces like <code>{`{{ variable }}`}</code>.
+                                Anda dapat menggunakan variabel berikut di subjek atau bodi. Bungkus dengan kurung kurawal ganda seperti <code>{`{{ variable }}`}</code>.
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {template.variables?.map(v => (
@@ -113,14 +113,14 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                                         {`{{ ${v} }}`}
                                     </span>
                                 ))}
-                                <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded text-xs font-mono">
+                                <span className="px-2 py-1 bg-success/10 border border-success/20 text-success rounded text-xs font-mono">
                                     {`{{ brand_name }}`}
                                 </span>
-                                <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded text-xs font-mono">
+                                <span className="px-2 py-1 bg-success/10 border border-success/20 text-success rounded text-xs font-mono">
                                     {`{{ footer_brand }}`}
                                 </span>
                                 {(!template.variables || template.variables.length === 0) && (
-                                    <span className="text-xs text-muted-foreground">No variables available for this template.</span>
+                                    <span className="text-xs text-muted-foreground">Tidak ada variabel untuk template ini.</span>
                                 )}
                             </div>
                         </div>
@@ -129,19 +129,19 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                     {/* Preview Section */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-foreground">Live Preview</h3>
+                            <h3 className="text-sm font-medium text-foreground">Pratinjau Langsung</h3>
                             <button
                                 type="button"
                                 onClick={() => setPreviewKey(k => k + 1)}
                                 className="text-xs text-primary hover:underline"
                             >
-                                Reload Preview
+                                Muat Ulang Pratinjau
                             </button>
                         </div>
                         <div className="bg-white border border-border-subtle rounded-lg overflow-hidden shadow-sm h-[calc(100vh-12rem)] flex flex-col">
                             <div className="bg-surface-muted border-b border-border-subtle px-4 py-3 shrink-0">
                                 <div className="text-sm font-medium text-black">
-                                    Subject: <span className="font-normal">{data.subject}</span>
+                                    Subjek: <span className="font-normal">{data.subject}</span>
                                 </div>
                             </div>
                             <iframe
@@ -149,12 +149,12 @@ export default function EmailTemplateForm({ template }: { template: EmailTemplat
                                 src={`/email-templates/${template.id}/preview`}
                                 className="w-full flex-1 bg-white"
                                 sandbox="allow-same-origin"
-                                title="Email Preview"
+                                title="Pratinjau Email"
                             />
                         </div>
                         <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
                             <AlertTriangle className="w-3.5 h-3.5" />
-                            Preview relies on saved data. Save changes to update the preview window.
+                            Pratinjau bergantung pada data yang tersimpan. Simpan perubahan untuk memperbarui jendela pratinjau.
                         </p>
                     </div>
                 </div>

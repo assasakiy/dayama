@@ -207,12 +207,12 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
 
     return (
         <DashboardLayout>
-            <Head title="Categories" />
+            <Head title="Kategori" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Categories</h1>
-                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Organize your content and SEO metadata</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Kategori</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Atur konten dan metadata SEO</p>
                     </div>
                     {can('categories.create') && (
                         <button
@@ -220,7 +220,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                             className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
-                            New Category
+                            Kategori Baru
                         </button>
                     )}
                 </div>
@@ -229,11 +229,11 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                <th className="text-left px-4 py-3 font-medium">Name</th>
-                                <th className="text-left px-4 py-3 font-medium">Visuals</th>
-                                <th className="text-left px-4 py-3 font-medium">Posts</th>
-                                <th className="text-left px-4 py-3 font-medium">Visibility</th>
-                                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium">Nama</th>
+                                <th className="text-left px-4 py-3 font-medium">Visual</th>
+                                <th className="text-left px-4 py-3 font-medium">Postingan</th>
+                                <th className="text-left px-4 py-3 font-medium">Visibilitas</th>
+                                <th className="text-right px-4 py-3 font-medium">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -259,7 +259,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                     {cat.name}
                                                 </button>
                                                 {cat.parent && (
-                                                    <p className="text-xs text-muted-foreground mt-0.5">Subcategory of <span className="font-medium">{cat.parent.name}</span></p>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">Subkategori dari <span className="font-medium">{cat.parent.name}</span></p>
                                                 )}
                                                 {cat.description && (
                                                     <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{cat.description}</p>
@@ -286,12 +286,12 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                         {cat.is_visible ? (
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-md">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                                                Visible
+                                                Tampil
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-surface-muted px-2 py-1 rounded-md">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground"></span>
-                                                Hidden
+                                                Disembunyikan
                                             </span>
                                         )}
                                     </td>
@@ -310,7 +310,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                 <button
                                                     onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                    title="Delete"
+                                                    title="Hapus"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -325,8 +325,8 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                     {categories.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <FolderTree className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                            <p className="text-sm font-medium text-foreground">No categories yet</p>
-                            <p className="text-xs text-muted-foreground mt-1">Create your first category to organize posts.</p>
+                            <p className="text-sm font-medium text-foreground">Belum ada kategori</p>
+                            <p className="text-xs text-muted-foreground mt-1">Buat kategori pertama untuk mengatur postingan.</p>
                         </div>
                     )}
                 </div>
@@ -335,7 +335,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
             <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
                 <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">{isEdit ? 'Edit Category' : 'Create Category'}</DialogTitle>
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Kategori' : 'Buat Kategori'}</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -345,37 +345,37 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
                             <div className="px-6 pt-5 shrink-0 z-10">
                                 <TabsList className="w-full bg-surface-muted p-1.5 rounded-xl border border-border-subtle/50">
-                                    <TabsTrigger value="general" className="flex-1 rounded-lg">General</TabsTrigger>
-                                    <TabsTrigger value="visual" className="flex-1 rounded-lg">Visuals</TabsTrigger>
-                                    <TabsTrigger value="seo" className="flex-1 rounded-lg">SEO Metadata</TabsTrigger>
+                                    <TabsTrigger value="general" className="flex-1 rounded-lg">Umum</TabsTrigger>
+                                    <TabsTrigger value="visual" className="flex-1 rounded-lg">Visual</TabsTrigger>
+                                    <TabsTrigger value="seo" className="flex-1 rounded-lg">Metadata SEO</TabsTrigger>
                                 </TabsList>
                             </div>
                             
                             <div className="flex-1 overflow-y-auto px-6 py-5">
                                 <TabsContent value="general" className="space-y-4 m-0">
                                     <Input
-                                        label="Name"
+                                        label="Nama"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         error={errors.name}
                                         required
-                                        placeholder="Category name (e.g., Technology)"
+                                        placeholder="Nama kategori (misal: Teknologi)"
                                     />
                                     
                                     <Input
-                                        label="Page Title (Optional)"
+                                        label="Judul Halaman (Opsional)"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         error={errors.title}
-                                        placeholder="Overwrites the H1 on the category page"
+                                        placeholder="Mengganti H1 di halaman kategori"
                                     />
 
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Description</label>
+                                        <label className="text-sm font-medium">Deskripsi</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            placeholder="Optional description shown on category page..."
+                                            placeholder="Deskripsi opsional yang ditampilkan di halaman kategori..."
                                             rows={3}
                                             className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         />
@@ -383,13 +383,13 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                     </div>
 
                                      <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Parent Category</label>
+                                        <label className="text-sm font-medium">Kategori Induk</label>
                                         <Select value={parentId} onValueChange={setParentId}>
                                             <SelectTrigger className="rounded-lg">
-                                                <SelectValue placeholder="None (top level)" />
+                                                <SelectValue placeholder="Tidak ada (level teratas)" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="none">None (top level)</SelectItem>
+                                                <SelectItem value="none">Tidak ada (level teratas)</SelectItem>
                                                 {parentCategories
                                                     .filter((p) => p.id !== editCategory?.id)
                                                     .map((p) => (
@@ -403,10 +403,10 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-surface-muted/50 to-transparent rounded-xl border border-border-subtle/50 group hover:border-border-subtle transition-colors mt-2">
                                         <div>
                                             <label className="text-sm font-semibold flex items-center gap-2">
-                                                Visibility
+                                                Visibilitas
                                                 {isVisible ? <span className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span> : <span className="w-2 h-2 rounded-full bg-muted-foreground"></span>}
                                             </label>
-                                            <span className="text-xs text-muted-foreground mt-0.5 block">Show this category on the public site</span>
+                                            <span className="text-xs text-muted-foreground mt-0.5 block">Tampilkan kategori ini di situs publik</span>
                                         </div>
                                         <Switch checked={isVisible} onCheckedChange={setIsVisible} />
                                     </div>
@@ -415,7 +415,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                  <TabsContent value="visual" className="space-y-6 m-0">
                                     <div className="grid grid-cols-2 gap-5">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Category Color</label>
+                                            <label className="text-sm font-medium">Warna Kategori</label>
                                             <div className="flex items-center gap-3">
                                                 <div className="relative w-10 h-10 rounded-full border-2 border-border-strong overflow-hidden shrink-0 shadow-sm" style={{ backgroundColor: color }}>
                                                     <input 
@@ -432,11 +432,11 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                     className="flex-1 font-mono text-sm uppercase"
                                                 />
                                             </div>
-                                            <p className="text-xs text-muted-foreground">Used for badges and accents.</p>
+                                            <p className="text-xs text-muted-foreground">Digunakan untuk badge dan aksen.</p>
                                         </div>
                                         
                                         <Input
-                                            label="Sort Order"
+                                            label="Urutan"
                                             type="number"
                                             value={sortOrder}
                                             onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
@@ -447,11 +447,11 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                      <div className="flex items-start gap-4">
                                         <div className="flex-1">
                                             <Input
-                                                label="Icon (Emoji or SVG)"
+                                                label="Ikon (Emoji atau SVG)"
                                                 value={icon}
                                                 onChange={(e) => setIcon(e.target.value)}
                                                 error={errors.icon}
-                                                placeholder="e.g. 🚀 or <svg>...</svg>"
+                                                placeholder="misal: 🚀 atau <svg>...</svg>"
                                             />
                                         </div>
                                         {icon && (
@@ -460,7 +460,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                     </div>
                                     
                                      <div className="space-y-2 pt-2">
-                                        <label className="text-sm font-medium">Hero Image / Banner</label>
+                                        <label className="text-sm font-medium">Gambar Hero / Banner</label>
                                         <div className="flex items-start gap-4 p-4 rounded-xl border border-border-subtle bg-surface-muted/20">
                                             <div className="flex-1">
                                                 {imagePreview ? (
@@ -473,7 +473,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                                 className="text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
-                                                                Remove Image
+                                                                Hapus Gambar
                                                             </button>
                                                         </div>
                                                     </div>
@@ -482,7 +482,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                         <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center">
                                                             <ImageIcon className="w-5 h-5" />
                                                         </div>
-                                                        <span className="text-sm font-medium">No image uploaded</span>
+                                                        <span className="text-sm font-medium">Belum ada gambar</span>
                                                     </div>
                                                 )}
                                                 {errors.image && <p className="text-xs text-destructive mt-1">{errors.image}</p>}
@@ -494,11 +494,11 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                     className="w-full h-10 px-4 border border-border-subtle bg-background rounded-lg text-sm font-medium hover:bg-surface-muted hover:text-primary transition-colors shadow-sm flex items-center justify-center gap-2"
                                                 >
                                                     <ImageIcon className="w-4 h-4" />
-                                                    Library...
+                                                    Pustaka...
                                                 </button>
                                                 <label className="w-full h-10 px-4 border border-border-subtle bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm">
                                                     <Plus className="w-4 h-4" />
-                                                    Upload
+                                                    Unggah
                                                     <input 
                                                         type="file" 
                                                         className="hidden" 
@@ -521,16 +521,16 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
 
                                 <TabsContent value="seo" className="space-y-4 m-0">
                                     <Input
-                                        label="SEO Meta Title"
+                                        label="Judul Meta SEO"
                                         value={seoTitle}
                                         onChange={(e) => setSeoTitle(e.target.value)}
                                         error={errors.seo_title}
-                                        placeholder="Optimal length 50-60 characters"
+                                        placeholder="Panjang optimal 50-60 karakter"
                                     />
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-medium flex items-center justify-between">
-                                            SEO Meta Description
+                                            Deskripsi Meta SEO
                                             <span className={`text-xs ${seoDescription.length > 160 ? 'text-warning' : 'text-muted-foreground'}`}>
                                                 {seoDescription.length}/160
                                             </span>
@@ -538,7 +538,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                         <textarea
                                             value={seoDescription}
                                             onChange={(e) => setSeoDescription(e.target.value)}
-                                            placeholder="A brief summary for search engine results..."
+                                            placeholder="Ringkasan singkat untuk hasil mesin pencari..."
                                             rows={3}
                                             className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         />
@@ -546,13 +546,13 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                     </div>
 
                                     <Input
-                                        label="Meta Keywords"
+                                        label="Kata Kunci Meta"
                                         value={metaKeywords}
                                         onChange={(e) => setMetaKeywords(e.target.value)}
                                         error={errors.meta_keywords}
-                                        placeholder="keyword1, keyword2, keyword3"
+                                        placeholder="kata1, kata2, kata3"
                                     />
-                                    <p className="text-xs text-muted-foreground -mt-2">Comma separated list of keywords.</p>
+                                    <p className="text-xs text-muted-foreground -mt-2">Daftar kata kunci dipisahkan koma.</p>
                                 </TabsContent>
                             </div>
 
@@ -562,7 +562,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                         {isEdit && editCategory && (
                                             <>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Created</span>
+                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Dibuat</span>
                                                     {editCategory.created_by ? (
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-sm text-foreground">{editCategory.created_by}</span>
@@ -570,20 +570,20 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col">
-                                                            <span className="font-medium text-sm text-foreground">System</span>
+                                                            <span className="font-medium text-sm text-foreground">Sistem</span>
                                                             <span className="text-xs text-muted-foreground">{formatDate(editCategory.created_at)}</span>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Updated</span>
+                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Diperbarui</span>
                                                     {editCategory.updated_by && editCategory.updated_at ? (
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-sm text-foreground">{editCategory.updated_by}</span>
                                                             <span className="text-xs text-muted-foreground">{formatDate(editCategory.updated_at)}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-sm text-muted-foreground italic mt-0.5">Never updated</span>
+                                                        <span className="text-sm text-muted-foreground italic mt-0.5">Belum pernah diperbarui</span>
                                                     )}
                                                 </div>
                                             </>
@@ -595,7 +595,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                                 type="button"
                                                 className="inline-flex items-center justify-center h-9 px-4 border border-border-subtle bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted hover:border-border-strong active:bg-surface-muted/80 transition-all shadow-sm"
                                             >
-                                                Cancel
+                                                Batal
                                             </button>
                                         </DialogClose>
                                         <Btn
@@ -605,7 +605,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                                             className="h-9 px-4 rounded-md shadow-sm"
                                             icon={<Save className="w-4 h-4" />}
                                         >
-                                            {isEdit ? 'Save Changes' : 'Create Category'}
+                                            {isEdit ? 'Simpan Perubahan' : 'Buat Kategori'}
                                         </Btn>
                                     </div>
                                 </div>
@@ -615,7 +615,7 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
                     <MediaPicker 
                         open={isMediaPickerOpen} 
                         onOpenChange={setIsMediaPickerOpen} 
-                        title="Select Category Hero Image"
+                        title="Pilih Gambar Hero Kategori"
                         onSelect={(selected) => {
                             if (selected instanceof File) {
                                 setImage(selected);
@@ -635,9 +635,9 @@ export default function CategoryIndex({ categories, parentCategories }: { catego
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Category"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Posts in this category may become uncategorized.` : ''}
-                confirmLabel="Delete"
+                title="Hapus Kategori"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Postingan dalam kategori ini mungkin menjadi tidak terkategorisasi.` : ''}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

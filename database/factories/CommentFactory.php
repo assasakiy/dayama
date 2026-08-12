@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Comment;
-use App\Models\Post;
-use App\Models\User;
+use Modules\CMS\Models\Comment;
+use Modules\CMS\Models\Post;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Comment> */
@@ -22,7 +22,7 @@ class CommentFactory extends Factory
             'post_id' => Post::factory(),
             'author_id' => User::factory(),
             'likes_count' => fake()->numberBetween(0, 25),
-            'approved_at' => now(),
+            'moderated_at' => now(),
         ];
     }
 
@@ -30,7 +30,7 @@ class CommentFactory extends Factory
     {
         return $this->state(fn () => [
             'status' => 'approved',
-            'approved_at' => now(),
+            'moderated_at' => now(),
         ]);
     }
 }

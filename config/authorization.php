@@ -13,6 +13,7 @@ return [
     */
     'rules' => [
         App\Authorization\Rules\PrimarySuperAdminRule::class,
+        App\Authorization\Rules\ScopeRule::class,
         App\Authorization\Rules\PermissionRule::class,
         App\Authorization\Rules\OwnershipRule::class,
         App\Authorization\Rules\RankRule::class,
@@ -28,8 +29,8 @@ return [
     |
     */
     'visibility' => [
-        App\Models\ActivityLog::class => App\Authorization\Scopes\ActivityLogVisibility::class,
-        App\Models\User::class => App\Authorization\Scopes\UserVisibility::class,
-        App\Models\Role::class => App\Authorization\Scopes\RoleVisibility::class,
+        Modules\System\Models\ActivityLog::class => App\Authorization\Scopes\ActivityLogVisibility::class,
+        Modules\Core\Models\User::class => App\Authorization\Scopes\UserVisibility::class,
+        Modules\Core\Models\Role::class => App\Authorization\Scopes\RoleVisibility::class,
     ],
 ];

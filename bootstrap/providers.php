@@ -5,4 +5,5 @@ return [
     App\Providers\AuthorizationServiceProvider::class,
     App\Providers\RoutesServiceProvider::class,
     App\Providers\SettingsServiceProvider::class,
+    App\Providers\ViewServiceProvider::class,
 ];

@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\PostView;
+use Modules\CMS\Models\PostView;
 
 class PostViewObserver
 {

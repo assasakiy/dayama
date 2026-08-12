@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Permission;
-use App\Models\User;
-use App\Models\Role;
+use Modules\Core\Models\Permission;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 use App\Authorization\AuthorizationService;
 
@@ -16,43 +15,43 @@ class PermissionPolicy
 
     public function viewAny(User $user): Response
     {
-        $result = $this->authService->check($user, 'viewAny', Role::class);
+        $result = $this->authService->check($user, 'viewAny', Permission::class);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function view(User $user, Permission $permission): Response
     {
-        $result = $this->authService->check($user, 'view', Role::class);
+        $result = $this->authService->check($user, 'view', $permission);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function create(User $user): Response
     {
-        $result = $this->authService->check($user, 'create', Role::class);
+        $result = $this->authService->check($user, 'create', Permission::class);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function update(User $user, Permission $permission): Response
     {
-        $result = $this->authService->check($user, 'update', Role::class);
+        $result = $this->authService->check($user, 'update', $permission);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function delete(User $user, Permission $permission): Response
     {
-        $result = $this->authService->check($user, 'delete', Role::class);
+        $result = $this->authService->check($user, 'delete', $permission);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function restore(User $user, Permission $permission): Response
     {
-        $result = $this->authService->check($user, 'restore', Role::class);
+        $result = $this->authService->check($user, 'restore', $permission);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 
     public function forceDelete(User $user, Permission $permission): Response
     {
-        $result = $this->authService->check($user, 'forceDelete', Role::class);
+        $result = $this->authService->check($user, 'forceDelete', $permission);
         return $result->allowed() ? Response::allow() : Response::deny($result->message());
     }
 }

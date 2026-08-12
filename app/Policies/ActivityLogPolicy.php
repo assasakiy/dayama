@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Authorization\AuthorizationService;
-use App\Models\ActivityLog;
-use App\Models\User;
+use Modules\System\Models\ActivityLog;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class ActivityLogPolicy

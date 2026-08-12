@@ -17,20 +17,20 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
 
     return (
         <DashboardLayout>
-            <Head title="My Bookmarks" />
+            <Head title="Markah Saya" />
             <div className="space-y-5">
                 <div className="hidden md:block">
-                    <h1 className="text-xl font-semibold tracking-tight">My Bookmarks</h1>
-                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Articles you've saved for later.</p>
+                    <h1 className="text-xl font-semibold tracking-tight">Markah Saya</h1>
+                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Artikel yang Anda simpan untuk nanti.</p>
                 </div>
 
                 {bookmarks.data.length === 0 ? (
                     <div className="bg-background border border-border-subtle rounded-lg flex flex-col items-center justify-center py-16 text-center">
                         <Bookmark className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                        <p className="text-sm font-medium text-foreground">No bookmarks yet</p>
-                        <p className="text-xs text-muted-foreground mt-1">Click the bookmark icon on any article to save it here.</p>
+                        <p className="text-sm font-medium text-foreground">Belum ada markah</p>
+                        <p className="text-xs text-muted-foreground mt-1">Klik ikon markah pada artikel untuk menyimpannya di sini.</p>
                         <SmartLink href={blog_url} className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
-                            <BookOpen className="w-3.5 h-3.5" /> Browse Articles
+                            <BookOpen className="w-3.5 h-3.5" /> Jelajahi Artikel
                         </SmartLink>
                     </div>
                 ) : (
@@ -38,10 +38,10 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                    <th className="text-left px-4 py-3 font-medium">Article</th>
-                                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Category</th>
-                                    <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Saved</th>
-                                    <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                    <th className="text-left px-4 py-3 font-medium">Artikel</th>
+                                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Kategori</th>
+                                    <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Disimpan</th>
+                                    <th className="text-right px-4 py-3 font-medium">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
@@ -86,14 +86,14 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
                                                         href={`/post/${post.slug}`}
                                                         target="_blank"
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
-                                                        title="Open article"
+                                                        title="Buka artikel"
                                                     >
                                                         <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>
                                                     <button
                                                         onClick={() => setRemoveId(post.id)}
                                                         className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                        title="Remove bookmark"
+                                                        title="Hapus markah"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
@@ -108,7 +108,7 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
                         {bookmarks.last_page > 1 && (
                             <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">
-                                    Showing {bookmarks.from}–{bookmarks.to} of {bookmarks.total}
+                                    Menampilkan {bookmarks.from}–{bookmarks.to} dari {bookmarks.total}
                                 </span>
                                 <div className="flex items-center gap-1">
                                     {bookmarks.links.map((link: any, i: number) => (
@@ -131,9 +131,9 @@ export default function BookmarksIndex({ bookmarks }: { bookmarks: any }) {
             <ConfirmDialog
                 open={!!removeId}
                 onOpenChange={(open) => { if (!open) setRemoveId(null); }}
-                title="Remove Bookmark"
-                message="Remove this article from your bookmarks?"
-                confirmLabel="Remove"
+                title="Hapus Markah"
+                message="Hapus artikel ini dari markah?"
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleRemove}
             />

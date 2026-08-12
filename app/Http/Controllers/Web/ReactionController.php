@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Post;
-use App\Models\Reaction;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Reaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Services\IdentityService;

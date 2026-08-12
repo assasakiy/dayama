@@ -1,6 +1,9 @@
-# ModernBlog CMS (File-Based Multi-Domain Architecture)
+# Dayama — Modular Monolith CMS
 
-ModernBlog adalah sistem manajemen konten (CMS) kelas *Enterprise* yang dibangun menggunakan Laravel 11. Proyek ini mengadopsi pendekatan **Monolith Multi-Domain**, di mana fungsi inti sistem diisolasi ke dalam subdomain terpisah, dan fungsionalitas tambahan (seperti landing page atau microsite) dapat dilampirkan sebagai proyek independen (*module*) tanpa merusak arsitektur inti.
+Dayama adalah sistem manajemen sekolah/pondok pesantren berbasis **Modular Monolith** dengan 11 domain bisnis yang diisolasi. Dibangun di atas Laravel, mengadopsi arsitektur Multi-Domain untuk frontend (blog, landing, dashboard, api, account) dan Modular Monolith untuk backend.
+
+**Dokumentasi Arsitektur Lengkap:** [`docs/arsitektur.md`](docs/arsitektur.md)
+*(Mencakup struktur direktori, seluruh tabel database per domain, dan filosofi desain)*
 
 ## Arsitektur Domain
 Proyek ini mengadopsi arsitektur berbasis File untuk memetakan domain. Pengaturannya dikelola sepenuhnya di dalam `config/projects.php`.
@@ -82,8 +85,9 @@ Untuk mendaftarkan *frontend* baru tanpa merusak sistem inti:
 3. Tambahkan domain baru tersebut ke dalam file `hosts` Windows Anda.
 4. Jalankan `php artisan optimize:clear`.
 
-## Dokumentasi Tambahan
-*   [Alur Implementasi Multi-Domain (Implementasi plan.md)](docs/Implementasi%20plan.md)
+## Dokumentasi
+*   [Arsitektur Modular Monolith (Lengkap)](docs/arsitektur.md) — Struktur file & database 11 domain
 *   [Peta Jalan Pengembangan (Roadmap)](docs/roadmap.md)
+*   [Alur Implementasi Multi-Domain](docs/Implementasi%20plan.md)
 *   [Panduan UI & Pengembangan Frontend](docs/development_guidelines.md)
 *   [Arsitektur RBAC (Role Based Access Control)](docs/rbac/roles_and_permissions.md)

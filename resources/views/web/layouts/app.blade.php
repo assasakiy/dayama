@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
-        $favicon = \App\Services\SettingService::get('general.favicon_url', null, 'global');
+        $context = $context ?? 'blog';
+        $favicon = \App\Services\SettingService::get('general.favicon_url', null, $context);
     @endphp
     @if($favicon)
         <link rel="icon" href="{{ $favicon }}">
@@ -44,30 +45,18 @@
     @vite(['resources/js/website.ts'])
     @stack('styles')
 
-    @php
-        $context = $context ?? 'blog';
-        $primaryColor = \App\Services\SettingService::get('appearance.primary_color', null, 'global');
-        $secondaryColor = \App\Services\SettingService::get('appearance.secondary_color', null, 'global');
-    @endphp
-    @if($primaryColor || $secondaryColor)
-    <style>
-        :root, .dark {
-            @if($primaryColor) --color-primary: {{ $primaryColor }}; @endif
-            @if($secondaryColor) --color-secondary: {{ $secondaryColor }}; @endif
-        }
-    </style>
-    @endif
+    @include('web.partials.theme-colors', ['context' => $context])
 </head>
 <body class="flex flex-col min-h-screen antialiased">
     <a href="#main-content" class="skip-link">{{ __('Skip to main content') }}</a>
 
-    @include('web.partials.header', ['context' => $context])
+    @include('web.partials.header.index', ['context' => $context])
 
     <main id="main-content" class="flex-1">
         @yield('content')
     </main>
 
-    @include('web.partials.footer', ['context' => $context])
+    @include('web.partials.footer.index', ['context' => $context])
 
     @stack('scripts')
 
@@ -88,3 +77,4 @@
     <x-web.cookie-preferences-modal />
 </body>
 </html>
+

@@ -119,12 +119,12 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
 
     return (
         <DashboardLayout>
-            <Head title="Tags" />
+            <Head title="Tag" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Tags</h1>
-                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Label and categorize your posts</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Tag</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Beri label dan kategorikan postingan Anda</p>
                     </div>
                     {can('tags.create') && (
                         <button
@@ -132,7 +132,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                             className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
-                            New Tag
+                            Tag Baru
                         </button>
                     )}
                 </div>
@@ -141,10 +141,10 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border-subtle bg-surface-muted/50">
-                                <th className="text-left px-4 py-3 font-medium">Name</th>
-                                <th className="text-left px-4 py-3 font-medium">Posts</th>
-                                <th className="text-left px-4 py-3 font-medium">Visibility</th>
-                                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                <th className="text-left px-4 py-3 font-medium">Nama</th>
+                                <th className="text-left px-4 py-3 font-medium">Postingan</th>
+                                <th className="text-left px-4 py-3 font-medium">Visibilitas</th>
+                                <th className="text-right px-4 py-3 font-medium">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -181,12 +181,12 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                         {tag.is_visible ? (
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-md">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                                                Visible
+                                                Tampil
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-surface-muted px-2 py-1 rounded-md">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground"></span>
-                                                Hidden
+                                                Disembunyikan
                                             </span>
                                         )}
                                     </td>
@@ -205,7 +205,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                                 <button
                                                     onClick={() => setDeleteTarget({ id: tag.id, name: tag.name })}
                                                     className="p-1.5 rounded-md text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                                                    title="Delete"
+                                                    title="Hapus"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -220,8 +220,8 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                     {tags.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <TagsIcon className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                            <p className="text-sm font-medium text-foreground">No tags yet</p>
-                            <p className="text-xs text-muted-foreground mt-1">Create tags to organize your posts.</p>
+                            <p className="text-sm font-medium text-foreground">Belum ada tag</p>
+                            <p className="text-xs text-muted-foreground mt-1">Buat tag untuk mengatur postingan Anda.</p>
                         </div>
                     )}
                 </div>
@@ -230,7 +230,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
             <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
                 <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">{isEdit ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Tag' : 'Buat Tag'}</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -238,20 +238,20 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                         <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
                             <Input
-                                        label="Name"
+                                        label="Nama"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         error={errors.name}
                                         required
-                                        placeholder="Tag name"
+                                        placeholder="Nama tag"
                                     />
 
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Description</label>
+                                        <label className="text-sm font-medium">Deskripsi</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            placeholder="Optional description shown on tag page..."
+                                            placeholder="Deskripsi opsional yang ditampilkan di halaman tag..."
                                             rows={3}
                                             className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary hover:border-primary"
                                         />
@@ -259,7 +259,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Tag Color</label>
+                                        <label className="text-sm font-medium">Warna Tag</label>
                                         <div className="flex items-center gap-3">
                                             <div className="relative w-10 h-10 rounded-full border-2 border-border-strong overflow-hidden shrink-0 shadow-sm" style={{ backgroundColor: color }}>
                                                 <input 
@@ -277,23 +277,23 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                                 error={errors.color}
                                             />
                                         </div>
-                                        <p className="text-xs text-muted-foreground">Used for badges and accents.</p>
+                                        <p className="text-xs text-muted-foreground">Digunakan untuk badge dan aksen.</p>
                                     </div>
                                     
                                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-surface-muted/50 to-transparent rounded-xl border border-border-subtle/50 group hover:border-border-subtle transition-colors mt-4">
                                         <div>
                                             <label className="text-sm font-semibold flex items-center gap-2">
-                                                Visibility
+                                                Visibilitas
                                                 {isVisible ? <span className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span> : <span className="w-2 h-2 rounded-full bg-muted-foreground"></span>}
                                             </label>
-                                            <span className="text-xs text-muted-foreground mt-0.5 block">Show this tag on the public site</span>
+                                            <span className="text-xs text-muted-foreground mt-0.5 block">Tampilkan tag ini di situs publik</span>
                                         </div>
                                         <Switch checked={isVisible} onCheckedChange={setIsVisible} />
                                     </div>
 
                                     {isEdit && editTag && (
                                         <div className="mt-6 pt-6 border-t border-border-subtle space-y-3">
-                                            <h4 className="text-sm font-semibold text-foreground">Tag Information</h4>
+                                            <h4 className="text-sm font-semibold text-foreground">Informasi Tag</h4>
                                             <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="text-muted-foreground">ID</span>
@@ -304,20 +304,20 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                                     <span className="font-medium text-foreground">{editTag.slug}</span>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground">Posts Count</span>
+                                                    <span className="text-muted-foreground">Jumlah Postingan</span>
                                                     <span className="font-medium text-foreground">{editTag.posts_count}</span>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground">Created At</span>
+                                                    <span className="text-muted-foreground">Dibuat Pada</span>
                                                     <span className="font-medium text-foreground">{new Date(editTag.created_at).toLocaleString()}</span>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground">Updated At</span>
+                                                    <span className="text-muted-foreground">Diperbarui Pada</span>
                                                     <span className="font-medium text-foreground">{new Date(editTag.updated_at).toLocaleString()}</span>
                                                 </div>
                                                 {editTag.deleted_at && (
                                                     <div className="flex flex-col gap-1">
-                                                        <span className="text-muted-foreground">Deleted At</span>
+                                                        <span className="text-muted-foreground">Dihapus Pada</span>
                                                         <span className="font-medium text-danger">{new Date(editTag.deleted_at).toLocaleString()}</span>
                                                     </div>
                                                 )}
@@ -330,7 +330,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                         {isEdit && editTag && (
                                             <>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Created</span>
+                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Dibuat</span>
                                                     {editTag.created_by ? (
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-sm text-foreground">{editTag.created_by}</span>
@@ -338,20 +338,20 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col">
-                                                            <span className="font-medium text-sm text-foreground">System</span>
+                                                            <span className="font-medium text-sm text-foreground">Sistem</span>
                                                             <span className="text-xs text-muted-foreground">{formatDate(editTag.created_at)}</span>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Updated</span>
+                                                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Diperbarui</span>
                                                     {editTag.updated_by && editTag.updated_at ? (
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-sm text-foreground">{editTag.updated_by}</span>
                                                             <span className="text-xs text-muted-foreground">{formatDate(editTag.updated_at)}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-sm text-muted-foreground italic mt-0.5">Never updated</span>
+                                                        <span className="text-sm text-muted-foreground italic mt-0.5">Belum pernah diperbarui</span>
                                                     )}
                                                 </div>
                                             </>
@@ -363,7 +363,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                                 type="button"
                                                 className="inline-flex items-center justify-center h-9 px-4 border border-border-subtle bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted active:bg-surface-muted/80 transition-all shadow-sm"
                                             >
-                                                Cancel
+                                                Batal
                                             </button>
                                         </DialogClose>
                                         <Btn
@@ -373,7 +373,7 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
                                             className="h-9 px-4"
                                             icon={<Save className="w-4 h-4" />}
                                         >
-                                            {isEdit ? 'Update Tag' : 'Create Tag'}
+                                            {isEdit ? 'Perbarui Tag' : 'Buat Tag'}
                                         </Btn>
                                     </div>
                                 </div>
@@ -384,9 +384,9 @@ export default function TagIndex({ tags }: { tags: Tag[] }) {
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Tag"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Posts with this tag will remain.` : ''}
-                confirmLabel="Delete"
+                title="Hapus Tag"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Postingan dengan tag ini akan tetap ada.` : ''}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

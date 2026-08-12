@@ -84,10 +84,10 @@ function VerifyPanel({ email, onDone, onExpired }: { email: UserEmail; onDone: (
     if (expired) return null;
 
     return (
-        <div className="mt-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
-            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1.5">
+        <div className="mt-3 p-4 rounded-lg border border-warning/30 bg-warning/5 space-y-3">
+            <p className="text-xs text-warning dark:text-amber-400 font-medium flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Enter the 6-digit code sent to <strong>{email.email}</strong>
+                Masukkan kode 6 digit yang dikirim ke <strong>{email.email}</strong>
             </p>
             <div className="flex items-center gap-2">
                 <input
@@ -108,7 +108,7 @@ function VerifyPanel({ email, onDone, onExpired }: { email: UserEmail; onDone: (
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
                 >
                     {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    Verify
+                    Verifikasi
                 </button>
                 <button
                     type="button"
@@ -119,8 +119,8 @@ function VerifyPanel({ email, onDone, onExpired }: { email: UserEmail; onDone: (
                     {resending
                         ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         : cooldown > 0
-                            ? `Resend (${cooldown}s)`
-                            : 'Resend Code'
+                            ? `Kirim Ulang (${cooldown}s)`
+                            : 'Kirim Ulang Kode'
                     }
                 </button>
             </div>
@@ -204,8 +204,8 @@ export default function AccountIndex() {
 
     return (
         <AccountSettingsLayout
-            title="Account Settings"
-            description="Manage your account identifier and regional settings."
+            title="Pengaturan Akun"
+            description="Kelola identifier akun dan pengaturan regional Anda."
         >
             <div className="space-y-6">
 
@@ -231,7 +231,7 @@ export default function AccountIndex() {
                                 <CalendarDays className="w-4.5 h-4.5 text-muted-foreground" />
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground font-medium mb-0.5">Member since</p>
+                                <p className="text-xs text-muted-foreground font-medium mb-0.5">Anggota sejak</p>
                                 <p className="font-medium">{joinedDate}</p>
                             </div>
                         </div>
@@ -246,11 +246,11 @@ export default function AccountIndex() {
                                 <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                     <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                                 </span>
-                                Email Addresses
+                                Alamat Email
                             </div>
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Manage the email addresses associated with your account.
+                            Kelola alamat email yang terhubung dengan akun Anda.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
@@ -259,9 +259,9 @@ export default function AccountIndex() {
                                 <div className="py-4">
                                     <div className="flex items-center gap-2 mb-1">
                                         <p className="font-medium text-sm">{user.email}</p>
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">Primary</span>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">Utama</span>
                                     </div>
-                                    <p className="text-xs text-muted-foreground">Used for login, notifications, and account recovery.</p>
+                                    <p className="text-xs text-muted-foreground">Digunakan untuk login, notifikasi, dan pemulihan akun.</p>
                                 </div>
                             )}
 
@@ -272,19 +272,19 @@ export default function AccountIndex() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <p className="font-medium text-sm">{email.email}</p>
                                                 {email.is_primary ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">Primary</span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">Utama</span>
                                                 ) : email.email_verified_at ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20">Verified</span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20">Terverifikasi</span>
                                                 ) : (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-500/20">Unverified</span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning dark:text-warning border border-warning/20">Belum Terverifikasi</span>
                                                 )}
                                             </div>
                                             <p className="text-xs text-muted-foreground">
                                                 {email.is_primary
-                                                    ? 'Used for login, notifications, and account recovery.'
+                                                    ? 'Digunakan untuk login, notifikasi, dan pemulihan akun.'
                                                     : !email.email_verified_at
-                                                        ? 'Verify this email before you can set it as primary.'
-                                                        : 'Verified backup email address.'}
+                                                        ? 'Verifikasi email ini sebelum dapat dijadikan utama.'
+                                                        : 'Alamat email cadangan terverifikasi.'}
                                             </p>
                                         </div>
 
@@ -298,7 +298,7 @@ export default function AccountIndex() {
                                                             disabled={actionId === email.id}
                                                             className="px-3 py-1.5 bg-surface-muted hover:bg-border/50 text-foreground border border-border rounded text-xs font-medium transition-colors disabled:opacity-50"
                                                         >
-                                                            {actionId === email.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Make Primary'}
+                                                            {actionId === email.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Jadikan Utama'}
                                                         </button>
                                     ) : (
                                         (() => {
@@ -323,15 +323,15 @@ export default function AccountIndex() {
                                                     }}
                                                     className={`px-3 py-1.5 border rounded text-xs font-medium transition-colors ${
                                                         verifyingId === email.id
-                                                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-400'
-                                                            : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-700 dark:text-amber-400'
+                                                            ? 'bg-warning/20 border-warning/40 text-warning dark:text-amber-400'
+                                                            : 'bg-warning/10 hover:bg-warning/20 border-warning/30 text-warning dark:text-amber-400'
                                                     }`}
                                                 >
                                                     {verifyingId === email.id
-                                                        ? 'Hide'
+                                                        ? 'Sembunyikan'
                                                         : isExpired
-                                                            ? 'Resend Code'
-                                                            : 'Enter Code'
+                                                            ? 'Kirim Ulang Kode'
+                                                            : 'Masukkan Kode'
                                                     }
                                                 </button>
                                             );
@@ -344,7 +344,7 @@ export default function AccountIndex() {
                                         disabled={actionId === email.id}
                                         className="text-xs font-medium text-destructive hover:underline disabled:opacity-50"
                                     >
-                                        Remove
+                                        Hapus
                                     </button>
                                 </>
                             )}
@@ -365,14 +365,14 @@ export default function AccountIndex() {
 
                         {/* Add New Email Form */}
                         <div className="mt-2 pt-4 border-t border-border-subtle">
-                            <label className="text-sm font-medium block mb-2">Add Email Address</label>
+                            <label className="text-sm font-medium block mb-2">Tambah Alamat Email</label>
                             <div className="flex flex-col sm:flex-row items-center gap-3">
                                 <input
                                     type="email"
                                     value={newEmail}
                                     onChange={e => setNewEmail(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && addEmail()}
-                                    placeholder="Enter new email address"
+                                    placeholder="Masukkan alamat email baru"
                                     className="w-full sm:flex-1 px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                                 />
                                 <button
@@ -382,7 +382,7 @@ export default function AccountIndex() {
                                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors shrink-0 disabled:opacity-50"
                                 >
                                     {addingEmail && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Add Email
+                                    Tambah Email
                                 </button>
                             </div>
                         </div>
@@ -397,25 +397,25 @@ export default function AccountIndex() {
                                 <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                     <Globe className="w-3.5 h-3.5 text-muted-foreground" />
                                 </span>
-                                Regional Preferences
+                                Preferensi Regional
                             </CardTitle>
                             <CardDescription className="text-xs mt-1.5 ml-8">
-                                Set your preferred language and timezone for the dashboard.
+                                Atur bahasa dan zona waktu yang diinginkan untuk dashboard.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <div className="space-y-2.5 max-w-md">
-                                <label className="text-sm font-medium">Language</label>
+                                <label className="text-sm font-medium">Bahasa</label>
                                 <div className="relative">
                                     <select
                                         value={data.language}
                                         onChange={e => setData('language', e.target.value)}
                                         className="w-full appearance-none px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                                     >
-                                        <option value="en">English (US)</option>
+                                        <option value="en">Inggris (US)</option>
                                         <option value="id">Bahasa Indonesia</option>
-                                        <option value="es">Español</option>
-                                        <option value="fr">Français</option>
+                                        <option value="es">Spanyol</option>
+                                        <option value="fr">Prancis</option>
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -424,7 +424,7 @@ export default function AccountIndex() {
                             </div>
 
                             <div className="space-y-2.5 max-w-md">
-                                <label className="text-sm font-medium">Timezone</label>
+                                <label className="text-sm font-medium">Zona Waktu</label>
                                 <div className="relative">
                                     <select
                                         value={data.timezone}
@@ -445,7 +445,7 @@ export default function AccountIndex() {
                         <div className="px-6 py-4 border-t border-border-subtle flex justify-end gap-3 bg-surface-muted/10 rounded-b-lg">
                             {recentlySuccessful && (
                                 <span className="text-sm text-green-600 self-center font-medium flex items-center gap-1.5">
-                                    <CheckCircle2 className="w-4 h-4" /> Saved!
+                                    <CheckCircle2 className="w-4 h-4" /> Tersimpan!
                                 </span>
                             )}
                             <Btn
@@ -454,7 +454,7 @@ export default function AccountIndex() {
                                 disabled={!isDirty || processing}
                                 icon={<Save className="w-4 h-4" />}
                             >
-                                Save Changes
+                                Simpan Perubahan
                             </Btn>
                         </div>
                     </form>
@@ -463,9 +463,9 @@ export default function AccountIndex() {
             <ConfirmDialog
                 open={!!emailToRemove}
                 onOpenChange={(open) => { if (!open) setEmailToRemove(null); }}
-                title="Remove Email Address"
-                message="Are you sure you want to remove this email? You will no longer be able to log in with it or receive notifications to it."
-                confirmLabel="Remove Email"
+                title="Hapus Alamat Email"
+                message="Apakah Anda yakin ingin menghapus email ini? Anda tidak akan bisa login atau menerima notifikasi lagi."
+                confirmLabel="Hapus Email"
                 variant="danger"
                 onConfirm={confirmRemoveEmail}
             />

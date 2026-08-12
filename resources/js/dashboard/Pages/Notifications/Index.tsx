@@ -37,7 +37,7 @@ export default function NotificationIndex({ notifications, unreadCount }: { noti
             case 'App\\Notifications\\CommentMentionedNotification':
                 return <AtSign className="w-5 h-5 text-indigo-500" />;
             case 'App\\Notifications\\CommentReplyNotification':
-                return <CornerDownRight className="w-5 h-5 text-emerald-500" />;
+                return <CornerDownRight className="w-5 h-5 text-success" />;
             default:
                 return <Bell className="w-5 h-5 text-muted-foreground" />;
         }

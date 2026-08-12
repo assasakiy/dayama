@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Authorization\AuthorizationService;
-use App\Models\User;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class UserPolicy

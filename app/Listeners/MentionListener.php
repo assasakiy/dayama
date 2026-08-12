@@ -29,7 +29,7 @@ class MentionListener
             return;
         }
 
-        $users = \App\Models\User::whereIn('username', $usernames)->get();
+        $users = \Modules\Core\Models\User::whereIn('username', $usernames)->get();
 
         foreach ($users as $user) {
             // Don't notify the author of the comment themselves

@@ -26,6 +26,7 @@ interface PermissionGroup {
     color?: string | null;
     sort_order: number;
     permissions_count: number;
+    permission_names?: string[];
     created_at: string;
 }
 
@@ -81,7 +82,7 @@ export default function PermissionGroupsIndex({
         setDescription(group.description || '');
         setColor(group.color || '#2563eb');
         setSortOrder(group.sort_order);
-        setSelectedPermissions([]);
+        setSelectedPermissions(group.permission_names || []);
         setErrors({}); setSubmitting(false);
         setModalOpen(true);
         setOpenMenuId(null);
@@ -116,19 +117,19 @@ export default function PermissionGroupsIndex({
 
     return (
         <DashboardLayout>
-            <Head title="Permission Groups" />
+            <Head title="Grup Izin" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Permission Groups</h1>
-                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Organize permissions into logical groups</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Grup Izin</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Atur izin ke dalam grup logis</p>
                     </div>
                     <button
                         onClick={openCreate}
                         className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                     >
                         <Plus className="w-4 h-4" />
-                        New Group
+                        Grup Baru
                     </button>
                 </div>
 
@@ -167,13 +168,13 @@ export default function PermissionGroupsIndex({
                                             <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
                                             <div className="absolute right-0 top-8 z-20 w-40 bg-background border border-border-subtle rounded-xl shadow-lg py-1 overflow-hidden">
                                                 <button onClick={() => openEdit(group)} className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-muted transition-colors">
-                                                    <Pencil className="w-3.5 h-3.5" /> Edit Group
+                                                    <Pencil className="w-3.5 h-3.5" /> Edit Grup
                                                 </button>
                                                 <button
                                                     onClick={() => { setDeleteTarget({ id: group.id, name: group.name }); setOpenMenuId(null); }}
                                                     className="flex items-center gap-2 w-full px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                    <Trash2 className="w-3.5 h-3.5" /> Hapus
                                                 </button>
                                             </div>
                                         </>
@@ -187,8 +188,8 @@ export default function PermissionGroupsIndex({
 
                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-4 pt-3 border-t border-border-subtle">
                                 <KeyRound className="w-3 h-3" />
-                                <span>{group.permissions_count} permission{group.permissions_count !== 1 ? 's' : ''}</span>
-                                <span className="ml-auto text-[10px] text-muted-foreground/60">Order: {group.sort_order}</span>
+                                <span>{group.permissions_count} izin</span>
+                                <span className="ml-auto text-[10px] text-muted-foreground/60">Urutan: {group.sort_order}</span>
                             </div>
                         </div>
                     ))}
@@ -196,14 +197,14 @@ export default function PermissionGroupsIndex({
                     {groups.length === 0 && (
                         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center bg-background border border-border-subtle rounded-xl">
                             <Layers className="w-12 h-12 text-muted-foreground/20 mb-4" />
-                            <p className="text-sm font-medium">No permission groups yet</p>
-                            <p className="text-xs text-muted-foreground mt-1">Group permissions by feature area for easier management.</p>
+                            <p className="text-sm font-medium">Belum ada grup izin</p>
+                            <p className="text-xs text-muted-foreground mt-1">Kelompokkan izin berdasarkan area fitur untuk pengelolaan yang lebih mudah.</p>
                             <button
                                 onClick={openCreate}
                                 className="mt-4 inline-flex items-center gap-2 h-8 px-3 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 transition-all shadow-sm"
                             >
                                 <Plus className="w-3.5 h-3.5" />
-                                Create Group
+                                Buat Grup
                             </button>
                         </div>
                     )}
@@ -214,7 +215,7 @@ export default function PermissionGroupsIndex({
             <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
                 <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">{isEdit ? 'Edit Group' : 'Create Permission Group'}</DialogTitle>
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Grup' : 'Buat Grup Izin'}</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -222,9 +223,9 @@ export default function PermissionGroupsIndex({
                     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                         <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
                             <div className="grid grid-cols-2 gap-4">
-                                <Input label="Group Name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="e.g. Content Management" />
+                                <Input label="Nama Grup" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="cth. Manajemen Konten" />
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-medium">Sort Order</label>
+                                    <label className="text-sm font-medium">Urutan</label>
                                     <input
                                         type="number"
                                         value={sortOrder}
@@ -235,17 +236,17 @@ export default function PermissionGroupsIndex({
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Description</label>
+                                <label className="text-sm font-medium">Deskripsi</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     rows={2}
-                                    placeholder="Optional description..."
+                                    placeholder="Deskripsi opsional..."
                                     className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Group Color</label>
+                                <label className="text-sm font-medium">Warna Grup</label>
                                 <div className="flex flex-wrap gap-2">
                                     {GROUP_COLORS.map((c) => (
                                         <button
@@ -256,13 +257,13 @@ export default function PermissionGroupsIndex({
                                             style={{ backgroundColor: c }}
                                         />
                                     ))}
-                                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border border-border-subtle" title="Custom color" />
+                                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border border-border-subtle" title="Warna kustom" />
                                 </div>
                             </div>
 
                             {/* Permission matrix */}
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Permissions in this Group</label>
+                                <label className="text-sm font-medium">Izin dalam Grup Ini</label>
                                 <PermissionMatrix
                                     groupedPermissions={groupedPermissions}
                                     selected={selectedPermissions}
@@ -271,14 +272,14 @@ export default function PermissionGroupsIndex({
                             </div>
                         </div>
                         <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle shrink-0">
-                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Cancel</Button>
+                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Batal</Button>
                             <Btn
                                 type="submit"
                                 loading={submitting}
                                 disabled={submitting}
                                 icon={<Save className="w-4 h-4" />}
                             >
-                                {isEdit ? 'Update Group' : 'Create Group'}
+                                {isEdit ? 'Perbarui Grup' : 'Buat Grup'}
                             </Btn>
                         </DialogFooter>
                     </form>
@@ -288,9 +289,9 @@ export default function PermissionGroupsIndex({
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Permission Group"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Permissions in this group won't be deleted.` : ''}
-                confirmLabel="Delete Group"
+                title="Hapus Grup Izin"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Izin dalam grup ini tidak akan dihapus.` : ''}
+                confirmLabel="Hapus Grup"
                 variant="danger"
                 onConfirm={handleDelete}
             />

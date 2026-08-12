@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Moderation\Checkers;
 
-use App\Models\Comment;
+use Modules\CMS\Models\Comment;
 use App\Services\Moderation\ModerationChecker;
 use App\Services\Moderation\ModerationContext;
 use Closure;

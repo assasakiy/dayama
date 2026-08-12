@@ -36,9 +36,17 @@ interface UserData {
     is_protected: boolean;
     is_verified: boolean;
     created_at: string;
+    institution?: { id: string; name: string } | null;
 }
 
 interface Role {
+    id: string;
+    name: string;
+    display_name?: string;
+    scope?: string | null;
+}
+
+interface Institution {
     id: string;
     name: string;
 }
@@ -46,9 +54,10 @@ interface Role {
 interface Props {
     user: UserData | null;
     roles: Role[];
+    institutions?: Institution[];
 }
 
-export default function UserForm({ user, roles }: Props) {
+export default function UserForm({ user, roles, institutions }: Props) {
     const { auth } = usePage().props as unknown as { auth: { user: { highest_rank: number, is_primary_super_admin: boolean } } };
     const canManageProtection = auth.user.is_primary_super_admin || auth.user.highest_rank >= 100;
     const isEditing = !!user;
@@ -63,6 +72,7 @@ export default function UserForm({ user, roles }: Props) {
     const [linkedin, setLinkedin] = useState(user?.social_links?.linkedin ?? '');
     const [password, setPassword] = useState('');
     const [selectedRoles, setSelectedRoles] = useState<string[]>(user?.roles ?? []);
+    const [institutionId, setInstitutionId] = useState(user?.institution?.id ?? '');
     const [isProtected, setIsProtected] = useState(user?.is_protected ?? false);
     const [isVerified, setIsVerified] = useState(user?.is_verified ?? false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url ?? null);
@@ -78,6 +88,7 @@ export default function UserForm({ user, roles }: Props) {
         twitter !== (user?.social_links?.twitter ?? '') ||
         linkedin !== (user?.social_links?.linkedin ?? '') ||
         password !== '' ||
+        institutionId !== (user?.institution?.id ?? '') ||
         isProtected !== (user?.is_protected ?? false) ||
         isVerified !== (user?.is_verified ?? false) ||
         avatarFile !== null ||
@@ -121,6 +132,7 @@ export default function UserForm({ user, roles }: Props) {
         formData.append('is_protected', isProtected ? '1' : '0');
         formData.append('is_verified', isVerified ? '1' : '0');
         selectedRoles.forEach((role) => formData.append('roles[]', role));
+        if (institutionId) formData.append('institution_id', institutionId);
         if (avatarFile) formData.append('avatar', avatarFile);
 
         if (isEditing && user) {
@@ -137,11 +149,13 @@ export default function UserForm({ user, roles }: Props) {
         }
     };
 
+    const hasLembagaRole = roles.some((r) => r.scope === 'lembaga' && selectedRoles.includes(r.name));
+
     const avatarInitial = name.charAt(0).toUpperCase();
 
     return (
         <DashboardLayout>
-            <Head title={isEditing ? 'Edit User' : 'New User'} />
+            <Head title={isEditing ? 'Edit Pengguna' : 'Pengguna Baru'} />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between w-full">
                     <div className="flex items-center gap-3">
@@ -152,9 +166,9 @@ export default function UserForm({ user, roles }: Props) {
                             <ArrowLeft className="w-4 h-4" />
                         </Link>
                         <div className="hidden md:block">
-                            <h1 className="text-xl font-semibold tracking-tight">{isEditing ? 'Edit User' : 'New User'}</h1>
+                            <h1 className="text-xl font-semibold tracking-tight">{isEditing ? 'Edit Pengguna' : 'Pengguna Baru'}</h1>
                             <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">
-                                {isEditing ? 'Update user details and permissions' : 'Create a new user account'}
+                                {isEditing ? 'Perbarui detail dan izin pengguna' : 'Buat akun pengguna baru'}
                             </p>
                         </div>
                     </div>
@@ -164,7 +178,7 @@ export default function UserForm({ user, roles }: Props) {
                             className="inline-flex items-center gap-1.5 h-8 px-3 text-xs border border-border-subtle rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-all"
                         >
                             <Eye className="w-3.5 h-3.5" />
-                            View Profile
+                            Lihat Profil
                         </Link>
                     )}
                 </div>
@@ -180,12 +194,12 @@ export default function UserForm({ user, roles }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <Mail className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Account Details
+                                        Detail Akun
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <Input
-                                        label="Full Name"
+                                        label="Nama Lengkap"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         error={errors.name}
@@ -193,7 +207,7 @@ export default function UserForm({ user, roles }: Props) {
                                         placeholder="John Doe"
                                     />
                                     <Input
-                                        label="Email Address"
+                                        label="Alamat Email"
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -211,20 +225,20 @@ export default function UserForm({ user, roles }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <UserIcon className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Profile
+                                        Profil
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <Textarea
-                                        label="Biography"
+                                        label="Biografi"
                                         value={biography}
                                         onChange={(e) => setBiography(e.target.value)}
                                         error={errors.biography}
-                                        placeholder="Brief bio..."
+                                        placeholder="Bio singkat..."
                                         rows={3}
                                     />
                                     <Input
-                                        label="Website"
+                                        label="Situs Web"
                                         value={website}
                                         onChange={(e) => setWebsite(e.target.value)}
                                         error={errors.website}
@@ -240,7 +254,7 @@ export default function UserForm({ user, roles }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <Globe className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Social Links
+                                        Tautan Sosial
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
@@ -303,7 +317,7 @@ export default function UserForm({ user, roles }: Props) {
                                             className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                                         >
                                             <Upload className="w-3.5 h-3.5" />
-                                            Upload photo
+                                            Unggah foto
                                         </button>
                                         <input
                                             ref={fileInputRef}
@@ -324,13 +338,13 @@ export default function UserForm({ user, roles }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <ShieldCheck className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Roles
+                                        Peran
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex flex-wrap gap-2">
                                         {roles.length === 0 ? (
-                                            <p className="text-xs text-muted-foreground">No roles available</p>
+                                            <p className="text-xs text-muted-foreground">Tidak ada peran tersedia</p>
                                         ) : (
                                             roles.map((role) => {
                                                 const active = selectedRoles.includes(role.name);
@@ -346,7 +360,7 @@ export default function UserForm({ user, roles }: Props) {
                                                         }`}
                                                     >
                                                         <ShieldCheck className="w-3 h-3" />
-                                                        {role.name}
+                                                        {role.display_name || role.name}
                                                     </button>
                                                 );
                                             })
@@ -356,6 +370,32 @@ export default function UserForm({ user, roles }: Props) {
                                 </CardContent>
                             </Card>
 
+                            {hasLembagaRole && institutions && institutions.length > 0 && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                            <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
+                                                <ShieldCheck className="w-3 h-3 text-muted-foreground" />
+                                            </span>
+                                            Lembaga
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <select
+                                            value={institutionId}
+                                            onChange={(e) => setInstitutionId(e.target.value)}
+                                            className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                        >
+                                            <option value="">Pilih lembaga...</option>
+                                            {institutions.map((inst) => (
+                                                <option key={inst.id} value={inst.id}>{inst.name}</option>
+                                            ))}
+                                        </select>
+                                        {errors.institution_id && <p className="text-xs text-destructive mt-1.5">{errors.institution_id}</p>}
+                                    </CardContent>
+                                </Card>
+                            )}
+
                             {/* Security */}
                             <Card>
                                 <CardHeader>
@@ -363,26 +403,26 @@ export default function UserForm({ user, roles }: Props) {
                                         <span className="w-5 h-5 rounded bg-surface-muted flex items-center justify-center">
                                             <Lock className="w-3 h-3 text-muted-foreground" />
                                         </span>
-                                        Security
+                                        Keamanan
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <Input
-                                        label={isEditing ? 'New Password (optional)' : 'Password'}
+                                        label={isEditing ? 'Kata Sandi Baru (opsional)' : 'Kata Sandi'}
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         error={errors.password}
                                         required={!isEditing}
-                                        placeholder={isEditing ? 'Leave blank to keep current' : 'Min. 8 characters'}
+                                        placeholder={isEditing ? 'Kosongkan untuk tetap menggunakan yang lama' : 'Min. 8 karakter'}
                                     />
                                     
                                     {canManageProtection && (
                                         <div className="pt-4 mt-4 border-t border-border-subtle space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-sm font-medium">Verified Account</p>
-                                                    <p className="text-xs text-muted-foreground">Grant the blue checkmark badge.</p>
+                                                    <p className="text-sm font-medium">Akun Terverifikasi</p>
+                                                    <p className="text-xs text-muted-foreground">Berikan lencana centang biru.</p>
                                                 </div>
                                                 <input
                                                     type="checkbox"
@@ -393,8 +433,8 @@ export default function UserForm({ user, roles }: Props) {
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-sm font-medium">Protected Account</p>
-                                                    <p className="text-xs text-muted-foreground">Prevent account from being deleted.</p>
+                                                    <p className="text-sm font-medium">Akun Terlindungi</p>
+                                                    <p className="text-xs text-muted-foreground">Cegah akun dari penghapusan.</p>
                                                 </div>
                                                 <input
                                                     type="checkbox"
@@ -423,11 +463,11 @@ export default function UserForm({ user, roles }: Props) {
                                     <CardContent className="space-y-2.5 text-sm">
                                         <div className="flex items-center gap-2.5 text-muted-foreground">
                                             <FileText className="w-4 h-4" />
-                                            <span>{user.posts_count} posts</span>
+                                            <span>{user.posts_count} postingan</span>
                                         </div>
                                         <div className="flex items-center gap-2.5 text-muted-foreground">
                                             <CalendarDays className="w-4 h-4" />
-                                            <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
+                                            <span>Bergabung {new Date(user.created_at).toLocaleDateString()}</span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -439,7 +479,7 @@ export default function UserForm({ user, roles }: Props) {
                                     href="/users"
                                     className="ml-auto inline-flex items-center justify-center flex-1 h-9 px-4 border border-border-strong bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted transition-all shadow-sm"
                                 >
-                                    Cancel
+                                    Batal
                                 </Link>
                                 <Btn
                                     type="submit"
@@ -448,7 +488,7 @@ export default function UserForm({ user, roles }: Props) {
                                     className="flex-1 h-9 px-4"
                                     icon={<Save className="w-4 h-4" />}
                                 >
-                                    {isEditing ? 'Update User' : 'Create User'}
+                                    {isEditing ? 'Perbarui Pengguna' : 'Buat Pengguna'}
                                 </Btn>
                             </div>
                         </div>

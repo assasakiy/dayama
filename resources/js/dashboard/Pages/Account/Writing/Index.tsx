@@ -21,8 +21,8 @@ export default function WritingIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Writing Preferences" 
-            description="Customize your authoring and editing experience."
+            title="Preferensi Menulis" 
+            description="Sesuaikan pengalaman menulis dan mengedit Anda."
         >
             <form onSubmit={submit} className="space-y-6">
                 
@@ -32,16 +32,16 @@ export default function WritingIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <PenTool className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Editor Settings
+                            Pengaturan Editor
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Configure the default behavior of the post editor.
+                            Konfigurasi perilaku default editor postingan.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         
                         <div className="flex flex-col gap-4">
-                            <label className="text-sm font-medium">Default Editor Mode</label>
+                            <label className="text-sm font-medium">Mode Editor Default</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
                                 <button
                                     type="button"
@@ -54,8 +54,8 @@ export default function WritingIndex() {
                                 >
                                     <Type className={`w-6 h-6 shrink-0 mt-0.5 ${data.default_editor === 'rich_text' ? 'text-primary' : 'text-muted-foreground'}`} />
                                     <div>
-                                        <h4 className={`text-sm font-semibold ${data.default_editor === 'rich_text' ? 'text-primary' : 'text-foreground'}`}>Rich Text (WYSIWYG)</h4>
-                                        <p className="text-xs text-muted-foreground mt-1">A visual editor similar to Word or Google Docs. Great for beginners.</p>
+                                        <h4 className={`text-sm font-semibold ${data.default_editor === 'rich_text' ? 'text-primary' : 'text-foreground'}`}>Teks Kaya (WYSIWYG)</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">Editor visual mirip Word atau Google Docs. Cocok untuk pemula.</p>
                                     </div>
                                 </button>
                                 <button
@@ -70,7 +70,7 @@ export default function WritingIndex() {
                                     <FileText className={`w-6 h-6 shrink-0 mt-0.5 ${data.default_editor === 'markdown' ? 'text-primary' : 'text-muted-foreground'}`} />
                                     <div>
                                         <h4 className={`text-sm font-semibold ${data.default_editor === 'markdown' ? 'text-primary' : 'text-foreground'}`}>Markdown</h4>
-                                        <p className="text-xs text-muted-foreground mt-1">Write using Markdown syntax. Fast and preferred by developers.</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Tulis menggunakan sintaks Markdown. Cepat dan disukai developer.</p>
                                     </div>
                                 </button>
                             </div>
@@ -80,8 +80,8 @@ export default function WritingIndex() {
 
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Auto-save Drafts</h3>
-                                <p className="text-sm text-muted-foreground">Automatically save your progress every 30 seconds while writing.</p>
+                                <h3 className="text-sm font-medium">Simpan Draf Otomatis</h3>
+                                <p className="text-sm text-muted-foreground">Simpan progres Anda secara otomatis setiap 30 detik saat menulis.</p>
                             </div>
                             <Switch 
                                 checked={data.auto_save}
@@ -91,8 +91,8 @@ export default function WritingIndex() {
 
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Enable Spell Check</h3>
-                                <p className="text-sm text-muted-foreground">Highlight spelling errors within the editor.</p>
+                                <h3 className="text-sm font-medium">Aktifkan Pemeriksa Ejaan</h3>
+                                <p className="text-sm text-muted-foreground">Sorot kesalahan ejaan di dalam editor.</p>
                             </div>
                             <Switch 
                                 checked={data.spell_check}
@@ -103,7 +103,7 @@ export default function WritingIndex() {
                     </CardContent>
                     <div className="px-6 py-4 border-t border-border-subtle flex justify-end gap-3 bg-surface-muted/10 rounded-b-lg">
                         {recentlySuccessful && (
-                            <span className="text-sm text-green-600 self-center font-medium">Preferences saved.</span>
+                            <span className="text-sm text-green-600 self-center font-medium">Preferensi disimpan.</span>
                         )}
                         <Btn 
                             type="submit"
@@ -111,7 +111,7 @@ export default function WritingIndex() {
                             disabled={!isDirty || processing}
                             icon={<Save className="w-4 h-4" />}
                         >
-                            Save Preferences
+                            Simpan Preferensi
                         </Btn>
                     </div>
                 </Card>

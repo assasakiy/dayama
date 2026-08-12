@@ -7,8 +7,9 @@ namespace App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StoreRoleRequest;
 use App\Http\Requests\Dashboard\UpdateRoleRequest;
-use App\Models\Permission;
-use App\Models\Role;
+use Modules\Core\Models\Permission;
+use Modules\Core\Models\PermissionGroup;
+use Modules\Core\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class RoleController
     public function index(): Response
     {
         Gate::authorize('viewAny', Role::class);
-        $roles = Role::withCount('permissions', 'users')
+        $roles = Role::with(['permissions:id,name'])->withCount('permissions', 'users')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
@@ -34,9 +35,11 @@ class RoleController
                 'icon'              => $role->icon,
                 'is_system'         => (bool) $role->is_system,
                 'status'            => $role->status ?? 'active',
+                'scope'             => $role->scope,
                 'sort_order'        => $role->sort_order,
                 'rank'              => $role->rank,
                 'permissions_count' => (int) $role->permissions_count,
+                'permission_names'  => $role->permissions->pluck('name'),
                 'users_count'       => (int) $role->users_count,
                 'created_at'        => $role->created_at,
                 'can'               => [
@@ -64,9 +67,30 @@ class RoleController
             ];
         }
 
+        // Build permission-group-based grouping
+        $permissionGroups = PermissionGroup::with('permissions:id,name,module,action,scope,description')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn ($group) => [
+                'id'          => $group->id,
+                'name'        => $group->name,
+                'slug'        => $group->slug,
+                'icon'        => $group->icon,
+                'color'       => $group->color,
+                'permissions' => $group->permissions->map(fn ($p) => [
+                    'id'          => $p->id,
+                    'name'        => $p->name,
+                    'module'      => $p->module,
+                    'action'      => $p->action,
+                    'scope'       => $p->scope,
+                    'description' => $p->description,
+                ]),
+            ]);
+
         return Inertia::render('Roles/Index', [
             'roles'              => $roles,
             'groupedPermissions' => $groupedPermissions,
+            'permissionGroups'   => $permissionGroups,
         ]);
     }
 
@@ -83,6 +107,7 @@ class RoleController
             'color'        => $validated['color'] ?? null,
             'icon'         => $validated['icon'] ?? null,
             'status'       => $validated['status'] ?? 'active',
+            'scope'        => $validated['scope'] ?? null,
             'is_system'    => $validated['is_system'] ?? false,
         ]);
 
@@ -106,6 +131,7 @@ class RoleController
             'color'        => $validated['color'] ?? null,
             'icon'         => $validated['icon'] ?? null,
             'status'       => $validated['status'] ?? 'active',
+            'scope'        => $validated['scope'] ?? null,
         ]);
 
         if (isset($validated['permissions'])) {
@@ -162,14 +188,14 @@ class RoleController
         // Remove from users not in new list
         foreach ($existingUsers as $userId) {
             if (! in_array($userId, $userIds)) {
-                $user = \App\Models\User::find($userId);
+                $user = \Modules\Core\Models\User::find($userId);
                 $user?->removeRole($role);
             }
         }
 
         // Add to new users
         foreach ($userIds as $userId) {
-            $user = \App\Models\User::find($userId);
+            $user = \Modules\Core\Models\User::find($userId);
             if ($user && ! $user->hasRole($role)) {
                 $user->assignRole($role);
             }

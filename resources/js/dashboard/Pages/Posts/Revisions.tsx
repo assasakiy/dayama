@@ -36,14 +36,14 @@ export default function PostRevisions({ post, revisions }: Props) {
     };
 
     const handleRestore = (revisionId: string) => {
-        if (confirm('Are you sure you want to restore to this revision? Current unsaved changes will be lost.')) {
+        if (confirm('Apakah Anda yakin ingin memulihkan ke revisi ini? Perubahan yang belum disimpan saat ini akan hilang.')) {
             router.post(`/posts/${post.id}/restore-revision/${revisionId}`);
         }
     };
 
     return (
         <DashboardLayout>
-            <Head title={`Revisions - ${post.title}`} />
+            <Head title={`Revisi - ${post.title}`} />
             <div className="space-y-5">
                 <div className="flex items-center gap-3">
                     <Link
@@ -53,7 +53,7 @@ export default function PostRevisions({ post, revisions }: Props) {
                         <ArrowLeft className="w-4 h-4" />
                     </Link>
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Revision History</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">Riwayat Revisi</h1>
                         <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{post.title}</p>
                     </div>
                 </div>
@@ -61,8 +61,8 @@ export default function PostRevisions({ post, revisions }: Props) {
                 {revisions.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <History className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                        <p className="text-sm font-medium text-foreground">No revisions yet</p>
-                        <p className="text-xs text-muted-foreground mt-1">Revisions are saved automatically each time you update the post.</p>
+                        <p className="text-sm font-medium text-foreground">Belum ada revisi</p>
+                        <p className="text-xs text-muted-foreground mt-1">Revisi disimpan otomatis setiap kali Anda memperbarui postingan.</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -79,7 +79,7 @@ export default function PostRevisions({ post, revisions }: Props) {
                                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                             <span className="hidden sm:inline-flex items-center gap-1.5">
                                                 <User className="w-3 h-3" />
-                                                {rev.author?.name ?? 'Unknown'}
+                                                {rev.author?.name ?? 'Tidak Diketahui'}
                                             </span>
                                             <span className="inline-flex items-center gap-1.5">
                                                 <CalendarDays className="w-3 h-3" />
@@ -93,18 +93,18 @@ export default function PostRevisions({ post, revisions }: Props) {
                                     <CardContent className="pt-0 space-y-4">
                                         {rev.change_summary && (
                                             <div>
-                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Changes</h4>
+                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Perubahan</h4>
                                                 <p className="text-sm font-medium text-foreground bg-primary/5 rounded-md p-3 border border-primary/10">{rev.change_summary}</p>
                                             </div>
                                         )}
                                         {rev.excerpt && (
                                             <div>
-                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Excerpt</h4>
+                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Cuplikan</h4>
                                                 <p className="text-sm text-muted-foreground bg-surface-muted/50 rounded-md p-3">{rev.excerpt}</p>
                                             </div>
                                         )}
                                         <div>
-                                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Content</h4>
+                                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Konten</h4>
                                             <div
                                                 className="prose-blog max-w-none text-sm bg-surface-muted/50 rounded-md p-4 max-h-80 overflow-y-auto border border-border-subtle"
                                                 dangerouslySetInnerHTML={{ __html: rev.content }}
@@ -116,7 +116,7 @@ export default function PostRevisions({ post, revisions }: Props) {
                                                 className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
                                             >
                                                 <History className="w-4 h-4" />
-                                                Restore to this version
+                                                Pulihkan ke versi ini
                                             </button>
                                         </div>
                                     </CardContent>

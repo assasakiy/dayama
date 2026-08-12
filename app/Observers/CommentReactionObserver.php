@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Models\CommentReaction;
+use Modules\CMS\Models\CommentReaction;
 
 class CommentReactionObserver
 {
@@ -26,7 +26,7 @@ class CommentReactionObserver
     {
         $count = CommentReaction::where('comment_id', $commentId)->count();
 
-        \App\Models\Comment::withoutGlobalScopes()
+        \Modules\CMS\Models\Comment::withoutGlobalScopes()
             ->where('id', $commentId)
             ->update(['likes_count' => $count]);
     }

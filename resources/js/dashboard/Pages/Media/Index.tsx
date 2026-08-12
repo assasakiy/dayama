@@ -205,17 +205,17 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
 
     return (
         <DashboardLayout>
-            <Head title="Media Library" />
+            <Head title="Pustaka Media" />
 
             <div className="flex items-center justify-end md:justify-between gap-4 mb-6 w-full">
                 <div className="hidden md:block">
-                    <h1 className="text-xl font-semibold tracking-tight">Media Library</h1>
-                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Manage your images, documents, and assets.</p>
+                    <h1 className="text-xl font-semibold tracking-tight">Pustaka Media</h1>
+                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Kelola gambar, dokumen, dan aset.</p>
                 </div>
                 {can('media.upload') && (
                     <div className="ml-auto">
                         <Btn onClick={handleUploadClick} icon={<Upload className="w-4 h-4" />}>
-                            Upload New
+                            Unggah Baru
                         </Btn>
                     </div>
                 )}
@@ -230,12 +230,12 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                     </div>
                     <Input
                         type="search"
-                        placeholder="Search media..."
+                        placeholder="Cari media..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-10 h-10 w-full bg-background border-border-subtle rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
-                    <button type="submit" className="hidden">Search</button>
+                    <button type="submit" className="hidden">Cari</button>
                 </form>
 
                 <div className="flex flex-row items-center gap-2 sm:gap-3 w-full xl:flex-1 justify-end overflow-x-auto xl:overflow-visible pb-2 xl:pb-0">
@@ -246,13 +246,13 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                     <div className="flex-1 min-w-[110px] xl:flex-none xl:w-36 shrink-0">
                         <Select value={type} onValueChange={(val) => applyFilter('type', val)}>
                             <SelectTrigger className="h-10 bg-background">
-                                <SelectValue placeholder="File Type" />
+                                <SelectValue placeholder="Tipe File" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Types</SelectItem>
-                                <SelectItem value="image">Images</SelectItem>
-                                <SelectItem value="document">Documents</SelectItem>
-                                <SelectItem value="video">Videos</SelectItem>
+                                <SelectItem value="all">Semua Tipe</SelectItem>
+                                <SelectItem value="image">Gambar</SelectItem>
+                                <SelectItem value="document">Dokumen</SelectItem>
+                                <SelectItem value="video">Video</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -262,10 +262,10 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                             <div className="flex-1 min-w-[120px] xl:flex-none xl:w-40 shrink-0">
                                 <Select value={role} onValueChange={(val) => applyFilter('role', val)}>
                                     <SelectTrigger className="h-10 bg-background">
-                                        <SelectValue placeholder="All Roles" />
+                                        <SelectValue placeholder="Semua Peran" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Roles</SelectItem>
+                                        <SelectItem value="all">Semua Peran</SelectItem>
                                         {filterRoles.map(r => (
                                             <SelectItem key={r.id} value={r.id.toString()}>{r.display_name}</SelectItem>
                                         ))}
@@ -276,10 +276,10 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                             <div className="flex-1 min-w-[120px] xl:flex-none xl:w-40 shrink-0">
                                 <Select value={user} onValueChange={(val) => applyFilter('user', val)}>
                                     <SelectTrigger className="h-10 bg-background">
-                                        <SelectValue placeholder="All Users" />
+                                        <SelectValue placeholder="Semua Pengguna" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Users</SelectItem>
+                                        <SelectItem value="all">Semua Pengguna</SelectItem>
                                         {filterUsers.map(u => (
                                             <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
                                         ))}
@@ -296,8 +296,8 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                     <svg className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <h3 className="text-lg font-medium text-foreground">No media found</h3>
-                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Upload some files to see them here.</p>
+                    <h3 className="text-lg font-medium text-foreground">Tidak ada media</h3>
+                    <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">Unggah file untuk melihatnya di sini.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
@@ -320,7 +320,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                                 <Globe className="w-3.5 h-3.5" />
                                             </span>
                                         ) : (
-                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Personal)">
+                                            <span className="p-1 text-[10px] bg-warning/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Personal)">
                                                 <Lock className="w-3.5 h-3.5" />
                                             </span>
                                         )
@@ -330,7 +330,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                                 <Globe className="w-3.5 h-3.5" />
                                             </span>
                                         ) : (
-                                            <span className="p-1 text-[10px] bg-amber-500/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Other User)">
+                                            <span className="p-1 text-[10px] bg-warning/80 text-white backdrop-blur-md rounded shadow-sm" title="Private (Other User)">
                                                 <Lock className="w-3.5 h-3.5" />
                                             </span>
                                         )
@@ -358,14 +358,14 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-48 z-[100]">
                                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedMedia(item); }}>
-                                                <Eye className="w-4 h-4 mr-2" /> View
+                                                <Eye className="w-4 h-4 mr-2" /> Lihat
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(item); }}>
-                                                <Edit2 className="w-4 h-4 mr-2" /> Edit Title
+                                                <Edit2 className="w-4 h-4 mr-2" /> Edit Judul
                                             </DropdownMenuItem>
                                             {item.model_type === 'App\\Models\\User' && (
                                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openVisibility(item); }}>
-                                                    <Globe className="w-4 h-4 mr-2" /> Media Visibility
+                                                    <Globe className="w-4 h-4 mr-2" /> Visibilitas Media
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem onClick={(e) => { 
@@ -377,20 +377,20 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                                 link.click();
                                                 document.body.removeChild(link);
                                             }}>
-                                                <Download className="w-4 h-4 mr-2" /> Download
+                                                <Download className="w-4 h-4 mr-2" /> Unduh
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={(e) => { 
                                                 e.stopPropagation(); 
                                                 copyToClipboard(new URL(item.original_url, window.location.origin).href);
-                                                toast.success('Media URL copied to clipboard');
+                                                toast.success('URL Media disalin ke clipboard');
                                             }}>
-                                                <LinkIcon className="w-4 h-4 mr-2" /> Copy Link
+                                                <LinkIcon className="w-4 h-4 mr-2" /> Salin Tautan
                                             </DropdownMenuItem>
                                             {canDelete(item) && (
                                                 <>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(item); }}>
-                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Hapus
                                                     </DropdownMenuItem>
                                                 </>
                                             )}
@@ -434,7 +434,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                             
                                             {/* Extra detail visible only on hover */}
                                             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 flex items-center">
-                                                <span className="text-[9px] text-emerald-400 font-semibold tracking-wider uppercase drop-shadow-sm">
+                                                <span className="text-[9px] text-success font-semibold tracking-wider uppercase drop-shadow-sm">
                                                     View
                                                 </span>
                                             </div>
@@ -475,7 +475,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
             }}>
                 <DialogContent className="sm:max-w-md w-[95vw] rounded-xl">
                     <DialogHeader className="flex flex-row items-center justify-between space-y-0">
-                        <DialogTitle>Upload Media</DialogTitle>
+                        <DialogTitle>Unggah Media</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -503,8 +503,8 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                 </svg>
                             </div>
-                            <p className="text-sm font-medium text-foreground mb-1">Click to upload or drag and drop</p>
-                            <p className="text-xs text-muted-foreground text-center">Images, PDFs, or Documents (Max 10MB)</p>
+                            <p className="text-sm font-medium text-foreground mb-1">Klik untuk unggah atau seret dan lepas</p>
+                            <p className="text-xs text-muted-foreground text-center">Gambar, PDF, atau Dokumen (Maks 10MB)</p>
                         </div>
                     ) : (
                         <div className="py-4">
@@ -543,10 +543,10 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                     </div>
                     <DialogFooter>
                         <Btn variant="outline" onClick={() => setIsUploadOpen(false)} disabled={isUploading} icon={<X className="w-4 h-4" />}>
-                            Cancel
+                            Batal
                         </Btn>
                         <Btn onClick={confirmUpload} disabled={!uploadFile || isUploading} loading={isUploading} icon={<Upload className="w-4 h-4" />}>
-                            Upload File
+                            Unggah File
                         </Btn>
                     </DialogFooter>
                 </DialogContent>
@@ -585,20 +585,20 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                             onClick={() => { setSelectedMedia(bottomSheetMedia); closeBottomSheet(); }}
                             className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground"
                         >
-                            <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> View
+                            <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> Lihat
                         </button>
                         <button 
                             onClick={() => { openEdit(bottomSheetMedia); closeBottomSheet(); }}
                             className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground"
                         >
-                            <Edit2 className="w-5 h-5 mr-3 text-muted-foreground" /> Edit Title
+                            <Edit2 className="w-5 h-5 mr-3 text-muted-foreground" /> Edit Judul
                         </button>
                         {bottomSheetMedia.model_type === 'App\\Models\\User' && (
                             <button 
                                 onClick={() => { openVisibility(bottomSheetMedia); closeBottomSheet(); }}
                                 className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground"
                             >
-                                <Globe className="w-5 h-5 mr-3 text-muted-foreground" /> Media Visibility
+                                <Globe className="w-5 h-5 mr-3 text-muted-foreground" /> Visibilitas Media
                             </button>
                         )}
                         <button 
@@ -613,24 +613,24 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                             }}
                             className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground"
                         >
-                            <Download className="w-5 h-5 mr-3 text-muted-foreground" /> Download
+                            <Download className="w-5 h-5 mr-3 text-muted-foreground" /> Unduh
                         </button>
                         <button 
                             onClick={() => { 
                                 copyToClipboard(new URL(bottomSheetMedia.original_url, window.location.origin).href);
-                                toast.success('Media URL copied to clipboard');
+                                toast.success('URL Media disalin ke clipboard');
                                 closeBottomSheet();
                             }}
                             className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground"
                         >
-                            <LinkIcon className="w-5 h-5 mr-3 text-muted-foreground" /> Copy Link
+                            <LinkIcon className="w-5 h-5 mr-3 text-muted-foreground" /> Salin Tautan
                         </button>
                         {canDelete(bottomSheetMedia) && (
                             <button 
                                 onClick={() => { handleDelete(bottomSheetMedia); closeBottomSheet(); }}
                                 className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors"
                             >
-                                <Trash2 className="w-5 h-5 mr-3" /> Delete
+                                <Trash2 className="w-5 h-5 mr-3" /> Hapus
                             </button>
                         )}
                     </div>
@@ -641,7 +641,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
             <Dialog open={!!editingMedia} onOpenChange={(open) => !open && setEditingMedia(null)}>
                 <DialogContent className="max-w-md w-[92vw] sm:w-full max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">Edit Media Title</DialogTitle>
+                        <DialogTitle className="text-base">Edit Judul Media</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -661,7 +661,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                             <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-medium">
-                                        Title
+                                        Judul
                                     </label>
                                     <Input 
                                         name="name" 
@@ -680,7 +680,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                         type="button"
                                         className="inline-flex items-center justify-center h-9 px-4 border border-border-subtle bg-background text-foreground rounded-md text-sm font-medium hover:bg-surface-muted active:bg-surface-muted/80 transition-all shadow-sm"
                                     >
-                                        Cancel
+                                        Batal
                                     </button>
                                 </DialogClose>
                                 <Btn 
@@ -690,7 +690,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                     icon={<Save className="w-4 h-4" />}
                                     className="h-9 px-4 shadow-sm"
                                 >
-                                    Save Changes
+                                    Simpan Perubahan
                                 </Btn>
                             </DialogFooter>
                         </form>
@@ -701,7 +701,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
             <Dialog open={!!visibilityMedia} onOpenChange={(open) => !open && setVisibilityMedia(null)}>
                 <DialogContent className="max-w-md w-[92vw] sm:w-full max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle mb-0 shrink-0">
-                        <DialogTitle className="text-base">Media Visibility</DialogTitle>
+                        <DialogTitle className="text-base">Visibilitas Media</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
@@ -713,9 +713,9 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                     <div className="space-y-0.5 pr-4">
                                         <label className="text-sm font-medium flex items-center gap-2">
                                             {editIsPublic ? <Globe className="w-4 h-4 text-primary" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
-                                            Public Access
+                                            Akses Publik
                                         </label>
-                                        <p className="text-xs text-muted-foreground">When active, anyone with the link can view this media.</p>
+                                        <p className="text-xs text-muted-foreground">Saat aktif, siapa pun dengan tautan dapat melihat media ini.</p>
                                     </div>
                                     <Switch 
                                         checked={editIsPublic} 
@@ -741,7 +741,7 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                 
                                 {editIsPublic && (
                                     <div className="space-y-2 p-4 bg-surface-muted rounded-lg border border-border-subtle">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Share Link</label>
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bagikan Tautan</label>
                                         <div className="flex items-center gap-2">
                                             <Input 
                                                 readOnly 
@@ -753,11 +753,11 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
                                                 className="shrink-0 h-9" 
                                                 onClick={() => {
                                                     copyToClipboard(new URL(visibilityMedia.original_url, window.location.origin).href);
-                                                    toast.success('Share link copied to clipboard');
+                                                    toast.success('Tautan disalin ke clipboard');
                                                 }}
                                                 icon={<LinkIcon className="w-3.5 h-3.5" />}
                                             >
-                                                Copy
+                                                Salin
                                             </Btn>
                                         </div>
                                     </div>
@@ -771,11 +771,11 @@ export default function Index({ media, filters, filterRoles = [], filterUsers = 
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Media"
+                title="Hapus Media"
                 message={isSuperAdminOrAdmin 
-                    ? `Are you sure you want to permanently delete "${deleteTarget?.name}" (Attached to: ${deleteTarget?.model_type === 'App\\Models\\User' ? 'Personal Library' : (deleteTarget?.model_type === 'App\\Models\\Post' ? 'Post' : 'System Asset')}) from the server?`
-                    : `Remove "${deleteTarget?.name}" from your collection? (It will be transferred to Admin to prevent broken links in existing posts)`}
-                confirmLabel="Delete"
+                    ? `Apakah Anda yakin ingin menghapus permanen "${deleteTarget?.name}" (Terlampir ke: ${deleteTarget?.model_type === 'App\\Models\\User' ? 'Pustaka Pribadi' : (deleteTarget?.model_type === 'App\\Models\\Post' ? 'Postingan' : 'Aset Sistem')}) dari server?`
+                    : `Hapus "${deleteTarget?.name}" dari koleksi Anda? (Akan ditransfer ke Admin untuk mencegah tautan rusak di postingan yang ada)`}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={confirmDelete}
             />

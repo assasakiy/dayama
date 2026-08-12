@@ -31,6 +31,7 @@ class AuthorizationServiceProvider extends ServiceProvider
         // Define the exact expected order
         $expectedOrder = [
             \App\Authorization\Rules\PrimarySuperAdminRule::class,
+            \App\Authorization\Rules\ScopeRule::class,
             \App\Authorization\Rules\PermissionRule::class,
             \App\Authorization\Rules\OwnershipRule::class,
             \App\Authorization\Rules\RankRule::class,
@@ -40,7 +41,7 @@ class AuthorizationServiceProvider extends ServiceProvider
         if ($rules !== $expectedOrder) {
             throw new InvalidArgumentException(
                 'Authorization Pipeline Rules are out of order. ' .
-                'Strict order required: PrimarySuperAdminRule -> PermissionRule -> OwnershipRule -> RankRule.'
+                'Strict order required: PrimarySuperAdminRule -> ScopeRule -> PermissionRule -> OwnershipRule -> RankRule.'
             );
         }
     }

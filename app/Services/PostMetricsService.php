@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 

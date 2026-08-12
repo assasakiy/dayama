@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Log;
-use App\Models\ConnectedAccount;
+use Modules\Core\Models\ConnectedAccount;
 
 class ConnectedAccountController extends Controller
 {

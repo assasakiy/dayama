@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Moderation;
 
 use App\Enums\CommentStatus;
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Carbon\CarbonImmutable;
 
 final class ModerationContext

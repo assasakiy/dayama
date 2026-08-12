@@ -16,12 +16,12 @@ interface EmailTemplate {
 export default function EmailTemplatesIndex({ templates }: { templates: EmailTemplate[] }) {
     return (
         <DashboardLayout>
-            <Head title="Email Templates" />
+            <Head title="Template Email" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-foreground tracking-tight">Email Templates</h1>
+                    <h1 className="text-2xl font-semibold text-foreground tracking-tight">Template Email</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Manage automated emails sent by the system.
+                        Kelola email otomatis yang dikirim oleh sistem.
                     </p>
                 </div>
 
@@ -30,10 +30,10 @@ export default function EmailTemplatesIndex({ templates }: { templates: EmailTem
                         <table className="w-full text-sm text-left">
                             <thead className="bg-surface-muted text-muted-foreground border-b border-border-subtle">
                                 <tr>
-                                    <th className="px-6 py-4 font-medium">Name / Key</th>
-                                    <th className="px-6 py-4 font-medium">Subject</th>
+                                    <th className="px-6 py-4 font-medium">Nama / Key</th>
+                                    <th className="px-6 py-4 font-medium">Subjek</th>
                                     <th className="px-6 py-4 font-medium">Status</th>
-                                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                    <th className="px-6 py-4 font-medium text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
@@ -50,9 +50,9 @@ export default function EmailTemplatesIndex({ templates }: { templates: EmailTem
                                         </td>
                                         <td className="px-6 py-4">
                                             {template.is_active ? (
-                                                <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">Active</Badge>
+                                                <Badge variant="default" className="bg-success/10 text-success hover:bg-success/20 border-success/20">Aktif</Badge>
                                             ) : (
-                                                <Badge variant="secondary" className="text-muted-foreground">Inactive</Badge>
+                                                <Badge variant="secondary" className="text-muted-foreground">Nonaktif</Badge>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
@@ -72,7 +72,7 @@ export default function EmailTemplatesIndex({ templates }: { templates: EmailTem
                                     <tr>
                                         <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                                             <LayoutTemplate className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                            <p>No email templates found.</p>
+                                            <p>Tidak ada template email.</p>
                                         </td>
                                     </tr>
                                 )}

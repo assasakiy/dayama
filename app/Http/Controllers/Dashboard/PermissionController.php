@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard;
 
 use Illuminate\Support\Facades\Gate;
-use App\Models\Permission;
-use App\Models\PermissionGroup;
+use Modules\Core\Models\Permission;
+use Modules\Core\Models\PermissionGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,8 +34,9 @@ class PermissionController
 
     public function index(): Response
     {
-        Gate::authorize('viewAny', \App\Models\Permission::class);
-        $permissions = Permission::orderBy('module')->orderBy('action')->orderBy('scope')->orderBy('name')
+        Gate::authorize('viewAny', \Modules\Core\Models\Permission::class);
+        $permissions = Permission::with('permissionGroups')
+            ->orderBy('module')->orderBy('action')->orderBy('scope')->orderBy('name')
             ->withCount('roles')
             ->get()
             ->map(fn ($perm) => [
@@ -48,6 +49,9 @@ class PermissionController
                 'guard_name'  => $perm->guard_name,
                 'roles_count' => (int) $perm->roles_count,
                 'created_at'  => $perm->created_at,
+                'group_ids'   => $perm->relationLoaded('permissionGroups')
+                    ? $perm->permissionGroups->pluck('id')->toArray()
+                    : [],
             ]);
 
         // Group by module
@@ -57,20 +61,25 @@ class PermissionController
             $grouped[$mod][] = $perm;
         }
 
+        $permissionGroups = PermissionGroup::orderBy('sort_order')->get(['id', 'name', 'slug', 'icon', 'color']);
+
         return Inertia::render('Permissions/Index', [
-            'permissions' => $permissions,
-            'grouped'     => $grouped,
+            'permissions'      => $permissions,
+            'grouped'          => $grouped,
+            'permissionGroups' => $permissionGroups,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'module'      => ['required', 'string', 'max:60'],
-            'action'      => ['required', 'string', 'max:60'],
-            'scope'       => ['nullable', 'string', 'max:30'],
-            'description' => ['nullable', 'string'],
-            'guard_name'  => ['nullable', 'string'],
+            'module'       => ['required', 'string', 'max:60'],
+            'action'       => ['required', 'string', 'max:60'],
+            'scope'        => ['nullable', 'string', 'max:30'],
+            'description'  => ['nullable', 'string'],
+            'guard_name'   => ['nullable', 'string'],
+            'group_ids'    => ['nullable', 'array'],
+            'group_ids.*'  => ['string', 'uuid', 'exists:core_permission_groups,id'],
         ]);
 
         $scope = $validated['scope'] ?? null;
@@ -78,7 +87,7 @@ class PermissionController
             ? "{$validated['module']}.{$validated['action']}.{$scope}"
             : "{$validated['module']}.{$validated['action']}";
 
-        Permission::firstOrCreate(
+        $permission = Permission::firstOrCreate(
             ['name' => $name, 'guard_name' => $validated['guard_name'] ?? 'web'],
             [
                 'module'      => $validated['module'],
@@ -88,6 +97,10 @@ class PermissionController
             ]
         );
 
+        if (isset($validated['group_ids'])) {
+            $permission->permissionGroups()->sync($validated['group_ids']);
+        }
+
         return redirect()->route('dashboard.permissions.index')->with('success', 'Permission created.');
     }
 
@@ -95,9 +108,15 @@ class PermissionController
     {
         $validated = $request->validate([
             'description' => ['nullable', 'string'],
+            'group_ids'   => ['nullable', 'array'],
+            'group_ids.*' => ['string', 'uuid', 'exists:core_permission_groups,id'],
         ]);
 
         $permission->update(['description' => $validated['description'] ?? null]);
+
+        if (isset($validated['group_ids'])) {
+            $permission->permissionGroups()->sync($validated['group_ids']);
+        }
 
         return redirect()->route('dashboard.permissions.index')->with('success', 'Permission updated.');
     }
@@ -115,7 +134,7 @@ class PermissionController
      */
     public function seed(): RedirectResponse
     {
-        Gate::authorize('create', \App\Models\Permission::class);
+        Gate::authorize('create', \Modules\Core\Models\Permission::class);
         app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         foreach (self::CMS_MODULES as $module => $actions) {

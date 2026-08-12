@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StoreTagRequest;
 use App\Http\Requests\Dashboard\UpdateTagRequest;
-use App\Models\Tag;
+use Modules\CMS\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;

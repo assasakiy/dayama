@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Models\Category;
-use App\Models\Comment;
-use App\Models\Post;
-use App\Models\Tag;
-use App\Models\User;
+use Modules\CMS\Models\Category;
+use Modules\CMS\Models\Comment;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Tag;
+use Modules\Core\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 

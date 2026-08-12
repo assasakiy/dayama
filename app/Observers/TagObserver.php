@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Tag;
+use Modules\CMS\Models\Tag;
 
 class TagObserver
 {

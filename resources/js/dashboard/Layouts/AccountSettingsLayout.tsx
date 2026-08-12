@@ -25,32 +25,32 @@ export interface MenuGroup {
 
 export const menuGroups: MenuGroup[] = [
     {
-        title: 'Personal',
+        title: 'Pribadi',
         items: [
-            { label: 'Profile', href: '/account/profile', icon: User },
-            { label: 'Account Details', href: '/account/details', icon: Settings2 },
+            { label: 'Profil', href: '/account/profile', icon: User },
+            { label: 'Detail Akun', href: '/account/details', icon: Settings2 },
         ]
     },
     {
-        title: 'Security & Privacy',
+        title: 'Keamanan & Privasi',
         items: [
-            { label: 'Security', href: '/account/security', icon: Shield },
-            { label: 'Connected Accounts', href: '/account/connected', icon: Share2 },
-            { label: 'Export Data', href: '/account/export', icon: Download },
-            { label: 'Delete Account', href: '/account/delete', icon: Trash2, destructive: true },
+            { label: 'Keamanan', href: '/account/security', icon: Shield },
+            { label: 'Akun Terhubung', href: '/account/connected', icon: Share2 },
+            { label: 'Ekspor Data', href: '/account/export', icon: Download },
+            { label: 'Hapus Akun', href: '/account/delete', icon: Trash2, destructive: true },
         ]
     },
     {
-        title: 'Preferences',
+        title: 'Preferensi',
         items: [
-            { label: 'Appearance', href: '/account/appearance', icon: Palette },
-            { label: 'Writing Preferences', href: '/account/writing', icon: PenTool, permission: 'posts.create' },
-            { label: 'Notifications', href: '/account/notifications', icon: Bell },
+            { label: 'Tampilan', href: '/account/appearance', icon: Palette },
+            { label: 'Preferensi Menulis', href: '/account/writing', icon: PenTool, permission: 'posts.create' },
+            { label: 'Notifikasi', href: '/account/notifications', icon: Bell },
         ]
     }
 ];
 
-export default function AccountSettingsLayout({ children, title = 'Settings', description }: AccountSettingsLayoutProps) {
+export default function AccountSettingsLayout({ children, title = 'Pengaturan', description }: AccountSettingsLayoutProps) {
     const { url } = usePage();
 
     const isActive = (href: string) => {
@@ -110,7 +110,7 @@ export default function AccountSettingsLayout({ children, title = 'Settings', de
                         <div className="bg-background border border-border-subtle rounded-xl shadow-sm p-3 flex items-center gap-2 text-sm text-muted-foreground">
                             <Link href="/account" className="flex items-center gap-1 hover:text-primary transition-colors">
                                 <ChevronLeft className="w-4 h-4 -ml-1" />
-                                <span className="font-medium">Settings</span>
+                                <span className="font-medium">Pengaturan</span>
                             </Link>
                             <span className="text-border">/</span>
                             <span className="font-semibold text-foreground">{title}</span>

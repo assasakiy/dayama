@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Category;
-use App\Models\Comment;
-use App\Models\Post;
-use App\Models\Tag;
-use App\Models\User;
+use Modules\CMS\Models\Category;
+use Modules\CMS\Models\Comment;
+use Modules\Core\Models\Person;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Tag;
+use Modules\Core\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
+use Modules\Core\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,6 +22,18 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             EmailTemplateSeeder::class,
             RoleAndPermissionSeeder::class,
+            LandingSeeder::class,
+            InstitutionSeeder::class,
+            InstitutionTypeSeeder::class,
+            PositionSeeder::class,
+            EducationLevelSeeder::class,
+            ProfessionSeeder::class,
+            RelationshipTypeSeeder::class,
+            ContactTypeSeeder::class,
+            AddressTypeSeeder::class,
+            SkillSeeder::class,
+            LanguageSeeder::class,
+            EmploymentStatusSeeder::class,
         ]);
 
         $defaultUsers = [
@@ -33,14 +46,21 @@ class DatabaseSeeder extends Seeder
 
         foreach ($defaultUsers as $index => $userData) {
             $isPrimarySuperAdmin = ($index === 0);
-            $user = User::firstOrCreate(
+
+            $nameParts = explode(' ', $userData['name'], 2);
+            $person = Person::firstOrCreate(
+                ['nama_lengkap' => $userData['name']],
+                [
+                    'nama_depan' => $nameParts[0],
+                    'nama_belakang' => $nameParts[1] ?? null,
+                    'nama_lengkap' => $userData['name'],
+                ]
+            );
+
+            $user = User::updateOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'name' => $userData['name'],
-                    'username' => $userData['username'],
-                    'email' => $userData['email'],
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
+                    'person_id' => $person->id,
                     'is_primary_super_admin' => $isPrimarySuperAdmin,
                     'is_protected' => $isPrimarySuperAdmin,
                     'is_verified' => $isPrimarySuperAdmin,
@@ -52,7 +72,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Skip bulk data if already exists
+        // Skip bulk demo data if already exists
         if (Category::count() > 0) {
             return;
         }
@@ -62,18 +82,18 @@ class DatabaseSeeder extends Seeder
 
         // Categories
         $categories = collect();
-        $parentNames = ['Technology', 'Design', 'Business', 'Science', 'Lifestyle'];
+        $parentNames = ['Teknologi', 'Desain', 'Bisnis', 'Sains', 'Gaya Hidup'];
         foreach ($parentNames as $name) {
             $parent = Category::create(['name' => $name, 'slug' => \Illuminate\Support\Str::slug($name), 'parent_id' => null]);
             $categories->push($parent);
 
             $childNames = match ($name) {
-                'Technology' => ['Web Development', 'Mobile Apps', 'AI & ML', 'Cybersecurity'],
-                'Design'     => ['UI/UX', 'Graphic Design', 'Typography'],
-                'Business'   => ['Startups', 'Marketing', 'Finance'],
-                'Science'    => ['Physics', 'Biology', 'Space'],
-                'Lifestyle'  => ['Health', 'Travel', 'Food'],
-                default      => [],
+                'Teknologi' => ['Pengembangan Web', 'Aplikasi Mobile', 'Kecerdasan Buatan', 'Keamanan Siber'],
+                'Desain'    => ['UI/UX', 'Desain Grafis', 'Tipografi'],
+                'Bisnis'    => ['Startup', 'Pemasaran', 'Keuangan'],
+                'Sains'     => ['Fisika', 'Biologi', 'Luar Angkasa'],
+                'Gaya Hidup'=> ['Kesehatan', 'Perjalanan', 'Makanan'],
+                default     => [],
             };
             foreach ($childNames as $childName) {
                 $child = Category::create([
@@ -89,8 +109,8 @@ class DatabaseSeeder extends Seeder
         $tagNames = [
             'PHP', 'Laravel', 'React', 'Vue.js', 'JavaScript', 'TypeScript',
             'Python', 'Machine Learning', 'AWS', 'Docker', 'DevOps',
-            'REST API', 'GraphQL', 'Tailwind CSS', 'Testing', 'Performance',
-            'Security', 'Database', 'Mobile', 'Open Source',
+            'REST API', 'GraphQL', 'Tailwind CSS', 'Pengujian', 'Performa',
+            'Keamanan', 'Basis Data', 'Mobile', 'Open Source',
         ];
         $tags = collect();
         foreach ($tagNames as $name) {
@@ -101,7 +121,7 @@ class DatabaseSeeder extends Seeder
         Post::factory(100)
             ->published()
             ->sequence(fn ($s) => [
-                'category_id' => $categories->random()->id,
+                'primary_category_id' => $categories->random()->id,
                 'author_id' => User::inRandomOrder()->first()->id,
             ])
             ->create()
@@ -110,12 +130,12 @@ class DatabaseSeeder extends Seeder
             });
 
         Post::factory(20)->draft()->sequence(fn ($s) => [
-            'category_id' => $categories->random()->id,
+            'primary_category_id' => $categories->random()->id,
             'author_id' => User::inRandomOrder()->first()->id,
         ])->create();
 
         Post::factory(5)->featured()->published()->sequence(fn ($s) => [
-            'category_id' => $categories->random()->id,
+            'primary_category_id' => $categories->random()->id,
             'author_id' => User::where('email', 'author@blog.com')->first()->id,
         ])->create();
 

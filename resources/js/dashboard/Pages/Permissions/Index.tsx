@@ -17,6 +17,15 @@ interface Permission {
     guard_name: string;
     roles_count: number;
     created_at: string;
+    group_ids: string[];
+}
+
+interface PermissionGroupItem {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string;
+    color?: string;
 }
 
 interface GroupedPermissions {
@@ -45,11 +54,11 @@ const CMS_ACTIONS: Record<string, string[]> = {
 const ACTION_COLORS: Record<string, string> = {
     view: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
     create: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800',
-    edit: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    edit: 'bg-warning/10 text-warning border-warning/20 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
     delete: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800',
     publish: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
-    moderate: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
-    upload: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800',
+    moderate: 'bg-warning/10 text-warning border-warning/20 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
+    upload: 'bg-info/10 text-info border-info/20 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800',
     restore: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800',
     update: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
     reply: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
@@ -63,7 +72,7 @@ const MODULE_LABELS: Record<string, string> = {
 
 const SCOPE_LABELS: Record<string, string> = { own: '·Own', all: '·All', assigned: '·Assigned' };
 
-export default function PermissionIndex({ permissions, grouped }: { permissions: Permission[]; grouped: GroupedPermissions }) {
+export default function PermissionIndex({ permissions, grouped, permissionGroups }: { permissions: Permission[]; grouped: GroupedPermissions; permissionGroups?: PermissionGroupItem[] }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [editPermission, setEditPermission] = useState<Permission | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -75,6 +84,7 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
     const [action, setAction] = useState('view');
     const [scope, setScope] = useState('');
     const [description, setDescription] = useState('');
+    const [groupIds, setGroupIds] = useState<string[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -82,7 +92,7 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
 
     const resetForm = () => {
         setModule('posts'); setAction('view'); setScope(''); setDescription('');
-        setErrors({}); setSubmitting(false); setEditPermission(null);
+        setGroupIds([]); setErrors({}); setSubmitting(false); setEditPermission(null);
     };
 
     const openCreate = () => { resetForm(); setModalOpen(true); };
@@ -93,6 +103,7 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
         setAction(perm.action || 'view');
         setScope(perm.scope || '');
         setDescription(perm.description || '');
+        setGroupIds(perm.group_ids || []);
         setErrors({}); setSubmitting(false);
         setModalOpen(true);
     };
@@ -100,7 +111,7 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
-        const data = { module, action, scope: scope || null, description: description || null };
+        const data = { module, action, scope: scope || null, description: description || null, group_ids: groupIds.length > 0 ? groupIds : undefined };
 
         if (isEdit) {
             router.put(`/permissions/${editPermission!.id}`, { description: description || null }, {
@@ -141,27 +152,27 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
 
     return (
         <DashboardLayout>
-            <Head title="Permissions" />
+            <Head title="Izin" />
             <div className="space-y-5">
                 <div className="flex items-center justify-end md:justify-between gap-4 flex-wrap w-full">
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-semibold tracking-tight">Permissions</h1>
-                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{permissions.length} permission{permissions.length !== 1 ? 's' : ''} defined</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Izin</h1>
+                        <p className="hidden lg:block text-sm text-muted-foreground mt-0.5">{permissions.length} izin ditentukan</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setSeedConfirm(true)}
-                            className="inline-flex items-center gap-2 h-9 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-sm font-medium transition-all shadow-sm"
+                            className="inline-flex items-center gap-2 h-9 px-4 bg-warning/100 hover:bg-warning/90 text-white rounded-md text-sm font-medium transition-all shadow-sm"
                         >
                             <Sparkles className="w-4 h-4" />
-                            Seed CMS Defaults
+                            Seed Default CMS
                         </button>
                         <button
                             onClick={openCreate}
                             className="inline-flex items-center gap-2 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 active:bg-primary/80 transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
-                            New Permission
+                            Izin Baru
                         </button>
                     </div>
                 </div>
@@ -171,11 +182,11 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
                     {modules.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center bg-background border border-border-subtle rounded-xl">
                             <KeyRound className="w-12 h-12 text-muted-foreground/20 mb-4" />
-                            <p className="text-sm font-medium">No permissions yet</p>
-                            <p className="text-xs text-muted-foreground mt-1">Seed CMS defaults or create permissions manually.</p>
-                            <button onClick={() => setSeedConfirm(true)} className="mt-4 inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors">
+                            <p className="text-sm font-medium">Belum ada izin</p>
+                            <p className="text-xs text-muted-foreground mt-1">Seed default CMS atau buat izin secara manual.</p>
+                            <button onClick={() => setSeedConfirm(true)} className="mt-4 inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-warning/100 text-white rounded-md hover:bg-warning/90 transition-colors">
                                 <Sparkles className="w-3.5 h-3.5" />
-                                Seed Defaults
+                                Seed Default
                             </button>
                         </div>
                     ) : (
@@ -194,7 +205,7 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
                                             <KeyRound className="w-3.5 h-3.5 text-primary" />
                                         </div>
                                         <span className="flex-1 font-semibold text-sm">{MODULE_LABELS[mod] || mod}</span>
-                                        <span className="text-xs text-muted-foreground mr-2">{perms.length} permission{perms.length !== 1 ? 's' : ''}</span>
+                                        <span className="text-xs text-muted-foreground mr-2">{perms.length} izin</span>
                                         {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                                     </button>
 
@@ -211,20 +222,20 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
                                                     </div>
                                                     <div className="flex items-center gap-2 shrink-0">
                                                         <span className="text-xs text-muted-foreground hidden md:block">
-                                                            {perm.roles_count} role{perm.roles_count !== 1 ? 's' : ''}
+                                                            {perm.roles_count} peran
                                                         </span>
                                                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <button
                                                                 onClick={() => openEdit(perm)}
                                                                 className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors"
-                                                                title="Edit description"
+                                                                title="Edit deskripsi"
                                                             >
                                                                 <Pencil className="w-3 h-3" />
                                                             </button>
                                                             <button
                                                                 onClick={() => setDeleteTarget({ id: perm.id, name: perm.name })}
                                                                 className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                                                title="Delete"
+                                                                title="Hapus"
                                                             >
                                                                 <Trash2 className="w-3 h-3" />
                                                             </button>
@@ -245,95 +256,116 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
             <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); resetForm(); } }}>
                 <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 gap-0">
                     <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border-subtle shrink-0">
-                        <DialogTitle className="text-base">{isEdit ? 'Edit Permission' : 'Create Permission'}</DialogTitle>
+                        <DialogTitle className="text-base">{isEdit ? 'Edit Izin' : 'Buat Izin'}</DialogTitle>
                         <DialogClose className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-muted transition-colors">
                             <X className="w-4 h-4" />
                         </DialogClose>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                         <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
-                            {isEdit ? (
-                                <>
-                                    <div className="p-3 bg-surface-muted/50 rounded-lg">
-                                        <p className="text-xs text-muted-foreground mb-1">Permission</p>
-                                        <p className="text-sm font-mono font-medium">{editPermission?.name}</p>
+                            <>
+                                <div className={`grid grid-cols-2 gap-3 ${isEdit ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-medium">Modul</label>
+                                        {isEdit ? (
+                                            <div className="flex h-9 items-center px-3 rounded-sm border border-border-subtle bg-surface-muted/50 text-sm font-mono">
+                                                {editPermission?.module || '-'}
+                                            </div>
+                                        ) : (
+                                            <input
+                                                value={module}
+                                                onChange={(e) => setModule(e.target.value)}
+                                                placeholder="contoh: posts, users, academic-years"
+                                                className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                            />
+                                        )}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Description</label>
-                                        <textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            rows={3}
-                                            placeholder="Describe what this permission allows..."
-                                            className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <label className="text-sm font-medium">Module</label>
-                                            <select
-                                                value={module}
-                                                onChange={(e) => { setModule(e.target.value); setAction('view'); }}
-                                                className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                            >
-                                                {CMS_MODULES.map((m) => <option key={m} value={m}>{MODULE_LABELS[m] || m}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-sm font-medium">Action</label>
-                                            <select
+                                        <label className="text-sm font-medium">Aksi</label>
+                                        {isEdit ? (
+                                            <div className="flex h-9 items-center px-3 rounded-sm border border-border-subtle bg-surface-muted/50 text-sm font-mono">
+                                                {editPermission?.action || '-'}
+                                            </div>
+                                        ) : (
+                                            <input
                                                 value={action}
                                                 onChange={(e) => setAction(e.target.value)}
-                                                className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                            >
-                                                {(CMS_ACTIONS[module] || ['view']).map((a) => <option key={a} value={a}>{a}</option>)}
-                                            </select>
-                                        </div>
+                                                placeholder="contoh: view, create, edit, delete"
+                                                className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                            />
+                                        )}
                                     </div>
+                                </div>
+                                {!isEdit && (
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Scope <span className="text-muted-foreground font-normal">(optional)</span></label>
+                                        <label className="text-sm font-medium">Cakupan <span className="text-muted-foreground font-normal">(opsional)</span></label>
                                         <select
                                             value={scope}
                                             onChange={(e) => setScope(e.target.value)}
                                             className="flex w-full h-9 rounded-sm border border-border-subtle bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         >
-                                            <option value="">No scope (global)</option>
-                                            <option value="own">own – user's own resources</option>
-                                            <option value="all">all – all resources</option>
-                                            <option value="assigned">assigned – assigned resources</option>
+                                            <option value="">Tanpa cakupan (global)</option>
+                                            <option value="own">own – sumber daya milik sendiri</option>
+                                            <option value="all">all – semua sumber daya</option>
+                                            <option value="assigned">assigned – sumber daya yang ditugaskan</option>
                                         </select>
                                     </div>
+                                )}
+                                {isEdit && (
                                     <div className="p-3 bg-surface-muted/50 rounded-lg">
-                                        <p className="text-xs text-muted-foreground mb-1">Generated permission name</p>
+                                        <p className="text-xs text-muted-foreground mb-1">Izin</p>
+                                        <p className="text-sm font-mono font-medium">{editPermission?.name}</p>
+                                    </div>
+                                )}
+                                {!isEdit && (
+                                    <div className="p-3 bg-surface-muted/50 rounded-lg">
+                                        <p className="text-xs text-muted-foreground mb-1">Nama izin yang dihasilkan</p>
                                         <p className="text-sm font-mono font-medium text-primary">
-                                            {module}.{action}{scope ? '.' + scope : ''}
+                                            {module || 'modul'}.{action || 'aksi'}{scope ? '.' + scope : ''}
                                         </p>
                                     </div>
+                                )}
+                                {permissionGroups && permissionGroups.length > 0 && (
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium">Description <span className="text-muted-foreground font-normal">(optional)</span></label>
-                                        <textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            rows={2}
-                                            placeholder="Describe what this permission allows..."
-                                            className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        />
+                                        <label className="text-sm font-medium">Grup Izin <span className="text-muted-foreground font-normal">(opsional)</span></label>
+                                        <div className="flex flex-wrap gap-2 pt-1">
+                                            {permissionGroups.map((g) => {
+                                                const active = groupIds.includes(g.id);
+                                                return (
+                                                    <button
+                                                        key={g.id}
+                                                        type="button"
+                                                        onClick={() => setGroupIds((prev) => prev.includes(g.id) ? prev.filter((id) => id !== g.id) : [...prev, g.id])}
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${active ? 'bg-primary text-primary-foreground border-primary shadow-sm' : 'bg-background text-muted-foreground border-border-subtle hover:border-primary/50 hover:text-foreground'}`}
+                                                    >
+                                                        {g.name}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </>
-                            )}
+                                )}
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Deskripsi <span className="text-muted-foreground font-normal">(opsional)</span></label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        rows={2}
+                                        placeholder="Jelaskan apa yang diizinkan oleh izin ini..."
+                                        className="flex w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    />
+                                </div>
+                            </>
                         </div>
                         <DialogFooter className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border-subtle shrink-0">
-                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Cancel</Button>
+                            <Button type="button" variant="outline" onClick={() => { setModalOpen(false); resetForm(); }}>Batal</Button>
                             <Btn
                                 type="submit"
                                 loading={submitting}
                                 disabled={submitting}
                                 icon={<Save className="w-4 h-4" />}
                             >
-                                {isEdit ? 'Update' : 'Create Permission'}
+                                {isEdit ? 'Perbarui' : 'Buat Izin'}
                             </Btn>
                         </DialogFooter>
                     </form>
@@ -343,9 +375,9 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
             <ConfirmDialog
                 open={seedConfirm}
                 onOpenChange={setSeedConfirm}
-                title="Seed CMS Default Permissions"
-                message="This will create all standard CMS permissions (posts, pages, media, users, etc.) if they don't exist yet. Existing permissions won't be affected."
-                confirmLabel="Seed Permissions"
+                title="Seed Default Izin CMS"
+                message="Ini akan membuat semua izin CMS standar (postingan, halaman, media, pengguna, dll.) jika belum ada. Izin yang sudah ada tidak akan terpengaruh."
+                confirmLabel="Seed Izin"
                 variant="primary"
                 onConfirm={handleSeed}
             />
@@ -353,9 +385,9 @@ export default function PermissionIndex({ permissions, grouped }: { permissions:
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-                title="Delete Permission"
-                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? Roles with this permission may lose access.` : ''}
-                confirmLabel="Delete"
+                title="Hapus Izin"
+                message={deleteTarget ? `Apakah Anda yakin ingin menghapus "${deleteTarget.name}"? Peran dengan izin ini mungkin kehilangan akses.` : ''}
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={handleDelete}
             />

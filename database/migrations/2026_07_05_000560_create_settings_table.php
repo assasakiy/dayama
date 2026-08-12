@@ -13,8 +13,11 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('group', 60)->default('general')->index();
-            $table->string('key', 100)->unique();
+            $table->string('context', 30)->default('global')->index();
+            $table->string('key', 100);
             $table->text('value')->nullable();
+            
+            $table->unique(['key', 'context']);
             $table->string('type', 20)->default('string'); // string|json|boolean|integer|array
             $table->boolean('is_locked')->default(false);
             $table->boolean('is_env')->default(false);

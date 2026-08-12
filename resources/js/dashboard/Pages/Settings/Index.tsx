@@ -108,7 +108,7 @@ export default function SettingsIndex({
                         </div>
                     </div>
                     <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                        {!!value ? 'Enabled' : 'Disabled'}
+                        {!!value ? 'Aktif' : 'Nonaktif'}
                     </span>
                 </label>
             );
@@ -141,7 +141,7 @@ export default function SettingsIndex({
                         }
                     }}
                     className={`${baseClass} font-mono text-xs resize-y`}
-                    placeholder="JSON value"
+                    placeholder="Nilai JSON"
                 />
             );
         }
@@ -179,7 +179,7 @@ export default function SettingsIndex({
                         disabled={disabled}
                         onChange={e => handleFieldChange(field.key, e.target.value)}
                         className={`${baseClass} pr-10`}
-                        placeholder={disabled ? '(set in .env)' : ''}
+                        placeholder={disabled ? '(diatur di .env)' : ''}
                     />
                     {!disabled && (
                         <button
@@ -201,7 +201,7 @@ export default function SettingsIndex({
                 disabled={disabled}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
                 className={baseClass}
-                placeholder={disabled ? '(managed via .env)' : ''}
+                        placeholder={disabled ? '(dikelola via .env)' : ''}
             />
         );
     };
@@ -220,13 +220,13 @@ export default function SettingsIndex({
 
     return (
         <DashboardLayout>
-            <Head title="Settings" />
+            <Head title="Pengaturan" />
             <div className="space-y-5">
                 {/* Header */}
                 <div>
-                    <h1 className="text-xl font-semibold text-foreground">System Settings</h1>
+                    <h1 className="text-xl font-semibold text-foreground">Pengaturan Sistem</h1>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                        Configure your site's behavior, appearance, and integrations.
+                        Konfigurasi perilaku, tampilan, dan integrasi situs Anda.
                     </p>
                 </div>
 
@@ -273,7 +273,7 @@ export default function SettingsIndex({
                                         className="flex items-center gap-1.5 h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
                                     >
                                         <Save className="w-3.5 h-3.5" />
-                                        {saving ? 'Saving…' : 'Save Changes'}
+                                        {saving ? 'Menyimpan…' : 'Simpan Perubahan'}
                                     </button>
                                 )}
                             </div>
@@ -305,13 +305,13 @@ export default function SettingsIndex({
                                         <div className="flex items-center gap-2 mb-4">
                                             <Lock className="w-3.5 h-3.5 text-muted-foreground" />
                                             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                                Environment-Managed (Read-only)
+                                                Dikelola Environment (Hanya Baca)
                                             </h3>
                                         </div>
                                         <div className="bg-surface-muted/50 border border-border-subtle rounded-md p-3 mb-4">
                                             <p className="text-xs text-muted-foreground">
-                                                These values are loaded from your <code className="bg-surface-muted px-1 py-0.5 rounded text-xs">.env</code> file.
-                                                To change them, edit your <code className="bg-surface-muted px-1 py-0.5 rounded text-xs">.env</code> file and restart the server.
+                                                Nilai-nilai ini dimuat dari file <code className="bg-surface-muted px-1 py-0.5 rounded text-xs">.env</code> Anda.
+                                                Untuk mengubahnya, edit file <code className="bg-surface-muted px-1 py-0.5 rounded text-xs">.env</code> Anda dan restart server.
                                             </p>
                                         </div>
                                         <div className="space-y-4">
@@ -336,7 +336,7 @@ export default function SettingsIndex({
 
                                 {currentFields.length === 0 && (
                                     <div className="text-center py-12 text-muted-foreground text-sm">
-                                        No settings found for this group.
+                                        Tidak ada pengaturan untuk grup ini.
                                     </div>
                                 )}
                             </div>

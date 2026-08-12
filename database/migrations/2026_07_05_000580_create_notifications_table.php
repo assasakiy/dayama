@@ -12,16 +12,14 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->string('type', 120)->index();
+            $table->string('type', 120);
             $table->uuidMorphs('notifiable');
             $table->json('data');
             $table->text('message')->nullable();
-            $table->string('link', 255)->nullable();
-            $table->string('level', 10)->default('info'); // info|success|warning|error
-            $table->timestamp('read_at')->nullable()->index();
-            $table->timestamp('created_at')->nullable();
-
-            $table->index(['notifiable_type', 'notifiable_id', 'read_at']);
+            $table->string('link')->nullable();
+            $table->string('level', 10)->default('info');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
         });
 
         Schema::create('newsletter_subscribers', function (Blueprint $table): void {

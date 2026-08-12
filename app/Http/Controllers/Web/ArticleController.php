@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use App\Services\PostMetricsService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

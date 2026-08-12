@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard;
 
 use Illuminate\Support\Facades\Gate;
-use App\Models\Permission;
-use App\Models\PermissionGroup;
+use Modules\Core\Models\Permission;
+use Modules\Core\Models\PermissionGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,8 +16,8 @@ class PermissionGroupController
 {
     public function index(): Response
     {
-        Gate::authorize('viewAny', \App\Models\PermissionGroup::class);
-        $groups = PermissionGroup::withCount('permissions')
+        Gate::authorize('viewAny', PermissionGroup::class);
+        $groups = PermissionGroup::with(['permissions:id,name'])->withCount('permissions')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
@@ -30,6 +30,7 @@ class PermissionGroupController
                 'color'             => $g->color,
                 'sort_order'        => $g->sort_order,
                 'permissions_count' => (int) $g->permissions_count,
+                'permission_names'  => $g->permissions->pluck('name'),
                 'created_at'        => $g->created_at,
             ]);
 

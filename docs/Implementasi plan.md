@@ -18,17 +18,39 @@ Berdasarkan evaluasi, membangun *Page Builder* dinamis (menyimpan layout di DB) 
 
 ```
 ✅ ADA:
-  test-blog.test/       -> Proyek Eksternal / Landing Utama
-  blog.test-blog.test/  -> Proyek Blog (Frontend Artikel)
-  dashboard.test-blog.test/ -> Admin CMS (Inertia/React), Dilindungi Middleware `CheckDashboardAccess`
+  test-blog.test/        -> Proyek Eksternal / Landing Utama
+  blog.test-blog.test/   -> Proyek Blog (Frontend Artikel)
+  dashboard.test-blog.test/ -> Admin CMS + LMS + HR (Inertia/React), Multi-domain modules
   account.test-blog.test/   -> Sistem Auth murni (Login, Register, Logout)
   api.test-blog.test/       -> REST API murni (Diuji dan berjalan dengan respon JSON)
   config/projects.php   -> File otak konfigurasi multi-domain
   RoutesServiceProvider -> Otomatis membagi rute berdasarkan file konfigurasi
 
+✅ TAMBAHAN (Track B - Multi-Tenant LMS & HR):
+  Dashboard terstruktur 8 domain: Core, Academic, HR, CMS, Landing, Yayasan, System, Workspace
+  12 modul CRUD: Academic Years, Semesters, Kelas, Subjects, Rombel, Students, Employees, Positions, Departments, Attendance, PersonIndex, TransferLogs, Stats
+  RBAC: 124 permissions, 7 permission groups, Role Operator
+  Gate::before bypass hanya untuk is_primary_super_admin
+  Institution management (tanpa switcher topbar)
+  Employee & Student form pages standalone (layout sidebar kanan)
+
+✅ TAMBAHAN (Schema Rev — 8 migrations):
+  core_persons: UNIQUE(nik, institution_id), institution_id NOT NULL
+  academic_students: UNIQUE(nis, institution_id), UNIQUE(person_id, institution_id), hapus kelas
+  core_person_positions: UUID PK, UNIQUE(person, position, institution, tanggal_mulai)
+  hr_positions: +jenis_jabatan, hr_employees: +department_id
+  hr_departments: +institution_id NOT NULL, +kepala_person_id
+  crm_donors: +institution_id, +jenis_donatur
+  hr_employee_positions: dihapus (duplicate)
+
 ❌ BELUM ADA (Target Berikutnya):
-  Automated Testing    -> Test suite bawaan gagal (404) karena penyesuaian multi-domain; perlu menulis Unit/Feature test untuk Services (Bookmark, Settings, dll).
-  Phase 5 (Discovery)  -> Popular Score (algoritma time-decay) dan Search Analytics belum diimplementasikan di PostMetricsService maupun SearchService.
+  C1 — Yayasan Person Index (Observer + Service + popup "tarik data")
+  C2 — Data Copy antar lembaga (via NIK match)
+  C3 — Embedded Tabs Person Detail (skills, pendidikan, kontak, dll)
+  C4 — Portal Santri (jadwal, nilai, absensi)
+  C5 — Yayasan Institution Detail/Edit
+  Automated Testing    -> Test suite gagal 404
+  Phase 5 (Discovery)  -> Popular Score, Search Analytics
 ```
 
 ---

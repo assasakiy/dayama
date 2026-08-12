@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Category;
+use Modules\CMS\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 

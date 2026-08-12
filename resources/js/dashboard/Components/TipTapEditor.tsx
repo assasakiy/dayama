@@ -17,8 +17,25 @@ interface TipTapEditorProps {
     onRequestImage?: () => void;
 }
 
+const CustomImage = ImageExtension.extend({
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            'data-media-id': {
+                default: null,
+            },
+            'data-src': {
+                default: null,
+            },
+            'class': {
+                default: null,
+            }
+        }
+    },
+});
+
 export interface TipTapEditorRef {
-    insertImage: (url: string) => void;
+    insertImage: (thumbUrl: string, fullUrl?: string, mediaId?: number) => void;
 }
 
 const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, onChange, placeholder, onRequestImage }, ref) => {
@@ -31,8 +48,8 @@ const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, 
                 link: false,
             }),
             LinkExtension.configure({ openOnClick: false }),
-            ImageExtension,
-            Placeholder.configure({ placeholder: placeholder ?? 'Start writing...' }),
+            CustomImage,
+            Placeholder.configure({ placeholder: placeholder ?? 'Mulai menulis...' }),
         ],
         content,
         onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -46,15 +63,20 @@ const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, 
     });
 
     useImperativeHandle(ref, () => ({
-        insertImage: (url: string) => {
+        insertImage: (thumbUrl: string, fullUrl?: string, mediaId?: number) => {
             if (editor) {
-                editor.chain().focus().setImage({ src: url }).run();
+                editor.chain().focus().setImage({ 
+                    src: thumbUrl, 
+                    'data-src': fullUrl || thumbUrl,
+                    'data-media-id': mediaId,
+                    'class': 'lazyload blur-up'
+                } as any).run();
             }
         }
     }), [editor]);
 
     const addLink = useCallback(() => {
-        const url = prompt('Enter URL:');
+        const url = prompt('Masukkan URL:');
         if (url && editor) {
             editor.chain().focus().setLink({ href: url }).run();
         }
@@ -64,7 +86,7 @@ const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, 
         if (onRequestImage) {
             onRequestImage();
         } else {
-            const url = prompt('Enter Image URL:');
+            const url = prompt('Masukkan URL Gambar:');
             if (url && editor) {
                 editor.chain().focus().setImage({ src: url }).run();
             }
@@ -93,22 +115,22 @@ const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, 
     return (
         <div className="border border-border-subtle rounded-md bg-background shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all relative">
             <div className="flex flex-wrap items-center gap-1 p-1 border-b border-border-subtle bg-surface/80 backdrop-blur-md sticky top-0 z-30 rounded-t-md">
-                <ToolbarButton title="Undo" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
+                <ToolbarButton title="Urungkan" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
                     <Undo className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Redo" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
+                <ToolbarButton title="Ulangi" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
                     <Redo className="w-4 h-4" />
                 </ToolbarButton>
 
                 <Divider />
 
-                <ToolbarButton title="Bold" onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}>
+                <ToolbarButton title="Tebal" onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}>
                     <Bold className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Italic" onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}>
+                <ToolbarButton title="Miring" onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}>
                     <Italic className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Strikethrough" onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}>
+                <ToolbarButton title="Coret" onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}>
                     <Strikethrough className="w-4 h-4" />
                 </ToolbarButton>
 
@@ -123,28 +145,28 @@ const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({ content, 
 
                 <Divider />
 
-                <ToolbarButton title="Bullet List" onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>
+                <ToolbarButton title="Daftar Bullet" onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>
                     <List className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Ordered List" onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}>
+                <ToolbarButton title="Daftar Numbering" onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}>
                     <ListOrdered className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Blockquote" onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}>
+                <ToolbarButton title="Kutipan" onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}>
                     <Quote className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Code Block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')}>
+                <ToolbarButton title="Blok Kode" onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')}>
                     <Code className="w-4 h-4" />
                 </ToolbarButton>
 
                 <Divider />
 
-                <ToolbarButton title="Link" onClick={addLink} active={editor.isActive('link')}>
+                <ToolbarButton title="Tautan" onClick={addLink} active={editor.isActive('link')}>
                     <LinkIcon className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Insert Image" onClick={addImage}>
+                <ToolbarButton title="Sisipkan Gambar" onClick={addImage}>
                     <ImageIcon className="w-4 h-4" />
                 </ToolbarButton>
-                <ToolbarButton title="Horizontal Rule" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+                <ToolbarButton title="Garis Horizontal" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
                     <Minus className="w-4 h-4" />
                 </ToolbarButton>
             </div>

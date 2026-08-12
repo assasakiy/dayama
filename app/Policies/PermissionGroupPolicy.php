@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\PermissionGroup;
-use App\Models\User;
-use App\Models\Role;
+use Modules\Core\Models\PermissionGroup;
+use Modules\Core\Models\User;
+use Modules\Core\Models\Role;
 use Illuminate\Auth\Access\Response;
 use App\Authorization\AuthorizationService;
 

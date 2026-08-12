@@ -2,7 +2,7 @@
 
 namespace App\Authorization;
 
-use App\Models\User;
+use Modules\Core\Models\User;
 
 class AuthorizationCapabilities
 {

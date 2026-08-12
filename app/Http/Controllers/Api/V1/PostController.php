@@ -8,7 +8,7 @@ use App\Http\Requests\Api\V1\StorePostRequest;
 use App\Http\Requests\Api\V1\UpdatePostRequest;
 use App\Http\Resources\Api\V1\PostCollection;
 use App\Http\Resources\Api\V1\PostResource;
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Reaction;
+use Modules\CMS\Models\Reaction;
 use Illuminate\Support\Facades\DB;
 
 class ReactionObserver

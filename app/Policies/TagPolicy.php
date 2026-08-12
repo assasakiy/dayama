@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Tag;
-use App\Models\User;
+use Modules\CMS\Models\Tag;
+use Modules\Core\Models\User;
 use Illuminate\Auth\Access\Response;
 use App\Authorization\AuthorizationService;
 

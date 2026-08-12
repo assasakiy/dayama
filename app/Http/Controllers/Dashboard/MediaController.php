@@ -9,11 +9,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\User;
-use App\Models\Post;
-use App\Models\SystemAsset;
-use App\Models\Role;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Modules\Core\Models\User;
+use Modules\CMS\Models\Post;
+use Modules\System\Models\SystemAsset;
+use Modules\Core\Models\Role;
+use Modules\Core\Models\Media;
 
 class MediaController
 {
@@ -36,7 +36,7 @@ class MediaController
                       $subQ->where('model_type', Post::class)
                            ->whereHasMorph('model', [Post::class]);
                   })
-                  ->orWhere('model_type', \App\Models\Category::class)
+                  ->orWhere('model_type', \Modules\CMS\Models\Category::class)
                   ->orWhere('model_type', SystemAsset::class);
             })
             ->latest();
@@ -118,7 +118,7 @@ class MediaController
                                 ->unique()
                                 ->filter()
                                 ->values();
-        $filterUsers = User::whereIn('id', $allUploaderIds)->get(['id', 'name']);
+        $filterUsers = User::whereIn('id', $allUploaderIds)->get(['id']);
 
         return Inertia::render('Media/Index', [
             'media' => $media,
@@ -142,7 +142,7 @@ class MediaController
                            ->where('model_id', $user->id);
                   })
                   ->orWhere('model_type', Post::class)
-                  ->orWhere('model_type', \App\Models\Category::class)
+                  ->orWhere('model_type', \Modules\CMS\Models\Category::class)
                   ->orWhere('model_type', SystemAsset::class);
             })
             ->latest();
@@ -203,6 +203,43 @@ class MediaController
             ->toMediaCollection('library');
 
         return redirect()->back()->with('success', 'File uploaded successfully.');
+    }
+
+    public function apiStore(Request $request): \Illuminate\Http\JsonResponse
+    {
+        Gate::authorize('create', Media::class);
+
+        $request->validate([
+            'file' => ['required', 'image', 'max:5120'], // Max 5MB
+        ]);
+
+        $media = $request->user()->addMedia($request->file('file'))
+            ->withCustomProperties([
+                'uploaded_by' => $request->user()->id,
+                'is_public' => false
+            ])
+            ->toMediaCollection('library');
+
+        return response()->json([
+            'id' => $media->id,
+            'name' => $media->name,
+            'file_name' => $media->file_name,
+            'mime_type' => $media->mime_type,
+            'size' => $media->size,
+            'human_readable_size' => $media->human_readable_size,
+            'thumbnail_url' => (function() use ($media) {
+                try {
+                    return parse_url($media->getUrl('thumb'), PHP_URL_PATH);
+                } catch (\Exception $e) {
+                    return parse_url($media->getUrl(), PHP_URL_PATH);
+                }
+            })(),
+            'original_url' => parse_url($media->getUrl(), PHP_URL_PATH),
+            'created_at' => $media->created_at->toIso8601String(),
+            'model_type' => $media->model_type,
+            'model_id' => $media->model_id,
+            'custom_properties' => $media->custom_properties,
+        ]);
     }
 
     public function update(Request $request, Media $medium): RedirectResponse

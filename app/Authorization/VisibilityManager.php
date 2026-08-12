@@ -3,7 +3,7 @@
 namespace App\Authorization;
 
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\User;
+use Modules\Core\Models\User;
 use InvalidArgumentException;
 use Closure;
 

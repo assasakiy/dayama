@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class PostService

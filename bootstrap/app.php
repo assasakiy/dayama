@@ -41,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Mendaftarkan alias middleware agar bisa dipanggil di rute
         $middleware->alias([
             'dashboard.access' => \App\Http\Middleware\CheckDashboardAccess::class,
+            'institution.scope' => \App\Http\Middleware\CheckInstitutionScope::class,
         ]);
 
         // Kustomisasi pengalihan Guest ke domain Auth

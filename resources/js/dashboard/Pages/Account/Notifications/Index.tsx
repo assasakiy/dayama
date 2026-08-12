@@ -24,8 +24,8 @@ export default function NotificationsIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Notifications" 
-            description="Manage how you receive alerts and updates."
+            title="Notifikasi" 
+            description="Kelola cara Anda menerima notifikasi dan pembaruan."
         >
             <form onSubmit={submit} className="space-y-6">
                 
@@ -36,17 +36,17 @@ export default function NotificationsIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Email Notifications
+                            Notifikasi Email
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Control which emails are sent to your primary email address.
+                            Kontrol email mana yang dikirim ke alamat email utama Anda.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Weekly Newsletter</h3>
-                                <p className="text-sm text-muted-foreground">Receive a weekly digest of top stories and news.</p>
+                                <h3 className="text-sm font-medium">Buletin Mingguan</h3>
+                                <p className="text-sm text-muted-foreground">Terima ringkasan mingguan dari cerita dan berita teratas.</p>
                             </div>
                             <Switch 
                                 checked={data.email_newsletter}
@@ -55,8 +55,8 @@ export default function NotificationsIndex() {
                         </div>
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Account Updates</h3>
-                                <p className="text-sm text-muted-foreground">Important notifications about your account security and billing.</p>
+                                <h3 className="text-sm font-medium">Pembaruan Akun</h3>
+                                <p className="text-sm text-muted-foreground">Notifikasi penting tentang keamanan dan penagihan akun Anda.</p>
                             </div>
                             <Switch 
                                 checked={data.email_updates}
@@ -65,8 +65,8 @@ export default function NotificationsIndex() {
                         </div>
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Marketing & Offers</h3>
-                                <p className="text-sm text-muted-foreground">Promotional emails, special offers, and event invitations.</p>
+                                <h3 className="text-sm font-medium">Pemasaran & Penawaran</h3>
+                                <p className="text-sm text-muted-foreground">Email promosi, penawaran khusus, dan undangan acara.</p>
                             </div>
                             <Switch 
                                 checked={data.email_marketing}
@@ -83,17 +83,17 @@ export default function NotificationsIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <Bell className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Push Notifications
+                            Notifikasi Push
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Control alerts delivered directly to your browser or device.
+                            Kontrol notifikasi yang dikirim langsung ke browser atau perangkat Anda.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Comments</h3>
-                                <p className="text-sm text-muted-foreground">Get notified when someone comments on your posts.</p>
+                                <h3 className="text-sm font-medium">Komentar</h3>
+                                <p className="text-sm text-muted-foreground">Dapatkan notifikasi saat seseorang berkomentar di postingan Anda.</p>
                             </div>
                             <Switch 
                                 checked={data.push_comments}
@@ -102,8 +102,8 @@ export default function NotificationsIndex() {
                         </div>
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Mentions</h3>
-                                <p className="text-sm text-muted-foreground">Get notified when you are mentioned in a comment or post.</p>
+                                <h3 className="text-sm font-medium">Sebutan</h3>
+                                <p className="text-sm text-muted-foreground">Dapatkan notifikasi saat Anda disebut dalam komentar atau postingan.</p>
                             </div>
                             <Switch 
                                 checked={data.push_mentions}
@@ -112,8 +112,8 @@ export default function NotificationsIndex() {
                         </div>
                         <div className="flex items-center justify-end md:justify-between w-full">
                             <div className="space-y-0.5">
-                                <h3 className="text-sm font-medium">Direct Messages</h3>
-                                <p className="text-sm text-muted-foreground">Get notified when you receive a new direct message.</p>
+                                <h3 className="text-sm font-medium">Pesan Langsung</h3>
+                                <p className="text-sm text-muted-foreground">Dapatkan notifikasi saat Anda menerima pesan langsung baru.</p>
                             </div>
                             <Switch 
                                 checked={data.push_messages}
@@ -123,7 +123,7 @@ export default function NotificationsIndex() {
                     </CardContent>
                     <div className="px-6 py-4 border-t border-border-subtle flex justify-end gap-3 bg-surface-muted/10 rounded-b-lg">
                         {recentlySuccessful && (
-                            <span className="text-sm text-green-600 self-center font-medium">Preferences saved.</span>
+                            <span className="text-sm text-green-600 self-center font-medium">Preferensi disimpan.</span>
                         )}
                         <Btn 
                             type="submit"
@@ -131,7 +131,7 @@ export default function NotificationsIndex() {
                             disabled={!isDirty || processing}
                             icon={<Save className="w-4 h-4" />}
                         >
-                            Save Preferences
+                            Simpan Preferensi
                         </Btn>
                     </div>
                 </Card>

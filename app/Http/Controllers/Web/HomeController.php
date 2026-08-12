@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Post;
-use App\Models\Category;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\Category;
 use Illuminate\View\View;
 
 class HomeController

@@ -16,7 +16,7 @@ class NewsletterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:newsletter_subscribers,email',
+            'email' => 'required|email|unique:landing_newsletter_subscribers,email',
         ];
     }
 }

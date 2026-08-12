@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Category;
-use App\Models\Post;
-use App\Models\User;
+use Modules\CMS\Models\Category;
+use Modules\CMS\Models\Post;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -33,7 +33,7 @@ class PostFactory extends Factory
             'views_count' => fake()->numberBetween(0, 5000),
             'reading_time' => fake()->numberBetween(3, 15),
             'author_id' => User::factory(),
-            'category_id' => Category::factory(),
+            'primary_category_id' => Category::factory(),
         ];
     }
 

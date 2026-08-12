@@ -11,7 +11,7 @@
             preg_match_all('/(?<=^|\s)@([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)/', $allText, $matches);
             $validUsernames = [];
             if (!empty($matches[1])) {
-                $validUsernames = \App\Models\User::whereIn('username', array_unique($matches[1]))->pluck('username')->toArray();
+                $validUsernames = \Modules\Core\Models\User::whereIn('username', array_unique($matches[1]))->pluck('username')->toArray();
             }
 
             $renderContent = function($text) use ($validUsernames) {

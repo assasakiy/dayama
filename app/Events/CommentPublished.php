@@ -17,7 +17,7 @@ class CommentPublished
     /**
      * Create a new event instance.
      */
-    public function __construct(public \App\Models\Comment $comment)
+    public function __construct(public \Modules\CMS\Models\Comment $comment)
     {
         //
     }

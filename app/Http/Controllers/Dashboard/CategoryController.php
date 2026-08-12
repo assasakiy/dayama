@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StoreCategoryRequest;
 use App\Http\Requests\Dashboard\UpdateCategoryRequest;
-use App\Models\Category;
+use Modules\CMS\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,7 +34,7 @@ class CategoryController
             $category->addMediaFromRequest('image')
                 ->toMediaCollection('image');
         } elseif ($request->filled('image_media_id')) {
-            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->image_media_id);
+            $media = \Modules\Core\Models\Media::find($request->image_media_id);
             if ($media) {
                 $media->copy($category, 'image');
             }
@@ -53,7 +53,7 @@ class CategoryController
             $category->addMediaFromRequest('image')->toMediaCollection('image');
         } elseif ($request->filled('image_media_id')) {
             $category->clearMediaCollection('image');
-            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->image_media_id);
+            $media = \Modules\Core\Models\Media::find($request->image_media_id);
             if ($media) {
                 $media->copy($category, 'image');
             }

@@ -7,10 +7,10 @@ namespace App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StorePostRequest;
 use App\Http\Requests\Dashboard\UpdatePostRequest;
-use App\Models\Category;
-use App\Models\Post;
-use App\Models\PostRevision;
-use App\Models\Tag;
+use Modules\CMS\Models\Category;
+use Modules\CMS\Models\Post;
+use Modules\CMS\Models\PostRevision;
+use Modules\CMS\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,7 +65,7 @@ class PostController
 
     public function store(StorePostRequest $request): RedirectResponse
     {
-        $data = collect($request->validated())->except(['thumbnail', 'tags', 'categories'])->toArray();
+        $data = collect($request->validated())->except(['thumbnail', 'tags', 'categories', 'thumbnail_media_id'])->toArray();
         if (isset($data['meta_keywords']) && is_string($data['meta_keywords'])) {
             $data['meta_keywords'] = array_values(array_filter(array_map('trim', explode(',', $data['meta_keywords']))));
         }
@@ -104,7 +104,7 @@ class PostController
             $post->addMediaFromRequest('thumbnail')
                 ->toMediaCollection('thumbnail');
         } elseif ($request->filled('thumbnail_media_id')) {
-            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->thumbnail_media_id);
+            $media = \Modules\Core\Models\Media::find($request->thumbnail_media_id);
             if ($media) {
                 $media->copy($post, 'thumbnail');
             }
@@ -135,7 +135,7 @@ class PostController
 
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        $data = collect($request->validated())->except(['thumbnail', 'tags', 'categories'])->toArray();
+        $data = collect($request->validated())->except(['thumbnail', 'tags', 'categories', 'thumbnail_media_id'])->toArray();
         if (isset($data['meta_keywords']) && is_string($data['meta_keywords'])) {
             $data['meta_keywords'] = array_values(array_filter(array_map('trim', explode(',', $data['meta_keywords']))));
         }
@@ -216,7 +216,7 @@ class PostController
             $post->addMediaFromRequest('thumbnail')
                 ->toMediaCollection('thumbnail');
         } elseif ($request->filled('thumbnail_media_id')) {
-            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->thumbnail_media_id);
+            $media = \Modules\Core\Models\Media::find($request->thumbnail_media_id);
             if ($media) {
                 $post->clearMediaCollection('thumbnail');
                 $media->copy($post, 'thumbnail');
@@ -347,34 +347,64 @@ class PostController
         $html = preg_replace_callback('/<(?:img|a)[^>]+(?:src|href)=["\']([^"\']+)["\'][^>]*>/i', function ($matches) use ($post, &$trackedMediaIds) {
             $fullTag = $matches[0];
             $url = $matches[1];
+            $mediaId = null;
             
-            $path = parse_url($url, PHP_URL_PATH);
-            
-            if ($path && str_starts_with($path, '/storage/')) {
-                $segments = explode('/', trim($path, '/'));
-                
-                if (count($segments) >= 3) {
-                    $mediaIdSegment = $segments[count($segments) - 2];
-                    
-                    if (is_numeric($mediaIdSegment)) {
-                        $mediaId = (int) $mediaIdSegment;
-                        /** @var \Spatie\MediaLibrary\MediaCollections\Models\Media|null $media */
-                        $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
-                        
-                        if ($media) {
-                            if ($media->model_type === Post::class && $media->model_id === $post->id && $media->collection_name === 'content_images') {
-                                $trackedMediaIds[] = $media->id;
-                                $currentPath = parse_url($media->getUrl(), PHP_URL_PATH);
-                                return str_replace($url, $currentPath, $fullTag);
-                            }
-                            
-                            $newMedia = $media->copy($post, 'content_images');
-                            $trackedMediaIds[] = $newMedia->id;
-                            
-                            $newPath = parse_url($newMedia->getUrl(), PHP_URL_PATH);
-                            return str_replace($url, $newPath, $fullTag);
-                        }
+            // Priority 1: data-media-id attribute
+            if (preg_match('/data-media-id=["\'](\d+)["\']/i', $fullTag, $idMatches)) {
+                $mediaId = (int) $idMatches[1];
+            } else {
+                // Priority 2: Extract from /storage/ path
+                $path = parse_url($url, PHP_URL_PATH);
+                if ($path && str_starts_with($path, '/storage/')) {
+                    $segments = explode('/', trim($path, '/'));
+                    // Check if it's a conversion path (e.g. 15/conversions/thumb.jpg)
+                    if (count($segments) >= 3 && $segments[count($segments) - 2] === 'conversions') {
+                        $mediaIdSegment = $segments[count($segments) - 3] ?? null;
+                    } else if (count($segments) >= 2) {
+                        $mediaIdSegment = $segments[count($segments) - 2] ?? null;
                     }
+
+                    if (isset($mediaIdSegment) && is_numeric($mediaIdSegment)) {
+                        $mediaId = (int) $mediaIdSegment;
+                    }
+                }
+            }
+            
+            if ($mediaId) {
+                /** @var \Modules\Core\Models\Media|null $media */
+                $media = \Modules\Core\Models\Media::find($mediaId);
+                
+                if ($media) {
+                    if ($media->model_type === Post::class && $media->model_id === $post->id && $media->collection_name === 'content_images') {
+                        $finalMedia = $media;
+                    } else {
+                        $finalMedia = $media->copy($post, 'content_images');
+                    }
+                    
+                    $trackedMediaIds[] = $finalMedia->id;
+                    
+                    if (stripos($fullTag, '<img') === 0) {
+                        $thumbUrl = null;
+                        try {
+                            $thumbUrl = parse_url($finalMedia->getUrl('thumb'), PHP_URL_PATH);
+                        } catch (\Exception $e) {
+                            $thumbUrl = parse_url($finalMedia->getUrl(), PHP_URL_PATH);
+                        }
+                        $fullUrl = parse_url($finalMedia->getUrl(), PHP_URL_PATH);
+                        
+                        // Strip old src, data-src, class, data-media-id to prevent duplication
+                        $cleanTag = preg_replace('/ (?:src|data-src|class|data-media-id)=["\'][^"\']*["\']/i', '', $fullTag);
+                        $cleanTag = rtrim($cleanTag, '/> ') . '>';
+                        
+                        return str_replace(
+                            '<img',
+                            sprintf('<img src="%s" data-src="%s" data-media-id="%d" class="lazyload blur-up"', $thumbUrl, $fullUrl, $finalMedia->id),
+                            $cleanTag
+                        );
+                    }
+                    
+                    $newPath = parse_url($finalMedia->getUrl(), PHP_URL_PATH);
+                    return str_replace($url, $newPath, $fullTag);
                 }
             }
             

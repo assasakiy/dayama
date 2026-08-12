@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Comment;
+use Modules\CMS\Models\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,7 +28,7 @@ class CommentController
 
         $validated = $request->validate($rules);
 
-        $post = \App\Models\Post::findOrFail($validated['post_id']);
+        $post = \Modules\CMS\Models\Post::findOrFail($validated['post_id']);
         $identity = \App\Services\IdentityService::current();
 
         $data = [

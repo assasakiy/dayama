@@ -41,16 +41,16 @@ trait HasUserstamps
 
     public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
+        return $this->belongsTo(\Modules\Core\Models\User::class, 'created_by');
     }
 
     public function updater(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'updated_by');
+        return $this->belongsTo(\Modules\Core\Models\User::class, 'updated_by');
     }
 
     public function deleter(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'deleted_by');
+        return $this->belongsTo(\Modules\Core\Models\User::class, 'deleted_by');
     }
 }

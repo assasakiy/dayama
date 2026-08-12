@@ -2,7 +2,7 @@
 
 namespace App\Authorization\Contracts;
 
-use App\Models\User;
+use Modules\Core\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 interface VisibilityScope

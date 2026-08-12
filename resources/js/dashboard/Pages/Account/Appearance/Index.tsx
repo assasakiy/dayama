@@ -19,8 +19,8 @@ export default function AppearanceIndex() {
 
     return (
         <AccountSettingsLayout
-            title="Appearance"
-            description="Customize the look and feel of your workspace."
+            title="Tampilan"
+            description="Sesuaikan tampilan workspace Anda."
         >
             <form onSubmit={submit} className="space-y-6">
                 <Card>
@@ -29,17 +29,17 @@ export default function AppearanceIndex() {
                             <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
                                 <Palette className="w-3.5 h-3.5 text-muted-foreground" />
                             </span>
-                            Theme Preference
+                            Preferensi Tema
                         </CardTitle>
                         <CardDescription className="text-xs mt-1.5 ml-8">
-                            Select or customize your UI theme.
+                            Pilih atau sesuaikan tema UI.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="flex flex-col gap-4">
-                            <label className="text-sm font-medium">Interface Theme</label>
+                            <label className="text-sm font-medium">Tema Antarmuka</label>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                {([['light', 'Light', Sun], ['dark', 'Dark', Moon], ['system', 'System', Monitor]] as const).map(([val, label, Icon]) => (
+                                {([['light', 'Terang', Sun], ['dark', 'Gelap', Moon], ['system', 'Sistem', Monitor]] as const).map(([val, label, Icon]) => (
                                     <button
                                         key={val}
                                         type="button"
@@ -56,14 +56,14 @@ export default function AppearanceIndex() {
                                 ))}
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                                If 'System' is selected, the theme will automatically match your operating system's appearance.
+                                Jika 'Sistem' dipilih, tema akan otomatis menyesuaikan dengan tampilan sistem operasi Anda.
                             </p>
                         </div>
                     </CardContent>
                     <div className="px-6 py-4 border-t border-border-subtle flex items-center justify-end gap-3 bg-surface-muted/10 rounded-b-lg">
                         {recentlySuccessful && (
                             <span className="text-sm text-green-600 flex items-center gap-1.5 font-medium">
-                                <CheckCircle2 className="w-4 h-4" /> Saved!
+                                <CheckCircle2 className="w-4 h-4" /> Tersimpan!
                             </span>
                         )}
                         <Btn
@@ -72,7 +72,7 @@ export default function AppearanceIndex() {
                             disabled={!isDirty || processing}
                             icon={<Save className="w-4 h-4" />}
                         >
-                            Save Preferences
+                            Simpan Preferensi
                         </Btn>
                     </div>
                 </Card>

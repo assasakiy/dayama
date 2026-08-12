@@ -26,7 +26,8 @@ export default function ProfileIndex() {
     const bannerInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors, recentlySuccessful, reset, transform, isDirty } = useForm({
-        name: user.name || '',
+        full_name: user.profile?.full_name || '',
+        nickname: user.profile?.nickname || '',
         username: user.username || '',
         biography: user.biography || '',
         website: user.website || '',
@@ -134,8 +135,8 @@ export default function ProfileIndex() {
 
     return (
         <AccountSettingsLayout 
-            title="Profile" 
-            description="Manage your public profile and how you appear to others."
+            title="Profil" 
+            description="Kelola profil publik Anda dan tampilan Anda kepada orang lain."
         >
             {/* Facebook-style Cover & Avatar Header */}
             <div className="bg-background border border-border-subtle rounded-xl overflow-hidden mb-6 shadow-sm">
@@ -153,14 +154,14 @@ export default function ProfileIndex() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); user.banner_media ? setViewingMedia(user.banner_media) : null; }}>
-                            <Eye className="w-4 h-4 mr-2" /> View Image
+                            <Eye className="w-4 h-4 mr-2" /> Lihat Gambar
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); bannerInputRef.current?.click(); }}>
-                            <Upload className="w-4 h-4 mr-2" /> Upload Image
+                            <Upload className="w-4 h-4 mr-2" /> Unggah Gambar
                         </DropdownMenuItem>
                         {user.banner_url && (
                             <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setIsDeleteBannerConfirmOpen(true)}>
-                                <Trash className="w-4 h-4 mr-2" /> Remove Image
+                                <Trash className="w-4 h-4 mr-2" /> Hapus Gambar
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>
@@ -197,14 +198,14 @@ export default function ProfileIndex() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="center">
                                     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); user.avatar_media ? setViewingMedia(user.avatar_media) : null; }}>
-                                        <Eye className="w-4 h-4 mr-2" /> View Image
+                                        <Eye className="w-4 h-4 mr-2" /> Lihat Gambar
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); avatarInputRef.current?.click(); }}>
-                                        <Upload className="w-4 h-4 mr-2" /> Upload Image
+                                        <Upload className="w-4 h-4 mr-2" /> Unggah Gambar
                                     </DropdownMenuItem>
                                     {user.avatar_url && (
                                         <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setIsDeleteAvatarConfirmOpen(true)}>
-                                            <Trash className="w-4 h-4 mr-2" /> Remove Image
+                                            <Trash className="w-4 h-4 mr-2" /> Hapus Gambar
                                         </DropdownMenuItem>
                                     )}
                                 </DropdownMenuContent>
@@ -237,7 +238,7 @@ export default function ProfileIndex() {
 
                     <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
                         {user.roles?.map((role: any) => {
-                            const roleName = typeof role === 'string' ? role : role.name;
+                            const roleDisplayName = typeof role === 'string' ? role : (role.display_name || role.name);
                             const roleKey = typeof role === 'string' ? role : role.id;
                             return (
                                 <span
@@ -245,7 +246,7 @@ export default function ProfileIndex() {
                                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20"
                                 >
                                     <ShieldCheck className="w-3.5 h-3.5" />
-                                    {roleName}
+                                    {roleDisplayName}
                                 </span>
                             );
                         })}
@@ -261,38 +262,48 @@ export default function ProfileIndex() {
                     editingSection === 'personal' ? (
                         <Card id="edit-basic-info" className="border-primary/20 shadow-sm scroll-mt-24">
                             <CardHeader className="pb-3 border-b border-border-subtle bg-surface-muted/30">
-                                <CardTitle className="text-sm font-semibold text-primary">Edit Basic Information</CardTitle>
+                                <CardTitle className="text-sm font-semibold text-primary">Edit Informasi Dasar</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-5">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-2.5">
-                                        <label className="text-sm font-medium">Full Name</label>
+                                        <label className="text-sm font-medium">Nama Lengkap</label>
                                         <input
                                             type="text"
-                                            value={data.name}
-                                            onChange={e => setData('name', e.target.value)}
+                                            value={data.full_name}
+                                            onChange={e => setData('full_name', e.target.value)}
                                             className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                                         />
-                                        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                                        {errors.full_name && <p className="text-sm text-destructive">{errors.full_name}</p>}
                                     </div>
                                     <div className="space-y-2.5">
-                                        <label className="text-sm font-medium">Username</label>
+                                        <label className="text-sm font-medium">Nama Panggilan</label>
                                         <input
                                             type="text"
-                                            value={data.username}
-                                            onChange={e => setData('username', e.target.value)}
+                                            value={data.nickname}
+                                            onChange={e => setData('nickname', e.target.value)}
                                             className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                                         />
-                                        {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
+                                        {errors.nickname && <p className="text-sm text-destructive">{errors.nickname}</p>}
                                     </div>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <label className="text-sm font-medium">Biography</label>
+                                    <label className="text-sm font-medium">Username</label>
+                                    <input
+                                        type="text"
+                                        value={data.username}
+                                        onChange={e => setData('username', e.target.value)}
+                                        className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
+                                    />
+                                    {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
+                                </div>
+                                <div className="space-y-2.5">
+                                    <label className="text-sm font-medium">Biografi</label>
                                     <textarea
                                         value={data.biography}
                                         onChange={e => setData('biography', e.target.value)}
                                         rows={4}
-                                        placeholder="Write a few sentences about yourself."
+                                        placeholder="Tulis beberapa kalimat tentang diri Anda."
                                         className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none transition-all"
                                     />
                                     {errors.biography && <p className="text-sm text-destructive">{errors.biography}</p>}
@@ -305,7 +316,7 @@ export default function ProfileIndex() {
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-surface-muted text-foreground border border-border rounded-md text-sm font-medium hover:bg-border/50 transition-colors"
                                 >
                                     <X className="w-4 h-4" />
-                                    Cancel
+                                    Batal
                                 </button>
                                 <Btn 
                                     type="button"
@@ -314,18 +325,18 @@ export default function ProfileIndex() {
                                     disabled={!isDirty || processing}
                                     icon={<Save className="w-4 h-4" />}
                                 >
-                                    Save Changes
+                                    Simpan Perubahan
                                 </Btn>
                             </div>
                         </Card>
                     ) : (
                         <Card>
                             <CardHeader className="pb-3 border-b border-border-subtle flex flex-row items-center justify-between space-y-0">
-                                <CardTitle className="text-sm font-semibold">About</CardTitle>
+                                <CardTitle className="text-sm font-semibold">Tentang</CardTitle>
                                 <button 
                                     onClick={() => setEditingSection('personal')}
                                     className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                                    title="Edit Personal Info"
+                                    title="Edit Informasi Pribadi"
                                 >
                                     <Pencil className="w-3.5 h-3.5" />
                                 </button>
@@ -333,7 +344,7 @@ export default function ProfileIndex() {
                             <CardContent className="pt-4 space-y-4">
                                 <div className="space-y-3 pb-4 border-b border-border-subtle">
                                     <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[120px_1fr] gap-2 items-start">
-                                        <span className="text-sm text-muted-foreground font-medium">Full Name</span>
+                                        <span className="text-sm text-muted-foreground font-medium">Nama Lengkap</span>
                                         <span className="text-sm font-medium text-foreground">{user.name}</span>
                                     </div>
                                     <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[120px_1fr] gap-2 items-start">
@@ -345,39 +356,40 @@ export default function ProfileIndex() {
                                         <span className="text-sm font-medium text-foreground">{user.email}</span>
                                     </div>
                                     <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[120px_1fr] gap-2 items-start">
-                                        <span className="text-sm text-muted-foreground font-medium">Role</span>
+                                        <span className="text-sm text-muted-foreground font-medium">Peran</span>
                                         <div className="flex flex-wrap gap-1.5">
                                             {user.roles?.map((role: any) => {
-                                                const roleName = typeof role === 'string' ? role : role.name;
+                                                const roleDisplayName = typeof role === 'string' ? role : (role.display_name || role.name);
                                                 const roleKey = typeof role === 'string' ? role : role.id;
                                                 return (
-                                                    <span key={roleKey} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                                        {roleName}
+                                                    <span key={roleKey} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                                        <ShieldCheck className="w-3 h-3" />
+                                                        {roleDisplayName}
                                                     </span>
-                                                )
+                                                );
                                             })}
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div>
-                                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Biography</h4>
+                                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Biografi</h4>
                                     {user.biography ? (
                                         <p className="text-sm leading-relaxed text-foreground">{user.biography}</p>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground italic">No biography provided.</p>
+                                        <p className="text-sm text-muted-foreground italic">Tidak ada biografi.</p>
                                     )}
                                 </div>
                                 <div className="pt-4 border-t border-border-subtle grid grid-cols-2 gap-3">
                                     <div className="text-center">
                                         <FileText className="w-5 h-5 text-primary mx-auto mb-1.5" />
                                         <p className="text-lg font-semibold">{user.posts_count || 0}</p>
-                                        <p className="text-xs text-muted-foreground">Posts</p>
+                                        <p className="text-xs text-muted-foreground">Postingan</p>
                                     </div>
                                     <div className="text-center">
                                         <BadgeCheck className={`w-5 h-5 mx-auto mb-1.5 ${user.email_verified_at ? 'text-primary' : 'text-muted-foreground/40'}`} />
-                                        <p className="text-lg font-semibold">{user.email_verified_at ? 'Yes' : 'No'}</p>
-                                        <p className="text-xs text-muted-foreground">Verified</p>
+                                        <p className="text-lg font-semibold">{user.email_verified_at ? 'Ya' : 'Tidak'}</p>
+                                        <p className="text-xs text-muted-foreground">Terverifikasi</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -392,12 +404,12 @@ export default function ProfileIndex() {
                             <CardHeader className="pb-3 border-b border-border-subtle bg-surface-muted/30">
                                 <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary">
                                     <Globe className="w-4 h-4" />
-                                    Edit Online Presence
+                                    Edit Kehadiran Online
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-5">
                                 <div className="space-y-2.5">
-                                    <label className="text-sm font-medium">Personal Website</label>
+                                    <label className="text-sm font-medium">Situs Web Pribadi</label>
                                     <input
                                         type="url"
                                         value={data.website}
@@ -408,7 +420,7 @@ export default function ProfileIndex() {
                                     {errors.website && <p className="text-sm text-destructive">{errors.website}</p>}
                                 </div>
                                 <div className="space-y-2.5">
-                                    <label className="text-sm font-medium">GitHub URL</label>
+                                    <label className="text-sm font-medium">URL GitHub</label>
                                     <input
                                         type="url"
                                         value={data.social_links.github}
@@ -418,7 +430,7 @@ export default function ProfileIndex() {
                                     />
                                 </div>
                                 <div className="space-y-2.5">
-                                    <label className="text-sm font-medium">X (Twitter) URL</label>
+                                    <label className="text-sm font-medium">URL X (Twitter)</label>
                                     <input
                                         type="url"
                                         value={data.social_links.twitter}
@@ -428,7 +440,7 @@ export default function ProfileIndex() {
                                     />
                                 </div>
                                 <div className="space-y-2.5">
-                                    <label className="text-sm font-medium">LinkedIn URL</label>
+                                    <label className="text-sm font-medium">URL LinkedIn</label>
                                     <input
                                         type="url"
                                         value={data.social_links.linkedin}
@@ -445,7 +457,7 @@ export default function ProfileIndex() {
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-surface-muted text-foreground border border-border rounded-md text-sm font-medium hover:bg-border/50 transition-colors"
                                 >
                                     <X className="w-4 h-4" />
-                                    Cancel
+                                    Batal
                                 </button>
                                 <Btn 
                                     type="button"
@@ -454,7 +466,7 @@ export default function ProfileIndex() {
                                     disabled={!isDirty || processing}
                                     icon={<Save className="w-4 h-4" />}
                                 >
-                                    Save Changes
+                                    Simpan Perubahan
                                 </Btn>
                             </div>
                         </Card>
@@ -463,15 +475,15 @@ export default function ProfileIndex() {
                             <CardHeader className="pb-3 border-b border-border-subtle flex flex-row items-center justify-between space-y-0">
                                 <CardTitle className="flex items-center gap-2 text-sm">
                                     <span className="w-6 h-6 rounded bg-surface-muted flex items-center justify-center">
-                                        <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-                                    </span>
-                                    Online Presence
-                                </CardTitle>
-                                <button 
-                                    onClick={() => setEditingSection('social')}
-                                    className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                                    title="Edit Social Links"
-                                >
+                                    <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                </span>
+                                Kehadiran Online
+                            </CardTitle>
+                            <button 
+                                onClick={() => setEditingSection('social')}
+                                className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                                title="Edit Tautan Sosial"
+                            >
                                     <Pencil className="w-3.5 h-3.5" />
                                 </button>
                             </CardHeader>
@@ -482,7 +494,7 @@ export default function ProfileIndex() {
                                             <Globe className="w-4.5 h-4.5 text-muted-foreground" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground font-medium mb-0.5">Website</p>
+                                            <p className="text-xs text-muted-foreground font-medium mb-0.5">Situs Web</p>
                                             <a href={user.website} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-primary transition-colors">
                                                 {new URL(user.website).hostname}
                                             </a>
@@ -504,7 +516,7 @@ export default function ProfileIndex() {
                                         </div>
                                     ) : null)
                                 ) : !user.website && (
-                                    <p className="text-sm text-muted-foreground">No online presence configured.</p>
+                                    <p className="text-sm text-muted-foreground">Belum ada tautan online.</p>
                                 )}
                             </CardContent>
                         </Card>
@@ -518,9 +530,9 @@ export default function ProfileIndex() {
             <ConfirmDialog
                 open={isDeleteAvatarConfirmOpen}
                 onOpenChange={setIsDeleteAvatarConfirmOpen}
-                title="Delete Profile Picture"
-                message="Are you sure you want to delete your profile picture?"
-                confirmLabel="Delete"
+                title="Hapus Foto Profil"
+                message="Apakah Anda yakin ingin menghapus foto profil?"
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={confirmDeleteAvatar}
             />
@@ -528,9 +540,9 @@ export default function ProfileIndex() {
             <ConfirmDialog
                 open={isDeleteBannerConfirmOpen}
                 onOpenChange={setIsDeleteBannerConfirmOpen}
-                title="Delete Cover Photo"
-                message="Are you sure you want to delete your cover photo?"
-                confirmLabel="Delete"
+                title="Hapus Foto Sampul"
+                message="Apakah Anda yakin ingin menghapus foto sampul?"
+                confirmLabel="Hapus"
                 variant="danger"
                 onConfirm={confirmDeleteBanner}
             />
@@ -539,18 +551,18 @@ export default function ProfileIndex() {
             <BottomSheet 
                 open={isAvatarMenuOpen} 
                 onOpenChange={setIsAvatarMenuOpen}
-                title="Profile Picture"
+                title="Foto Profil"
             >
                 <div className="space-y-1">
                     <button onClick={() => { setIsAvatarMenuOpen(false); user.avatar_media ? setViewingMedia(user.avatar_media) : null; }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                        <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> View Image
+                        <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> Lihat Gambar
                     </button>
                     <button onClick={() => { setIsAvatarMenuOpen(false); avatarInputRef.current?.click(); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                        <Upload className="w-5 h-5 mr-3 text-muted-foreground" /> Upload Image
+                        <Upload className="w-5 h-5 mr-3 text-muted-foreground" /> Unggah Gambar
                     </button>
                     {user.avatar_url && (
                         <button onClick={() => { setIsAvatarMenuOpen(false); setIsDeleteAvatarConfirmOpen(true); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
-                            <Trash className="w-5 h-5 mr-3" /> Remove Image
+                            <Trash className="w-5 h-5 mr-3" /> Hapus Gambar
                         </button>
                     )}
                 </div>
@@ -559,18 +571,18 @@ export default function ProfileIndex() {
             <BottomSheet 
                 open={isBannerMenuOpen} 
                 onOpenChange={setIsBannerMenuOpen}
-                title="Cover Photo"
+                title="Foto Sampul"
             >
                 <div className="space-y-1">
                     <button onClick={() => { setIsBannerMenuOpen(false); user.banner_media ? setViewingMedia(user.banner_media) : null; }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                        <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> View Image
+                        <Eye className="w-5 h-5 mr-3 text-muted-foreground" /> Lihat Gambar
                     </button>
                     <button onClick={() => { setIsBannerMenuOpen(false); bannerInputRef.current?.click(); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl hover:bg-surface-muted transition-colors text-foreground">
-                        <Upload className="w-5 h-5 mr-3 text-muted-foreground" /> Upload Image
+                        <Upload className="w-5 h-5 mr-3 text-muted-foreground" /> Unggah Gambar
                     </button>
                     {user.banner_url && (
                         <button onClick={() => { setIsBannerMenuOpen(false); setIsDeleteBannerConfirmOpen(true); }} className="w-full flex items-center px-4 py-3 text-sm rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
-                            <Trash className="w-5 h-5 mr-3" /> Remove Image
+                            <Trash className="w-5 h-5 mr-3" /> Hapus Gambar
                         </button>
                     )}
                 </div>

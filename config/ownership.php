@@ -11,7 +11,7 @@ return [
     | relationships (e.g. fn($model) => $model->relation->owner_id).
     |
     */
-    App\Models\Post::class => 'author_id',
-    App\Models\Comment::class => 'user_id',
-    App\Models\ActivityLog::class => 'causer_id',
+    Modules\CMS\Models\Post::class => 'author_id',
+    Modules\CMS\Models\Comment::class => 'user_id',
+    Modules\System\Models\ActivityLog::class => 'causer_id',
 ];

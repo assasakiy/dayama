@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Comment;
-use App\Models\Post;
+use Modules\CMS\Models\Comment;
+use Modules\CMS\Models\Post;
 use Illuminate\Support\Facades\DB;
 
 class CommentService

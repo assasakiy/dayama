@@ -2,7 +2,7 @@
 
 namespace App\View\Components;
 
-use App\Models\Post;
+use Modules\CMS\Models\Post;
 use Illuminate\View\Component;
 use Illuminate\Support\Str;
 

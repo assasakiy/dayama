@@ -1,17 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import DashboardLayout from '@dashboard/Layouts/DashboardLayout';
 import {
     Settings, FileText, Search, Image as ImageIcon, Mail, Shield,
     Palette, Globe, LayoutTemplate, Save, Info, Lock,
-    Eye, EyeOff, ChevronRight, ArrowLeft, PanelsTopLeft, Bell, X
+    Eye, EyeOff, ChevronRight, ArrowLeft, PanelsTopLeft, Bell, X, Check
 } from 'lucide-react';
 import { Btn } from '@dashboard/Components/ui/btn';
 import { Switch } from '@dashboard/Components/ui/switch';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@dashboard/Components/ui/select';
 import MediaPicker from '@dashboard/Components/MediaPicker';
 
-// Icon mapping for tabs
 const ICONS: Record<string, React.ReactNode> = {
     PanelsTopLeft: <PanelsTopLeft className="w-3.5 h-3.5" />,
     Globe:         <Globe className="w-3.5 h-3.5" />,
@@ -35,25 +34,36 @@ type Group = {
     description: string;
 };
 
-// Hardcoded Custom Tabs for Settings (combining fields dynamically)
 const SETTINGS_TABS = [
-    { key: 'branding', name: 'Branding', icon: 'PanelsTopLeft', description: 'Manage brand identity and search optimization.' },
-    { key: 'visual', name: 'Visual & Theme', icon: 'Globe', description: 'Personalize appearance and localization.' },
-    { key: 'system', name: 'System & Security', icon: 'Lock', description: 'Technical configuration, security, and media.' },
-    { key: 'contact', name: 'Contact & Socials', icon: 'Bell', description: 'Public contact information and links.' },
+    { key: 'branding', name: 'Branding', icon: 'PanelsTopLeft', description: 'Kelola identitas merek dan optimasi pencarian.' },
+    { key: 'visual', name: 'Visual & Tema', icon: 'Globe', description: 'Personalisasi tampilan dan lokalisasi.' },
+    { key: 'system', name: 'Sistem & Keamanan', icon: 'Lock', description: 'Konfigurasi teknis, keamanan, dan media.' },
+    { key: 'contact', name: 'Kontak & Sosial', icon: 'Bell', description: 'Informasi kontak publik dan tautan.' },
 ];
 
 const SUB_GROUPS: Record<string, { title: string, description: string }> = {
-    identity: { title: 'Site Identity', description: 'Main logo, name, and tagline of the website.' },
-    seo: { title: 'SEO & Meta Tags', description: 'Search engine settings and analytics integration.' },
-    appearance: { title: 'Appearance', description: 'Primary colors and basic layout.' },
-    localization: { title: 'Localization & Time', description: 'Language, date format, and timezone.' },
-    security: { title: 'Security', description: 'Authentication, login protection, and maintenance.' },
-    media: { title: 'Media & Storage', description: 'Upload limits and image optimization.' },
-    mail: { title: 'Mail Configuration', description: 'SMTP server settings for outgoing emails.' },
-    domains: { title: 'Domain Settings', description: 'Multi-domain and URL configurations.' },
-    pages: { title: 'Main Pages', description: 'Homepage and blog settings.' },
-    other: { title: 'Other Settings', description: 'Additional configurations.' },
+    identity: { title: 'Identitas Situs', description: 'Logo utama, nama, dan tagline situs web.' },
+    seo: { title: 'SEO & Meta Tag', description: 'Pengaturan mesin pencari dan integrasi analitik.' },
+    appearance: { title: 'Tampilan', description: 'Skema warna, prasetel, dan warna teks.' },
+    localization: { title: 'Lokalisasi & Waktu', description: 'Bahasa, format tanggal, dan zona waktu.' },
+    security: { title: 'Keamanan', description: 'Autentikasi, perlindungan login, dan pemeliharaan.' },
+    media: { title: 'Media & Penyimpanan', description: 'Batas unggahan dan optimasi gambar.' },
+    mail: { title: 'Konfigurasi Email', description: 'Pengaturan server SMTP untuk email keluar.' },
+    domains: { title: 'Pengaturan Domain', description: 'Multi-domain dan konfigurasi URL.' },
+    pages: { title: 'Halaman Utama', description: 'Pengaturan beranda dan blog.' },
+    other: { title: 'Pengaturan Lainnya', description: 'Konfigurasi tambahan.' },
+};
+
+const PRESET_COLORS: Record<string, { primary: string, secondary: string, accent: string, heading: string, body: string, muted: string }> = {
+    green:  { primary: '#15803D', secondary: '#0F766E', accent: '#D4A017', heading: '#0F172A', body: '#334155', muted: '#64748B' },
+    orange: { primary: '#EA580C', secondary: '#D97706', accent: '#0891B2', heading: '#1C1917', body: '#44403C', muted: '#78716C' },
+    blue:   { primary: '#2563EB', secondary: '#7C3AED', accent: '#059669', heading: '#0F172A', body: '#334155', muted: '#64748B' },
+};
+
+const PRESET_META: Record<string, { label: string, desc: string, icon: string }> = {
+    green:  { label: 'Hijau Alami', desc: 'Hijau segar khas pesantren', icon: '🌿' },
+    orange: { label: 'Orange Hangat', desc: 'Semangat & kreativitas', icon: '🔥' },
+    blue:   { label: 'Biru Profesional', desc: 'Modern & terpercaya', icon: '🌊' },
 };
 
 export default function SettingsShow({
@@ -73,7 +83,6 @@ export default function SettingsShow({
     const { data, setData, put, processing, isDirty, transform } = useForm<Record<string, any>>(() => {
         const initial: Record<string, any> = {};
         for (const field of fields) {
-            // Provide a default for boolean 'false' strings
             let val = field.value;
             if (field.type === 'boolean' && typeof val === 'string') {
                 val = val === 'true' || val === '1';
@@ -114,13 +123,37 @@ export default function SettingsShow({
         });
     };
 
+    const handlePresetSelect = (preset: string) => {
+        setData((prev: Record<string, any>) => {
+            const next: Record<string, any> = { ...prev, 'appearance.color_preset': preset };
+            if (preset !== 'custom' && PRESET_COLORS[preset]) {
+                const c = PRESET_COLORS[preset];
+                next['appearance.primary_color'] = c.primary;
+                next['appearance.secondary_color'] = c.secondary;
+                next['appearance.accent_color'] = c.accent;
+                next['appearance.heading_color'] = c.heading;
+                next['appearance.body_color'] = c.body;
+                next['appearance.muted_color'] = c.muted;
+            }
+            return next;
+        });
+    };
+
     const handleSave = () => {
-        put(`/settings/${context}${isSingleGroup ? `/${activeTab}` : ''}`, {
+        let url = `/settings/${context}`;
+        if (context === 'landing') {
+            url = `/landing/settings`;
+        }
+        
+        if (isSingleGroup) {
+            url += `/${activeTab}`;
+        }
+
+        put(url, {
             preserveScroll: true,
         });
     };
 
-    // Get short label from key (e.g. 'general.site_name' → 'Site Name')
     const labelFrom = (key: string) => {
         const short = key.split('.').pop() ?? key;
         return short.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -139,7 +172,7 @@ export default function SettingsShow({
         if (fieldKey.startsWith('contact.') || fieldKey.startsWith('social.')) {
             return 'contact';
         }
-        return 'system'; // fallback
+        return 'system';
     };
 
     const getFieldSubGroup = (fieldKey: string) => {
@@ -159,7 +192,7 @@ export default function SettingsShow({
         return (
             <Select disabled={disabled} value={String(value || '')} onValueChange={v => handleFieldChange(key, v)}>
                 <SelectTrigger className={disabled ? 'opacity-70 bg-surface-muted cursor-not-allowed' : ''}>
-                    <SelectValue placeholder="Select an option..." />
+                    <SelectValue placeholder="Pilih opsi..." />
                 </SelectTrigger>
                 <SelectContent>
                     {options.map(opt => (
@@ -170,9 +203,168 @@ export default function SettingsShow({
         );
     };
 
+    const currentPreset = data['appearance.color_preset'] || 'green';
+    const isCustom = currentPreset === 'custom';
+
+    const previewUrl = (key: string) => {
+        const v = data[key];
+        const preview = data[key + '_preview'];
+        if (preview) return preview;
+        if (v instanceof File) return URL.createObjectURL(v);
+        return v || '';
+    };
+
+    const { domain_main } = usePage().props as { domain_main?: string };
+    const brandDomain = domain_main || 'test-blog.test';
+
+    const brandPreviewName = data['general.site_name'] || 'Nama Situs';
+    const brandPreviewTagline = data['general.tagline'] || 'Tagline situs';
+    const brandPreviewDesc = data['general.site_description'] || '';
+
+    const renderBrandingFields = (identityFields: SettingField[], seoFields: SettingField[]) => {
+        const logoField = identityFields.find(f => f.key === 'general.logo_url');
+        const faviconField = identityFields.find(f => f.key === 'general.favicon_url');
+        const logoUrl = previewUrl('general.logo_url');
+        const faviconUrl = previewUrl('general.favicon_url');
+        const hasLogo = !!logoUrl;
+
+        return (
+            <>
+                <div className="mb-8">
+                    <h3 className="text-base font-semibold mb-1">Pratinjau Brand</h3>
+                    <p className="text-xs text-muted-foreground mb-4">Pratinjau langsung tampilan brand Anda di situs.</p>
+
+                    <div className="rounded-xl border border-border-subtle overflow-hidden bg-white shadow-sm">
+                        <div className="p-5 sm:p-6" style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' }}>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden shrink-0 shadow-sm border border-white/10">
+                                    {hasLogo ? (
+                                        <img src={logoUrl} alt="" className="w-full h-full object-contain" />
+                                    ) : (
+                                        <PanelsTopLeft className="w-6 h-6 text-white/80" />
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-white font-bold text-lg truncate">{brandPreviewName}</div>
+                                    <div className="text-white/70 text-xs truncate">{brandPreviewTagline}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {brandPreviewDesc && (
+                            <div className="px-5 sm:px-6 py-4 text-sm text-muted-foreground leading-relaxed border-b border-border-subtle">
+                                {brandPreviewDesc}
+                            </div>
+                        )}
+                        <div className="px-5 sm:px-6 py-3 flex items-center gap-3 text-xs text-muted-foreground/60 bg-surface-muted/20">
+                            <Globe className="w-3.5 h-3.5" />
+                            {brandDomain}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-8">
+                    <h3 className="text-base font-semibold mb-1">Identitas Situs</h3>
+                    <p className="text-xs text-muted-foreground mb-4">Logo utama, nama, dan tagline situs web.</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {['general.site_name', 'general.tagline', 'general.site_description'].map(key => {
+                            const field = identityFields.find(f => f.key === key);
+                            if (!field) return null;
+                            const isFullWidth = key === 'general.site_description';
+                            return (
+                                <div key={key} className={isFullWidth ? 'md:col-span-2' : ''}>
+                                    <label className="block text-sm font-medium mb-1.5">{labelFrom(key)}</label>
+                                    {renderField(field)}
+                                    {field.description && (
+                                        <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1">
+                                            <Info className="w-3 h-3 shrink-0 mt-0.5" />
+                                            {field.description}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mt-5">
+                        <label className="block text-sm font-medium mb-3">Logo & Favicon</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {logoField && (
+                                <div className="rounded-lg border border-border-subtle overflow-hidden">
+                                    <div className="p-4 bg-surface-muted/30 border-b border-border-subtle flex items-center gap-3">
+                                        {logoUrl ? (
+                                            <img src={logoUrl} alt="" className="w-10 h-10 rounded-lg object-contain bg-background border border-border-subtle" />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-lg bg-surface-muted border border-border-subtle flex items-center justify-center">
+                                                <ImageIcon className="w-5 h-5 text-muted-foreground/50" />
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div className="text-sm font-medium">Logo</div>
+                                            <div className="text-xs text-muted-foreground">Tampil di header situs</div>
+                                        </div>
+                                    </div>
+                                    <div className="p-3">
+                                        {renderField(logoField)}
+                                    </div>
+                                </div>
+                            )}
+                            {faviconField && (
+                                <div className="rounded-lg border border-border-subtle overflow-hidden">
+                                    <div className="p-4 bg-surface-muted/30 border-b border-border-subtle flex items-center gap-3">
+                                        {faviconUrl ? (
+                                            <img src={faviconUrl} alt="" className="w-8 h-8 rounded object-contain bg-background border border-border-subtle" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded bg-surface-muted border border-border-subtle flex items-center justify-center">
+                                                <Search className="w-4 h-4 text-muted-foreground/50" />
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div className="text-sm font-medium">Favicon</div>
+                                            <div className="text-xs text-muted-foreground">Ikon tab browser</div>
+                                        </div>
+                                    </div>
+                                    <div className="p-3">
+                                        {renderField(faviconField)}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {seoFields.length > 0 && (
+                    <div>
+                        <h3 className="text-base font-semibold mb-1">SEO & Meta Tag</h3>
+                        <p className="text-xs text-muted-foreground mb-4">Pengaturan mesin pencari dan integrasi analitik.</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {seoFields.map(field => {
+                                const isFullWidth = field.type === 'boolean' || field.type === 'text' || field.key.includes('description');
+                                return (
+                                    <div key={field.key} className={isFullWidth ? 'md:col-span-2' : ''}>
+                                        <label className="block text-sm font-medium mb-1.5">{labelFrom(field.key)}</label>
+                                        {renderField(field)}
+                                        {field.description && (
+                                            <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1">
+                                                <Info className="w-3 h-3 shrink-0 mt-0.5" />
+                                                {field.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
+
     const renderField = (field: SettingField) => {
         const value = data[field.key];
-        const disabled = field.is_env || field.is_locked;
+        const isAppearanceColor = field.key.startsWith('appearance.') && field.key !== 'appearance.color_preset' && field.key.includes('color');
+        const disabled = field.is_env || field.is_locked || (isAppearanceColor && !isCustom);
         const baseClass = `w-full rounded-md border px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-primary ${
             disabled
                 ? 'bg-surface-muted text-muted-foreground border-border-subtle cursor-not-allowed opacity-70'
@@ -188,7 +380,7 @@ export default function SettingsShow({
                         disabled={disabled}
                     />
                     <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                        {!!value ? 'Enabled' : 'Disabled'}
+                        {!!value ? 'Aktif' : 'Nonaktif'}
                     </span>
                 </label>
             );
@@ -225,14 +417,13 @@ export default function SettingsShow({
                             }`}
                         >
                             <ImageIcon className="w-5 h-5" />
-                            <span className="text-sm font-medium">Select or upload image</span>
+                            <span className="text-sm font-medium">Pilih atau unggah gambar</span>
                         </button>
                     )}
                 </div>
             );
         }
 
-        // Dropdowns mapped to Select
         if (field.key === 'mail.encryption') {
             return renderSelect(field.key, value, disabled, [
                 { value: 'tls', label: 'TLS' },
@@ -252,8 +443,8 @@ export default function SettingsShow({
         }
         if (field.key === 'general.language') {
              return renderSelect(field.key, value, disabled, [
-                { value: 'en', label: 'English' },
-                { value: 'id', label: 'Indonesian' },
+                { value: 'en', label: 'Inggris' },
+                { value: 'id', label: 'Indonesia' },
             ]);
         }
         if (field.key === 'general.timezone') {
@@ -288,8 +479,8 @@ export default function SettingsShow({
         }
         if (field.key === 'seo.robots') {
              return renderSelect(field.key, value, disabled, [
-                { value: 'index, follow', label: 'Index, Follow (Recommended)' },
-                { value: 'noindex, nofollow', label: 'No Index, No Follow (Private)' },
+                { value: 'index, follow', label: 'Index, Follow (Disarankan)' },
+                { value: 'noindex, nofollow', label: 'No Index, No Follow (Privat)' },
             ]);
         }
 
@@ -320,7 +511,7 @@ export default function SettingsShow({
                         }
                     }}
                     className={`${baseClass} font-mono text-xs resize-y`}
-                    placeholder="JSON value"
+                    placeholder="Nilai JSON"
                 />
             );
         }
@@ -357,7 +548,7 @@ export default function SettingsShow({
                         disabled={disabled}
                         onChange={e => handleFieldChange(field.key, e.target.value)}
                         className={`${baseClass} pr-10`}
-                        placeholder={disabled ? '(set in .env)' : ''}
+                        placeholder={disabled ? '(diatur di .env)' : ''}
                     />
                     {!disabled && (
                         <button
@@ -380,7 +571,7 @@ export default function SettingsShow({
                     rows={3}
                     onChange={e => handleFieldChange(field.key, e.target.value)}
                     className={`${baseClass} resize-y`}
-                    placeholder={disabled ? '(managed via .env)' : ''}
+                    placeholder={disabled ? '(dikelola via .env)' : ''}
                 />
             );
         }
@@ -398,14 +589,14 @@ export default function SettingsShow({
     };
 
     const availableTabs = useMemo(() => {
-        if (isSingleGroup) return []; // Mail handles itself
+        if (isSingleGroup) return [];
         
         const tabsWithFields = new Set<string>(fields.map(f => getFieldTab(f.key)));
         return SETTINGS_TABS.filter(t => tabsWithFields.has(t.key));
     }, [fields, isSingleGroup]);
     
     const currentFields = useMemo(() => {
-        if (isSingleGroup) return fields; // For Mail etc
+        if (isSingleGroup) return fields;
         return fields.filter(f => getFieldTab(f.key) === activeTab);
     }, [fields, activeTab, isSingleGroup]);
 
@@ -417,13 +608,11 @@ export default function SettingsShow({
     
     const isMultiDomainEnabled = data['domains.multi_domain_enabled'] === true;
     const useCustomSmtp = data['mail.use_custom_smtp'] === true;
-    
-    // Add check for Custom SEO Enabled
     const isCustomSeoEnabled = data['seo.custom_seo_enabled'] === true;
 
     const editableFields = currentFields.filter(f => {
         if (f.is_env || f.is_locked) return false;
-        if (f.key === 'seo.sitemap_enabled') return false; // Hide sitemap as requested
+        if (f.key === 'seo.sitemap_enabled') return false;
 
         if (activeTab === 'domains' && f.key !== 'domains.multi_domain_enabled') {
             return isMultiDomainEnabled;
@@ -474,18 +663,151 @@ export default function SettingsShow({
         return sortedGroups;
     }, [envFields]);
 
+    const renderAppearanceFields = (fields: SettingField[]) => {
+        const brandFields = fields.filter(f => f.key !== 'appearance.color_preset');
+        const presetD = data['appearance.color_preset'] || 'green';
+
+        return (
+            <div className="space-y-8">
+                <div>
+                    <label className="block text-sm font-medium mb-3">Prasetel Warna</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {Object.entries(PRESET_META).map(([key, meta]) => {
+                            const active = presetD === key;
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => handlePresetSelect(key)}
+                                    className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                                        active
+                                            ? 'border-primary bg-primary/5 shadow-sm'
+                                            : 'border-border-subtle hover:border-primary/50 hover:bg-surface-muted/50'
+                                    }`}
+                                >
+                                    <span className="text-2xl">{meta.icon}</span>
+                                    <div>
+                                        <div className="text-sm font-semibold">{meta.label}</div>
+                                        <div className="text-xs text-muted-foreground">{meta.desc}</div>
+                                    </div>
+                                    {active && (
+                                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                                            <Check className="w-3 h-3" />
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                        <button
+                            type="button"
+                            onClick={() => handlePresetSelect('custom')}
+                            className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                                presetD === 'custom'
+                                    ? 'border-primary bg-primary/5 shadow-sm'
+                                    : 'border-dashed border-border-subtle hover:border-primary/50 hover:bg-surface-muted/50'
+                            }`}
+                        >
+                            <span className="text-2xl">🎨</span>
+                            <div>
+                                <div className="text-sm font-semibold">Kustom</div>
+                                <div className="text-xs text-muted-foreground">Atur manual</div>
+                            </div>
+                            {presetD === 'custom' && (
+                                <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                                    <Check className="w-3 h-3" />
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {isCustom && (
+                    <div>
+                        <label className="block text-sm font-medium mb-3">Warna Brand</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {brandFields.filter(f => ['appearance.primary_color', 'appearance.secondary_color', 'appearance.accent_color'].includes(f.key)).map(field => (
+                                <div key={field.key}>
+                                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">
+                                        {labelFrom(field.key)}
+                                    </label>
+                                    {renderField(field)}
+                                    {field.description && (
+                                        <p className="mt-1 text-xs text-muted-foreground">{field.description}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div>
+                    <label className="block text-sm font-medium mb-3">Warna Teks</label>
+                    <p className="text-xs text-muted-foreground mb-3">
+                        {isCustom ? 'Warna teks untuk heading, body, dan teks redup.' : 'Gunakan mode Kustom untuk mengatur warna teks.'}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        {brandFields.filter(f => ['appearance.heading_color', 'appearance.body_color', 'appearance.muted_color'].includes(f.key)).map(field => (
+                            <div key={field.key}>
+                                <label className="block text-xs font-medium mb-1.5 text-muted-foreground">
+                                    {labelFrom(field.key)}
+                                </label>
+                                {renderField(field)}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-3">Pratinjau</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {['primary', 'secondary', 'accent'].map(role => {
+                            const colors: Record<string, string> = {};
+                            brandFields.forEach(f => {
+                                const short = f.key.split('.').pop() || '';
+                                colors[short.replace('_color', '')] = data[f.key] || '#ccc';
+                            });
+
+                            return (
+                                <div key={role} className="rounded-lg overflow-hidden border border-border-subtle">
+                                    <div
+                                        className="h-12 flex items-center justify-center text-xs font-bold"
+                                        style={{ backgroundColor: colors[role] || '#ccc', color: role === 'accent' ? '#422006' : '#fff' }}
+                                    >
+                                        {role}
+                                    </div>
+                                    <div className="p-3 space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Dasar</span>
+                                            <code className="font-mono">{colors[role]}</code>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Hover</span>
+                                            <code className="font-mono" style={{ color: colors[role] }}>
+                                                digelapkan
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <DashboardLayout>
-            <Head title={`${context} Settings`} />
+            <Head title={`${context} Pengaturan`} />
             <div className="space-y-5">
                 
                 <div className="flex items-center justify-end md:justify-between w-full mb-6">
                     <div className="hidden md:block">
                         <h1 className="text-xl font-semibold tracking-tight capitalize">
-                            {context} Settings
+                            {context} Pengaturan
                         </h1>
                         <p className="text-sm text-muted-foreground mt-0.5 hidden lg:block">
-                            Manage the branding, operations, and configuration for {context}.
+                            Kelola branding, operasi, dan konfigurasi untuk {context}.
                         </p>
                     </div>
                     {isDirty && (
@@ -497,7 +819,7 @@ export default function SettingsShow({
                             variant="primary"
                             className="ms-auto"
                         >
-                            Save Changes
+                            Simpan Perubahan
                         </Btn>
                     )}
                 </div>
@@ -529,62 +851,81 @@ export default function SettingsShow({
                         </div>
                     )}
 
-                    {Object.entries(groupedEditableFields).map(([subGroupId, fields]) => (
-                        <div key={subGroupId} className="bg-background rounded-xl border border-border-subtle shadow-sm overflow-hidden p-6">
-                            <div className="mb-5 pb-4 border-b border-border-subtle flex justify-between items-start">
-                                <div>
-                                    <h3 className="text-base font-semibold">{SUB_GROUPS[subGroupId]?.title || 'Settings'}</h3>
-                                    {SUB_GROUPS[subGroupId]?.description && (
-                                        <p className="text-xs text-muted-foreground mt-1">{SUB_GROUPS[subGroupId].description}</p>
+                    {activeTab === 'branding' ? (
+                        (() => {
+                            const identityF = editableFields.filter(f => getFieldSubGroup(f.key) === 'identity');
+                            const seoF = editableFields.filter(f => getFieldSubGroup(f.key) === 'seo');
+                            return (
+                                <div className="bg-background rounded-xl border border-border-subtle shadow-sm overflow-hidden p-6">
+                                    {renderBrandingFields(identityF, seoF)}
+                                    {!isCustomSeoEnabled && (
+                                        <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mt-8">
+                                            <p className="text-sm text-primary">
+                                                <strong>Catatan:</strong> SEO Kustom dinonaktifkan. Sistem akan secara otomatis membuat tag SEO (Judul, Deskripsi, Gambar) menggunakan nilai yang diberikan di kartu <strong>Identitas Situs</strong>. Aktifkan toggle di atas untuk menyesuaikannya secara manual.
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
-                                {subGroupId === 'seo' && (
-                                    <div className="mt-1">
+                            );
+                        })()
+                    ) : (
+                        Object.entries(groupedEditableFields).map(([subGroupId, fields]) => (
+                            <div key={subGroupId} className="bg-background rounded-xl border border-border-subtle shadow-sm overflow-hidden p-6">
+                                <div className="mb-5 pb-4 border-b border-border-subtle flex justify-between items-start">
+                                    <div>
+                                        <h3 className="text-base font-semibold">{SUB_GROUPS[subGroupId]?.title || 'Pengaturan'}</h3>
+                                        {SUB_GROUPS[subGroupId]?.description && (
+                                            <p className="text-xs text-muted-foreground mt-1">{SUB_GROUPS[subGroupId].description}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {subGroupId === 'appearance' ? (
+                                    renderAppearanceFields(fields)
+                                ) : (
+                                    <fieldset>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {fields.map(field => {
+                                                const type = field.type;
+                                                const key = field.key;
+                                                
+                                                const isFullWidth = type === 'json' || type === 'array' || type === 'boolean' || 
+                                                                    key.includes('use_custom_smtp') || key.includes('description') || key.includes('text');
+                                                
+                                                return (
+                                                    <div key={field.key} className={isFullWidth ? 'md:col-span-2' : ''}>
+                                                        <label className="block text-sm font-medium mb-1.5">
+                                                            {labelFrom(field.key)}
+                                                        </label>
+                                                        {renderField(field)}
+                                                        {field.description && (
+                                                            <p className="mt-1.5 text-xs text-muted-foreground flex items-start gap-1">
+                                                                <Info className="w-3 h-3 shrink-0 mt-0.5" />
+                                                                {field.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </fieldset>
+                                )}
+                                
+                                {!isCustomSeoEnabled && subGroupId === 'seo' && (
+                                    <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mt-8">
+                                        <p className="text-sm text-primary">
+                                            <strong>Note:</strong> Custom SEO is disabled. The system will automatically generate SEO tags (Title, Description, Image) using the values provided in the <strong>Site Identity</strong> card. Enable the toggle above to customize them manually.
+                                        </p>
                                     </div>
                                 )}
                             </div>
-                            
-                            <fieldset>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {fields.map(field => {
-                                        const type = field.type;
-                                        const key = field.key;
-                                        
-                                        const isFullWidth = type === 'json' || type === 'array' || type === 'boolean' || 
-                                                            key.includes('use_custom_smtp') || key.includes('description') || key.includes('text');
-                                        
-                                        return (
-                                            <div key={field.key} className={isFullWidth ? 'md:col-span-2' : ''}>
-                                                <label className="block text-sm font-medium mb-1.5">
-                                                    {labelFrom(field.key)}
-                                                </label>
-                                                {renderField(field)}
-                                                {field.description && (
-                                                    <p className="mt-1.5 text-xs text-muted-foreground flex items-start gap-1">
-                                                        <Info className="w-3 h-3 shrink-0 mt-0.5" />
-                                                        {field.description}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </fieldset>
-                            
-                            {!isCustomSeoEnabled && subGroupId === 'seo' && (
-                                <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mt-8">
-                                    <p className="text-sm text-primary">
-                                        <strong>Note:</strong> Custom SEO is disabled. The system will automatically generate SEO tags (Title, Description, Image) using the values provided in the <strong>Site Identity</strong> card. Enable the toggle above to customize them manually.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                        ))
+                    )}
 
                     {!isMultiDomainEnabled && activeTab === 'domains' && (
                         <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mt-8">
                             <p className="text-sm text-primary">
-                                <strong>Note:</strong> Enable <em>Multi Domain Enabled</em> above to configure URLs for separate subdomains like blog, auth, and dashboard.
+                                                <strong>Catatan:</strong> Aktifkan <em>Multi Domain</em> di atas untuk mengonfigurasi URL untuk subdomain terpisah seperti blog, auth, dan dashboard.
                             </p>
                         </div>
                     )}
@@ -592,7 +933,7 @@ export default function SettingsShow({
                     {!useCustomSmtp && isSingleGroup && context === 'global' && activeGroupMeta?.key === 'mail' && (
                         <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mt-8">
                             <p className="text-sm text-primary">
-                                <strong>Note:</strong> Custom SMTP is disabled. The system will use the default mail settings defined in your <code>.env</code> file. Enable the toggle above to override them.
+                                <strong>Catatan:</strong> SMTP Kustom dinonaktifkan. Sistem akan menggunakan pengaturan email default yang ditentukan di file <code>.env</code> Anda. Aktifkan toggle di atas untuk menimpanya.
                             </p>
                         </div>
                     )}
@@ -602,20 +943,20 @@ export default function SettingsShow({
                             <div className="flex items-center gap-2 mb-4">
                                 <Lock className="w-4 h-4 text-muted-foreground" />
                                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Environment-Managed (Read-only)
+                                    Dikelola Environment (Hanya Baca)
                                 </h3>
                             </div>
                             <div className="bg-surface-muted/50 border border-border-subtle rounded-xl p-4 mb-6">
                                 <p className="text-xs text-muted-foreground">
-                                    These values are loaded from your <code className="bg-surface-muted text-foreground px-1 py-0.5 rounded font-mono">.env</code> file.
-                                    To change them, edit your <code className="bg-surface-muted text-foreground px-1 py-0.5 rounded font-mono">.env</code> file and restart the server.
+                                Nilai-nilai ini dimuat dari file <code className="bg-surface-muted text-foreground px-1 py-0.5 rounded font-mono">.env</code> Anda.
+                                Untuk mengubahnya, edit file <code className="bg-surface-muted text-foreground px-1 py-0.5 rounded font-mono">.env</code> Anda dan restart server.
                                 </p>
                             </div>
                             
                             {Object.entries(groupedEnvFields).map(([subGroupId, fields]) => (
                                 <div key={subGroupId} className="bg-background rounded-xl border border-border-subtle overflow-hidden p-6 mb-6">
                                     <div className="mb-4 pb-3 border-b border-border-subtle">
-                                        <h4 className="text-sm font-bold text-foreground">{SUB_GROUPS[subGroupId]?.title || 'Settings'}</h4>
+                                        <h4 className="text-sm font-bold text-foreground">{SUB_GROUPS[subGroupId]?.title || 'Pengaturan'}</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {fields.map(field => {
@@ -645,7 +986,7 @@ export default function SettingsShow({
 
                     {currentFields.length === 0 && (
                         <div className="text-center py-12 text-muted-foreground text-sm font-medium bg-background rounded-2xl border border-border-subtle shadow-sm">
-                            No settings found for this tab.
+                            Tidak ada pengaturan untuk tab ini.
                         </div>
                     )}
                 </div>
@@ -655,7 +996,7 @@ export default function SettingsShow({
                 open={!!mediaPickerField} 
                 onOpenChange={(open) => !open && setMediaPickerField(null)} 
                 onSelect={handleMediaSelect} 
-                title="Select Image" 
+                title="Pilih Gambar" 
             />
         </DashboardLayout>
     );
