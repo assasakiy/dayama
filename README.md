@@ -59,7 +59,7 @@ Enforcement dilakukan berlapis: **rules pipeline** (`app/Authorization/`) → **
 
 1. **Kloning repositori & Install Dependensi**
    ```bash
-   git clone <repo_url> test-blog
+   git clone https://github.com/assasakiy/dayama.git test-blog
    cd test-blog
    composer install
    npm install
