@@ -1,6 +1,6 @@
-# MIGRATION PLAN TAHAP 1A — IDENTITY FOUNDATION (REVISI LENGKAP)
+# MIGRATION PLAN TAHAP 1A — IDENTITY FOUNDATION (FINAL GOLD STANDARD)
 **Platform DAYAMA — Decoupling Person, Introducing InstitutionMembership, and Application Compatibility**
-*Dokumen Rencana Teknis Terpadu (Tanpa Eksekusi Skema)*
+*Dokumen Rencana Teknis Terpadu*
 *Tanggal: 2026-09-04*
 
 ---
@@ -11,8 +11,10 @@ Tahap 1A meletakkan fondasi identitas yang bersih tanpa merusak (*zero breaking 
 1. **Membebaskan `core_persons`** dari kepemilikan satu lembaga (`institution_id`), menjadikannya representasi manusia fisik global.
 2. **Memperkenalkan `core_institution_memberships`** sebagai representasi hubungan kelembagaan yang bersifat *Person-centric*.
 3. **Menjamin Kompatibilitas Kode Aplikasi (Application Compatibility)**: Menyelaraskan seluruh *write-paths* (`PersonController`, `StudentController`, `EmployeeController`) dan *read-paths* (filter index) agar tidak ada SQL crash akibat kolom `institution_id` yang hilang.
-4. **Mengubah Paradigma Duplikasi**: Menghentikan pola kloning/replicate Person di `YayasanPersonIndexService` menjadi pola penggunaan Person global yang sama + pembuatan Membership baru.
-5. **Mempertahankan `core_role_user`** sebagai jembatan kompatibilitas (*compatibility bridge*) agar RBAC dan seluruh pipeline otorisasi saat ini tetap berjalan normal 100%.
+4. **Global Person Resolver**: Menyediakan pola resolusi person yang seragam di pendaftaran Siswa & Pegawai (reuse person global via `person_id` atau `nik`, create hanya jika manusia baru).
+5. **Membership Ensure & Reaktivasi**: Mengaktifkan kembali membership lama bila person kembali aktif di lembaga tersebut, tanpa menimpa `joined_at` pertama kali.
+6. **Desentralisasi YayasanPersonIndex**: Menghilangkan duplikasi relasi di JSON `refs`. `yayasan_person_index` murni mengindeks identitas global, sedangkan afiliasi lembaga dibaca langsung dari `core_institution_memberships`.
+7. **Mempertahankan `core_role_user`** sebagai jembatan kompatibilitas (*compatibility bridge*) agar RBAC dan seluruh pipeline otorisasi saat ini tetap berjalan normal 100%.
 
 ---
 
@@ -24,11 +26,11 @@ Tahap 1A meletakkan fondasi identitas yang bersih tanpa merusak (*zero breaking 
 - **Model Updates**: `Person`, `Institution`, dan pembuatan model baru `InstitutionMembership`.
 - **Hapus trait** `HasInstitutionScope` dari model `Person`.
 - **Pembaruan Application Write-Paths**:
-  - `PersonController` (store, update, index filtering via membership).
-  - `StudentController` (penciptaan/pencarian Person + pembuatan Membership).
-  - `EmployeeController` (penciptaan/pencarian Person + pembuatan Membership).
-- **Penyesuaian `YayasanPersonIndexService`**: Menghapus `copyFromInstitution()` yang mereplikasi Person; menggantinya dengan penautan `InstitutionMembership`.
-- **Script / Prosedur Backfill & Dual-Level Rollback**.
+  - `PersonController` (store, update, index filtering dengan prioritas Yayasan/SuperAdmin).
+  - `StudentController` (validasi `person_id`, Global Person Resolver, ensure membership).
+  - `EmployeeController` (validasi `person_id`, Global Person Resolver, ensure membership).
+- **Penyesuaian `YayasanPersonIndexService` & `PersonObserver`**: Sinkronisasi murni identitas global (nama, NIK, TTL) tanpa menyimpan JSON duplikat relasi lembaga.
+- **Dual-Level Rollback Semantics** (Early Rollback vs Post-Adoption Recovery).
 - **Automated Regression & Acceptance Tests**.
 
 ### B. EKSPLISIT DI LUAR SCOPE (OUT OF SCOPE TAHAP 1A)
@@ -48,7 +50,7 @@ Tahap 1A meletakkan fondasi identitas yang bersih tanpa merusak (*zero breaking 
 
 ### Bagian A: Preflight Checks & Target Database
 1. **Target Database Verification**:
-   - Database aktif diverifikasi via config/runtime (di lokal aktif: `modern_blog` atau `dayama`).
+   - Database aktif diverifikasi via runtime (di lokal aktif: `modern_blog` atau `dayama`).
    - Wajib konfirmasi string `DB_DATABASE` sebelum eksekusi.
 2. **Snapshot / Backup**:
    - Eksekusi backup fisik sebelum DDL: `mysqldump -u root -p [active_db] > backup_pre_tahap1a.sql`.
@@ -79,7 +81,7 @@ Tahap 1A meletakkan fondasi identitas yang bersih tanpa merusak (*zero breaking 
 ---
 
 ### Bagian C: Skema Final `core_institution_memberships`
-Tabel dirancang *Person-centric* dan murni mencatat siklus hubungan organisasi:
+Tabel dirancang *Person-centric* dan murni mencatat status hubungan organisasi:
 
 ```sql
 CREATE TABLE core_institution_memberships (
@@ -97,83 +99,89 @@ CREATE TABLE core_institution_memberships (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-**Kaidah Desain:**
-- `status`: Murni status hubungan lembaga (`active` | `inactive`). Tidak memuat status akademik (`alumni`, `student`) maupun HR (`employee`, `teacher`).
-- `uq_person_institution`: Menjamin 1 Person hanya memiliki 1 baris status keanggotaan pada satu lembaga (dapat diaktifkan/nonaktifkan kembali via `joined_at` / `left_at`).
-
 ---
 
-### Bagian D: Application Compatibility & Write-Paths Refactoring
+### Bagian D: Aturan Teknis Utama & Application Compatibility
 
-Pembaruan mutlak pada controller & service agar tidak crash setelah `institution_id` lepas dari `core_persons`:
+#### 1. Foundation Precedence pada Index Filtering (`PersonController@index`)
+Tidak boleh hanya bergantung pada `ActiveInstitution::shouldScope()`. Otorisasi diselesaikan dengan urutan hierarki yang tegas:
+```php
+$user = $request->user();
 
-1. **`PersonController`**:
-   - **`index()`**:
-     - Hapus `ActiveInstitution::applyToQuery($q)` pada model `Person` (karena kolom `institution_id` sudah tidak ada di tabel `core_persons`).
-     - Ganti dengan scoping berbasis membership:
-       ```php
-       if (ActiveInstitution::shouldScope()) {
-           $instId = ActiveInstitution::id();
-           $query->whereHas('memberships', fn ($m) => $m->where('institution_id', $instId)->where('status', 'active'));
-       }
-       // Pengguna dengan Yayasan scope / Super Admin otomatis melihat Person global tanpa filter.
-       ```
-   - **`store()`**:
-     - Buat `Person` global (tanpa `institution_id`).
-     - Jika dibuat dalam konteks lembaga (`$instId = ActiveInstitution::id()`), otomatis buatkan membership:
-       ```php
-       InstitutionMembership::firstOrCreate([
-           'person_id' => $person->id,
-           'institution_id' => $instId,
-       ], [
-           'status' => 'active',
-           'joined_at' => now(),
-       ]);
-       ```
-   - **`update()`**:
-     - Ubah validasi NIK: bukan lagi `unique:core_persons,nik,...,institution_id,...`, melainkan `Rule::unique('core_persons', 'nik')->ignore($person->id)` (global nullable unique).
+// 1. Super Admin atau memiliki Role Scope Yayasan -> Akses Global Unrestricted
+$isYayasanOrAdmin = $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
 
-2. **`StudentController` (`store`)**:
-   - Menghapus `'institution_id' => $institutionId` dari array `Person::create()`.
-   - Setelah `Person` didapat/dibuat, pastikan relasi membership terbentuk:
-     ```php
-     InstitutionMembership::firstOrCreate([
-         'person_id' => $person->id,
-         'institution_id' => $institutionId,
-     ], [
-         'status' => 'active',
-         'joined_at' => now(),
-     ]);
-     ```
-   - Lanjutkan pembuatan record domain `Student` (`student` tetap institution-scoped).
+if (! $isYayasanOrAdmin) {
+    // 2. Operator / User dengan Institution Scope -> Terikat Active Institution
+    $instId = ActiveInstitution::id();
+    if ($instId) {
+        $query->whereHas('memberships', fn ($m) => 
+            $m->where('institution_id', $instId)->where('status', 'active')
+        );
+    } else {
+        $query->whereRaw('1 = 0');
+    }
+}
+```
 
-3. **`EmployeeController` (`store`)**:
-   - Menghapus `'institution_id' => $institutionId` dari array `Person::create()`.
-   - Buat/pastikan `InstitutionMembership` aktif di lembaga terkait.
-   - Lanjutkan pembuatan record domain `Employee` (`employee` tetap institution-scoped).
+#### 2. Pola Membership Ensure & Reaktivasi (`ensureMembership`)
+Bukan sekadar `firstOrCreate()`. Menyediakan metode helper/service yang menangani reaktivasi:
+```php
+public static function ensureMembership(string $personId, string $institutionId): InstitutionMembership
+{
+    $membership = InstitutionMembership::where('person_id', $personId)
+        ->where('institution_id', $institutionId)
+        ->first();
 
-4. **`YayasanPersonIndexService`**:
-   - **Hentikan Replikasi Person (`copyFromInstitution`)**:
-     - Alur lama mereplikasi record `core_persons` ke ID baru dengan `institution_id` target.
-     - Alur baru: Jika Person dengan NIK tersebut sudah ada, gunakan `Person` ID yang sama dan buatkan `InstitutionMembership` baru untuk `targetInstitutionId`:
-       ```php
-       public function linkToInstitution(string $nik, string $targetInstitutionId): ?Person
-       {
-           $person = Person::where('nik', $nik)->first();
-           if (! $person) return null;
+    if (! $membership) {
+        return InstitutionMembership::create([
+            'id'             => (string) Str::orderedUuid(),
+            'person_id'      => $personId,
+            'institution_id' => $institutionId,
+            'status'         => 'active',
+            'joined_at'      => now(),
+            'left_at'        => null,
+        ]);
+    }
 
-           InstitutionMembership::firstOrCreate([
-               'person_id' => $person->id,
-               'institution_id' => $targetInstitutionId,
-           ], [
-               'status' => 'active',
-               'joined_at' => now(),
-           ]);
+    if ($membership->status !== 'active') {
+        $membership->update([
+            'status'  => 'active',
+            'left_at' => null,
+            // joined_at awal dipertahankan
+        ]);
+    }
 
-           return $person;
-       }
-       ```
-   - Hapus ketergantungan kolom `$person->institution_id` pada metode `syncPerson` dan `removePerson`.
+    return $membership;
+}
+```
+
+#### 3. Global Person Resolver pada Write-Paths (`StudentController` & `EmployeeController`)
+Kedua controller dilengkapi validasi `person_id` dan resolver global person:
+```text
+Langkah Resolusi Person:
+1. Validasi Input:
+   - 'person_id' => 'nullable|uuid|exists:core_persons,id'
+   - 'nik' => ['nullable', 'string', 'max:20', Rule::unique('core_persons', 'nik')->ignore($personId)]
+2. Eksekusi Resolver:
+   - Jika 'person_id' diberikan -> $person = Person::findOrFail($personId)
+   - Jika 'person_id' kosong tapi 'nik' diberikan dan ditemukan di DB -> $person = Person::where('nik', $nik)->first()
+   - Selain itu -> $person = Person::create([...]) (Manusia baru)
+3. Pastikan Keanggotaan Lembaga:
+   - ensureMembership($person->id, $institutionId)
+4. Buat Record Domain Operasional:
+   - Student::create([...]) atau Employee::create([...])
+```
+
+#### 4. YayasanPersonIndexService & PersonObserver Semantics
+- **Tanggung Jawab Tunggal**:
+  - `core_persons`: Sumber kebenaran manusia fisik global.
+  - `core_institution_memberships`: Sumber kebenaran afiliasi kelembagaan.
+  - `yayasan_person_index`: Indeks pencarian terpusat identitas manusia (NIK, nama, tanggal lahir).
+- **Penyesuaian**:
+  - Hapus array `refs` duplikat dari `yayasan_person_index`. Pencarian lembaga mana saja yang terafiliasi dengan NIK tersebut langsung melakukan query relasi `Person->institutions`.
+  - `PersonObserver`: Menyinkronkan identitas global ke index tanpa terikat event membership.
+  - Hapus metode replikasi `copyFromInstitution()`. Gantikan dengan `linkToInstitution(string $nik, string $targetInstitutionId)` yang memanggil `ensureMembership()`.
 
 ---
 
@@ -183,43 +191,38 @@ Pembaruan mutlak pada controller & service agar tidak crash setelah `institution
    - `core_role_user` **tetap dipertahankan 100%** sebagai Single Source of Truth Otorisasi bagi `ActiveInstitution`, `CheckInstitutionScope`, dan `ScopeRule`.
    - Tidak ada modifikasi skema tabel `core_role_user` pada Tahap 1A.
 2. **Target Masa Depan (Phase 4)**:
-   - Target akhir adalah menghubungkan penugasan peran akun ke keanggotaan institusi:
-     `core_role_user (user_id, role_id, institution_membership_id)`.
-   - Mencegah akun memegang role lembaga tanpa adanya Person Membership di lembaga tersebut.
+   - Target akhir: `core_role_user (user_id, role_id, institution_membership_id)`.
 
 ---
 
 ### Bagian F: Dual-Level Rollback Semantics
 
-Kebijakan rollback dibagi secara tegas menjadi dua level:
-
 1. **Level 1 — Early Rollback (Sebelum Multi-Membership Terbentuk)**:
-   - Berlaku jika rollback dilakukan sesaat setelah migrasi dijalankan dan belum ada Person yang terhubung ke >1 lembaga.
+   - Berlaku sesaat setelah migrasi dijalankan jika ada kegagalan teknis awal.
    - Prosedur:
      - Tambahkan kembali kolom `institution_id` nullable ke `core_persons`.
-     - Kembalikan `institution_id` dari baris `core_institution_memberships` (jika ada data).
+     - Kembalikan `institution_id` dari baris `core_institution_memberships` (jika ada data 1-to-1).
      - Buat foreign key `core_persons_institution_id_foreign`.
      - Drop index `core_persons_nik_unique`.
      - Buat kembali `person_nik_per_institution (nik, institution_id)`.
      - Drop tabel `core_institution_memberships`.
 2. **Level 2 — Post-Adoption Recovery (Setelah Multi-Membership Aktif Digunakan)**:
-   - Jika sistem sudah berjalan dan terdapat Person yang memiliki banyak membership (misal: Ahmad memiliki membership MTs dan MA), **rollback skema ke single `institution_id` secara lossless adalah mustahil secara matematis**.
-   - Prosedur recovery: Gunakan snapshot database backup yang diambil pada preflight, atau lakukan forward migration fix. Jangan mengandalkan perintah rollback bawaan.
+   - Jika Person sudah memiliki banyak membership (Ahmad di MTs dan MA), rollback ke single `institution_id` secara lossless tidak mungkin dilakukan.
+   - Prosedur recovery: Gunakan snapshot database backup preflight atau forward migration.
 
 ---
 
-### Bagian G: Rencana Verifikasi & Acceptance Test
+### Bagian G: Acceptance Criteria & Automated Tests
 
-1. **Migration Integrity**:
-   - `php artisan migrate` berjalan bersih.
-   - Skema `core_persons` bebas dari `institution_id`.
-   - Skema `core_institution_memberships` terbentuk dengan constraint yang tepat.
-2. **Regression Test (Zero Side-Effects)**:
-   - `php artisan route:list` tetap menampilkan 333 rute aktif.
-   - Login, dashboard admin, dan otorisasi `core_role_user` tetap berfungsi normal.
-   - Model operasional (`Student`, `Employee`, `Classroom`) tetap berjalan dengan `HasInstitutionScope`.
-3. **Automated Feature Test (`tests/Feature/IdentityTahap1ATest.php`)**:
-   - **Test 1**: Membuat 1 `Person` (Ahmad) dan mendaftarkannya ke 2 lembaga berbeda (`MTs` dan `MA`) menghasilkan 2 baris di `core_institution_memberships` dan tetap HANYA 1 baris di `core_persons`.
-   - **Test 2**: Pendaftaran Siswa (`StudentController`) dan Pegawai (`EmployeeController`) otomatis membuat/mengaitkan `InstitutionMembership` tanpa memicu error SQL missing column.
-   - **Test 3**: Query `PersonController@index` pada operator lembaga memfilter data via relasi membership, sedangkan admin yayasan melihat seluruh Person global.
-   - **Test 4**: Validasi NIK menolak NIK yang sama untuk Person berbeda secara global.
+Pengujian dilakukan di `tests/Feature/IdentityTahap1ATest.php`:
+1. **Test 1 (Multi-Membership Integritas)**:
+   - Mendaftarkan 1 `Person` ke MTs dan MA menghasilkan 2 baris di `core_institution_memberships` dan tetap HANYA 1 baris di `core_persons`.
+2. **Test 2 (Reaktivasi Membership)**:
+   - Menonaktifkan membership (`status = inactive`, `left_at = now()`), lalu memanggil `ensureMembership()` memastikan status kembali `active` dan `left_at = null` tanpa mengubah `joined_at` lama.
+3. **Test 3 (Global Person Resolver pada Student & Employee)**:
+   - Input pendaftaran dengan NIK yang sama di lembaga baru berhasil menggunakan Person yang sama tanpa melempar SQL duplicate exception, dan menghasilkan membership baru di lembaga kedua.
+4. **Test 4 (Foundation Precedence pada Index)**:
+   - User dengan role Yayasan/SuperAdmin melihat seluruh Person global.
+   - User dengan role Lembaga hanya melihat Person yang memiliki active membership di lembaga tersebut.
+5. **Test 5 (Regression Rute & RBAC)**:
+   - Seluruh 333 rute aktif dan login/dashboard staf tetap berjalan lancar.
