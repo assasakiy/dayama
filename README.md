@@ -1,86 +1,65 @@
-# Dayama — Modular Monolith CMS
+# DAYAMA — Platform Manajemen Yayasan & Lembaga Pendidikan
 
-Dayama adalah sistem manajemen sekolah/pondok pesantren berbasis **Modular Monolith** dengan **12 domain bisnis** yang diisolasi di `app/Modules/`. Dibangun di atas Laravel, mengadopsi arsitektur Multi-Domain untuk frontend (blog, landing, dashboard, api, account) dan Modular Monolith untuk backend. Mendukung **multi-institusi** (yayasan → lembaga) dengan RBAC berbasis *scope*.
+DAYAMA adalah ekosistem aplikasi yayasan dan lembaga pendidikan berbasis **Modular Monolith** dengan pendekatan **Multi-Application** dan **Multi-Runtime**. Backend diorganisasikan ke dalam 12 domain di `app/Modules/`, dashboard berbasis **React 19 (Inertia)**, dan situs publik berbasis Blade SSR.
 
-**Dokumentasi Arsitektur Lengkap:** [`docs/arsitektur.md`](docs/arsitektur.md)
-*(Mencakup struktur direktori, seluruh tabel database per domain, dan filosofi desain)*
+Sistem mendukung **Single Identity** (User digital ↔ Person fisik ↔ Multi-Membership lembaga), **Failure Isolation** antar-aplikasi, serta RBAC berbasis *scope* (Yayasan, Lembaga, Personal).
 
-## Arsitektur Domain
+**Dokumentasi Arsitektur & Roadmap:**
+- Panduan Agen & Operasional: [`AGENTS.md`](AGENTS.md)
+- Implementasi Plan Platform: [`docs/Implementasi plan.md`](docs/Implementasi%20plan.md)
+- Arsitektur Modular Monolith: [`docs/arsitektur.md`](docs/arsitektur.md)
+- Skema Database Institusi: [`docs/schema-institusi.md`](docs/schema-institusi.md)
 
-Proyek ini mengadopsi arsitektur berbasis File untuk memetakan domain. Pengaturannya dikelola sepenuhnya di dalam `config/projects.php`.
+---
 
-### Core System (Sistem Inti)
-Aplikasi inti tidak dapat dihapus dan beroperasi di subdomainnya masing-masing:
-- `api.test-blog.test` : Sistem REST API murni (Sanctum/Token).
-- `account.test-blog.test` : Sistem autentikasi (Login, Register, Lupa Password).
-- `dashboard.test-blog.test` : Dasbor admin berbasis React/Inertia.
+## Arsitektur Platform & Domain
 
-### Frontends & Projects
-Tampilan publik yang dapat ditambah/dimatikan dengan mudah melalui file konfigurasi:
-- `test-blog.test` : Halaman pendaratan (Landing page) utama yayasan.
-- `blog.test-blog.test` : Sistem publikasi artikel (Blog utama).
-- *(Bisa ditambahkan proyek lain seperti `promo.test-blog.test` dengan mengisolasi rutenya di `routes/projects/`).*
+Pemetaan domain dikelola secara terpusat melalui `config/platform.php` dan diturunkan otomatis dari `APP_ROOT_DOMAIN`:
+- Development: `*.dayama.test` (Local router / Laragon)
+- Production: `*.dayama.id` (Reverse proxy server)
 
-### Domain Modules (Backend)
-Seluruh model bisnis diisolasi per domain di `app/Modules/`, terdaftar di `composer.json` sebagai namespace `Modules\`:
+### 1. Platform Applications (`routes/apps/`)
+- `account.dayama.test` : Identity Provider tunggal (Login, Register, Profil, 2FA, Sesi).
+- `dashboard.dayama.test` : Workspace operasional staf/admin (Admin Yayasan, Kepala Lembaga, Operator, Bendahara, Guru).
+- `portal.dayama.test` : Workspace personal terpadu (Santri, Wali Santri, Alumni, Guru).
+- `psb.dayama.test` : Pusat Penerimaan Santri Baru terpusat seluruh lembaga.
+- `data.dayama.test` : Pusat data induk manusia (Person Index) dan agregasi yayasan.
+- `api.dayama.test` : REST API Gateway (Sanctum/Token) untuk integrasi eksternal & aplikasi mobile.
 
-| Modul | Fokus |
-|---|---|
-| `Core` | User, Role, Permission, Person, Media, Institution & master data |
-| `CMS` | Post, Category, Tag, Comment, Reaksi, Bookmark |
-| `Academic` | Santri/Siswa, Rombel, Kelas, Semester, Nilai, Kehadiran |
-| `HR` | Karyawan, Departemen, Jabatan, Riwayat Kerja |
-| `CRM` | Donatur, Wali, Relasi Keluarga, Partner |
-| `Finance` | Donasi, Invoice, Pembayaran, Transaksi |
-| `Library` | Katalog buku, Peminjaman |
-| `Inventory` | Aset, Inventaris, Ruangan, Stok |
-| `AI` | Agen, Percakapan, Embedding, Knowledge |
-| `Landing` | Halaman statis, Hero, CTA, FAQ, Testimoni |
-| `Yayasan` | Index orang, Log transfer antar lembaga |
-| `System` | Setting, Backup, Activity Log, Email Template |
+### 2. Sites & Content Surfaces (`routes/sites/`)
+- `dayama.test` : Halaman pendaratan (Landing page) utama yayasan di root domain.
+- `blog.dayama.test` : Publikasi berita, artikel, dan konten media yayasan.
+- Situs Lembaga (`mts.dayama.test`, `ma.dayama.test`, dsb.) : Diselesaikan secara dinamis via Core Site Registry.
 
-## Multi-Institusi & RBAC
+---
 
-Sistem mendukung hierarki **yayasan → lembaga** (madrasah/sekolah/pondok). Setiap role memiliki *scope* (`yayasan` / `lembaga`):
+## Instalasi (Lingkungan Lokal / Laragon)
 
-- **Yayasan scope**: melihat data semua lembaga.
-- **Lembaga scope**: hanya melihat data milik institusinya sendiri — diberlakukan otomatis melalui `InstitutionScope` (Eloquent Global Scope) + `ScopeRule` di pipeline autorisasi.
-
-Enforcement dilakukan berlapis: **rules pipeline** (`app/Authorization/`) → **Global Scope** → **middleware** (`CheckInstitutionScope`). Panduan lengkap: [`docs/rbac/README.md`](docs/rbac/README.md).
-
-## Persyaratan Sistem
-- PHP 8.3 atau lebih baru.
-- Composer
-- Node.js (untuk kompilasi Vite)
-- MySQL/MariaDB
-- [Laragon](https://laragon.org/) (direkomendasikan untuk lingkungan lokal)
-
-## Instalasi (Lingkungan Lokal/Laragon)
-
-1. **Kloning repositori & Install Dependensi**
+1. **Kloning Repositori & Install Dependensi**
    ```bash
-   git clone https://github.com/assasakiy/dayama.git test-blog
-   cd test-blog
+   git clone https://github.com/assasakiy/dayama.git dayama
+   cd dayama
    composer install
    npm install
    ```
 
 2. **Pengaturan `.env`**
-   Salin file `.env.example` ke `.env`, jalankan `php artisan key:generate`, lalu pastikan konfigurasi Multi-Domain berikut telah diatur:
+   Salin file `.env.example` ke `.env`, lalu jalankan `php artisan key:generate`:
    ```env
-   # Pengaturan domain agar cookie login bisa dibagikan lintas subdomain
-   SESSION_DOMAIN=.test-blog.test
+   APP_NAME="DAYAMA"
+   APP_ROOT_DOMAIN=dayama.test
+   SESSION_DOMAIN=.dayama.test
 
-   # Pemetaan Domain
-   DOMAIN_MAIN=test-blog.test
-   DOMAIN_BLOG=blog.test-blog.test
-   DOMAIN_DASHBOARD=dashboard.test-blog.test
-   DOMAIN_API=api.test-blog.test
-   DOMAIN_AUTH=account.test-blog.test
+   DOMAIN_AUTH=account.dayama.test
+   DOMAIN_DASHBOARD=dashboard.dayama.test
+   DOMAIN_PORTAL=portal.dayama.test
+   DOMAIN_PSB=psb.dayama.test
+   DOMAIN_DATACENTER=data.dayama.test
+   DOMAIN_API=api.dayama.test
+   DOMAIN_BLOG=blog.dayama.test
    ```
 
 3. **Database & Migrasi**
-   Buat database (contoh: `modern_blog`) sesuai konfigurasi di `.env`, lalu:
    ```bash
    php artisan migrate --seed
    ```
@@ -88,36 +67,22 @@ Enforcement dilakukan berlapis: **rules pipeline** (`app/Authorization/`) → **
 4. **Kompilasi Aset Frontend**
    ```bash
    npm run build
+   # Untuk development dengan hot-reload:
+   npm run dev
    ```
-   Untuk pengembangan dengan hot-reload, jalankan script `composer run dev` (server, queue, log, dan Vite sekaligus).
 
-5. **Pengaturan File Hosts Windows (PENTING)**
-   Agar subdomain dapat diakses secara lokal, tambahkan pemetaan berikut di bagian paling bawah file `C:\Windows\System32\drivers\etc\hosts`:
+5. **Pengaturan File Hosts Windows**
+   Tambahkan pemetaan berikut di `C:\Windows\System32\drivers\etc\hosts`:
    ```text
-   127.0.0.1 test-blog.test
-   127.0.0.1 blog.test-blog.test
-   127.0.0.1 dashboard.test-blog.test
-   127.0.0.1 account.test-blog.test
-   127.0.0.1 api.test-blog.test
+   127.0.0.1 dayama.test
+   127.0.0.1 account.dayama.test
+   127.0.0.1 dashboard.dayama.test
+   127.0.0.1 portal.dayama.test
+   127.0.0.1 psb.dayama.test
+   127.0.0.1 data.dayama.test
+   127.0.0.1 api.dayama.test
+   127.0.0.1 blog.dayama.test
    ```
-
-## Cara Menambah Proyek Eksternal (Microsite)
-Untuk mendaftarkan *frontend* baru tanpa merusak sistem inti:
-1. Buat file rute baru di `routes/projects/{namaproyek}.php`.
-2. Daftarkan di file `config/projects.php` di bawah array `projects`:
-   ```php
-   'promo_2026' => [
-       'domain'     => 'promo.test-blog.test',
-       'route_file' => 'routes/projects/promo_2026.php',
-       'active'     => true,
-   ],
-   ```
-3. Tambahkan domain baru tersebut ke dalam file `hosts` Windows Anda.
-4. Jalankan `php artisan optimize:clear`.
-
-## Dokumentasi
-*   [Arsitektur Modular Monolith (Lengkap)](docs/arsitektur.md) — Struktur file & database 12 domain
-*   [Skema Database Multi-Institusi](docs/schema-institusi.md)
 *   [Panduan Sistem RBAC](docs/rbac/README.md) — Permission `module.action.scope`, pipeline autorisasi & scoping institusi
 *   [Peta Jalan Pengembangan (Roadmap)](docs/roadmap.md)
 *   [Alur Implementasi Multi-Domain](docs/Implementasi%20plan.md)

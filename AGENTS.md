@@ -35,10 +35,11 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 ---
 
 ## 3. Stack & Lingkungan Kerja
-- **Backend**: Laravel 11 / PHP 8.3+, MySQL 8.0, Redis (predis).
-- **Frontend**: Inertia.js (Vue/React) untuk Dashboard, Blade SSR untuk Publik/Sites.
+- **Backend**: Laravel 13 / PHP 8.3+, MySQL 8.0, Redis (mendukung `phpredis` sebagai default prioritas atau `predis` fallback).
+- **Frontend Dashboard**: React 19 + `@inertiajs/react` (SPA).
+- **Public & Sites**: Blade SSR + Tailwind CSS + Alpine.js.
 - **Packages Utama**: Spatie Permission (RBAC), Spatie MediaLibrary, Laravel Sanctum.
-- **Struktur Modular**: `Modules/` (Core, CMS, Academic, HR, CRM, Finance, Library, Inventory, AI, Landing, Yayasan, System).
+- **Struktur Modular**: `app/Modules/` (Core, CMS, Academic, HR, CRM, Finance, Library, Inventory, AI, Landing, Yayasan, System).
 - **Local Dev Server**: Laragon (MySQL, Redis, PHP, Terminal) + Local Reverse Proxy/Router.
 
 ---

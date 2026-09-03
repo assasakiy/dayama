@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$rootDomain = env('APP_ROOT_DOMAIN', env('DOMAIN_MAIN', 'dayama.test'));
+$rootDomain = env('APP_ROOT_DOMAIN', 'dayama.test');
 
 return [
     /*
@@ -97,7 +97,7 @@ return [
         'landing' => [
             'name'        => 'Yayasan Landing',
             'type'        => 'landing',
-            'domain'      => env('DOMAIN_MAIN', $rootDomain),
+            'domain'      => $rootDomain,
             'route_file'  => 'routes/sites/landing.php',
             'middleware'  => ['web'],
             'enabled'     => true,
