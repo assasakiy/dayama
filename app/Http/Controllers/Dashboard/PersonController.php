@@ -14,6 +14,7 @@ use Modules\Core\Models\Contact;
 use Modules\Core\Models\ContactType;
 use Modules\Academic\Models\EducationLevel;
 use Modules\Core\Models\Institution;
+use Modules\Core\Models\InstitutionMembership;
 use Modules\Core\Models\Language;
 use Modules\Core\Models\Person;
 use Modules\Academic\Models\PersonEducation;
@@ -26,6 +27,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,10 +35,21 @@ class PersonController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
+        $isYayasanOrAdmin = ! $user || $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
+
         $query = Person::with(['positions' => fn ($q) => $q->withPivot('institution_id', 'status')])
             ->withCount(['positions'])
-            ->tap(fn ($q) => ActiveInstitution::applyToQuery($q))
             ->latest();
+
+        if (! $isYayasanOrAdmin) {
+            $instId = ActiveInstitution::id();
+            if ($instId) {
+                $query->whereHas('memberships', fn ($m) => $m->where('institution_id', $instId)->where('status', 'active'));
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
 
         if ($search = $request->input('search')) {
             $query->where(fn ($q) => $q
@@ -83,12 +96,16 @@ class PersonController extends Controller
             'nama_belakang' => 'nullable|string|max:100',
             'gender'        => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
+            'nik'           => 'nullable|string|max:20|unique:core_persons,nik',
         ]);
 
         $validated['nama_lengkap'] = trim(($validated['nama_depan'] ?? '') . ' ' . ($validated['nama_belakang'] ?? ''));
-        $validated['institution_id'] = ActiveInstitution::id();
 
-        Person::create($validated);
+        $person = Person::create($validated);
+
+        if ($instId = ActiveInstitution::id()) {
+            InstitutionMembership::ensureMembership($person->id, $instId);
+        }
 
         return back()->with('success', 'Person berhasil ditambahkan.');
     }
@@ -205,7 +222,7 @@ class PersonController extends Controller
     public function update(Request $request, Person $person): RedirectResponse
     {
         $validated = $request->validate([
-            'nik'           => 'nullable|string|max:20|unique:core_persons,nik,' . $person->id . ',id,institution_id,' . $person->institution_id,
+            'nik'           => ['nullable', 'string', 'max:20', Rule::unique('core_persons', 'nik')->ignore($person->id)],
             'passport'      => 'nullable|string|max:50',
             'nama_depan'    => 'required|string|max:100',
             'nama_belakang' => 'nullable|string|max:100',
@@ -594,14 +611,13 @@ class PersonController extends Controller
         ]);
 
         $service = app(YayasanPersonIndexService::class);
-        $person = $service->copyFromInstitution(
+        $person = $service->linkToInstitution(
             $validated['nik'],
-            $validated['source_person_id'],
             ActiveInstitution::id()
         );
 
         if (!$person) {
-            return response()->json(['error' => 'Gagal menyalin data person.'], 422);
+            return response()->json(['error' => 'Gagal menautkan data person ke lembaga ini.'], 422);
         }
 
         return response()->json([

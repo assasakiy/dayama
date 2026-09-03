@@ -19,12 +19,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Person extends Model
 {
     use HasUuids, SoftDeletes;
-    use \App\Authorization\Concerns\HasInstitutionScope;
 
     protected $table = 'core_persons';
 
     protected $fillable = [
-        'institution_id',
         'nik', 'passport',
         'nama_lengkap',
         'gelar_depan', 'gelar_belakang',
@@ -40,9 +38,21 @@ class Person extends Model
         ];
     }
 
-    public function institution(): BelongsTo
+    public function memberships(): HasMany
     {
-        return $this->belongsTo(Institution::class);
+        return $this->hasMany(InstitutionMembership::class, 'person_id');
+    }
+
+    public function institutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'core_institution_memberships')
+            ->withPivot(['id', 'status', 'joined_at', 'left_at'])
+            ->withTimestamps();
+    }
+
+    public function activeInstitutions(): BelongsToMany
+    {
+        return $this->institutions()->wherePivot('status', 'active');
     }
 
     public function user(): HasOne

@@ -14,6 +14,7 @@ use Inertia\Response;
 use Modules\Academic\Models\Student;
 use Modules\Core\Models\AddressType;
 use Modules\Core\Models\ContactType;
+use Modules\Core\Models\InstitutionMembership;
 use Modules\Core\Models\Person;
 
 class StudentController extends Controller
@@ -61,6 +62,7 @@ class StudentController extends Controller
 
         $validated = $request->validate([
             // Person
+            'person_id' => 'nullable|uuid|exists:core_persons,id',
             'nama_lengkap' => 'required|string|max:200',
             'nik' => 'nullable|string|max:20',
             'gender' => 'nullable|in:L,P',
@@ -94,28 +96,40 @@ class StudentController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $institutionId) {
-            // Create or use existing person
-            if (empty($validated['person_id'])) {
-                $person = Person::create([
-                    'institution_id' => $institutionId,
-                    'nama_lengkap' => $validated['nama_lengkap'],
-                    'nik' => $validated['nik'] ?? null,
-                    'gender' => $validated['gender'] ?? null,
-                    'tempat_lahir' => $validated['tempat_lahir'] ?? null,
-                    'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
-                    'agama' => $validated['agama'] ?? null,
-                ]);
-            } else {
+            // Global Person Resolver: reuse by person_id, reuse by NIK, or create
+            if (! empty($validated['person_id'])) {
                 $person = Person::findOrFail($validated['person_id']);
+                // Update non-empty attributes if sent
                 $person->update(array_filter([
-                    'nama_lengkap' => $validated['nama_lengkap'] ?? $person->nama_lengkap,
-                    'nik' => $validated['nik'] ?? $person->nik,
-                    'gender' => $validated['gender'] ?? $person->gender,
-                    'tempat_lahir' => $validated['tempat_lahir'] ?? $person->tempat_lahir,
+                    'nama_lengkap'  => $validated['nama_lengkap'] ?? $person->nama_lengkap,
+                    'nik'           => $validated['nik'] ?? $person->nik,
+                    'gender'        => $validated['gender'] ?? $person->gender,
+                    'tempat_lahir'  => $validated['tempat_lahir'] ?? $person->tempat_lahir,
                     'tanggal_lahir' => $validated['tanggal_lahir'] ?? $person->tanggal_lahir,
-                    'agama' => $validated['agama'] ?? $person->agama,
+                    'agama'         => $validated['agama'] ?? $person->agama,
                 ], fn ($v) => $v !== null));
+            } elseif (! empty($validated['nik']) && ($existingPerson = Person::where('nik', $validated['nik'])->first())) {
+                $person = $existingPerson;
+                $person->update(array_filter([
+                    'nama_lengkap'  => $validated['nama_lengkap'] ?? $person->nama_lengkap,
+                    'gender'        => $validated['gender'] ?? $person->gender,
+                    'tempat_lahir'  => $validated['tempat_lahir'] ?? $person->tempat_lahir,
+                    'tanggal_lahir' => $validated['tanggal_lahir'] ?? $person->tanggal_lahir,
+                    'agama'         => $validated['agama'] ?? $person->agama,
+                ], fn ($v) => $v !== null));
+            } else {
+                $person = Person::create([
+                    'nama_lengkap'  => $validated['nama_lengkap'],
+                    'nik'           => $validated['nik'] ?? null,
+                    'gender'        => $validated['gender'] ?? null,
+                    'tempat_lahir'  => $validated['tempat_lahir'] ?? null,
+                    'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+                    'agama'         => $validated['agama'] ?? null,
+                ]);
             }
+
+            // Ensure Institution Membership
+            InstitutionMembership::ensureMembership($person->id, $institutionId);
 
             // Create student
             Student::create([

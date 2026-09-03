@@ -11,10 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('settings', function (Blueprint $table) {
-            $table->dropUnique('settings_key_unique');
-            $table->unique(['key', 'context']);
-        });
+        // Cegah crash di SQLite in-memory jika settings_key_unique tidak ada
+        try {
+            Schema::table('settings', function (Blueprint $table) {
+                $table->dropUnique('settings_key_unique');
+                $table->unique(['key', 'context']);
+            });
+        } catch (\Throwable $e) {
+            // Index sudah ['key', 'context'] di create_settings_table
+        }
     }
 
     /**

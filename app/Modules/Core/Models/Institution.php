@@ -47,9 +47,16 @@ class Institution extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function persons(): HasMany
+    public function memberships(): HasMany
     {
-        return $this->hasMany(Person::class);
+        return $this->hasMany(InstitutionMembership::class, 'institution_id');
+    }
+
+    public function persons(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Person::class, 'core_institution_memberships')
+            ->withPivot(['id', 'status', 'joined_at', 'left_at'])
+            ->withTimestamps();
     }
 
     public function legality(): \Illuminate\Database\Eloquent\Relations\HasOne

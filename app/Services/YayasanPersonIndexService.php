@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Core\Models\Institution;
+use Modules\Core\Models\InstitutionMembership;
 use Modules\Core\Models\Person;
 
 class YayasanPersonIndexService
@@ -15,6 +17,10 @@ class YayasanPersonIndexService
         return DB::table('yayasan_person_index')->where('nik', $nik)->first();
     }
 
+    /**
+     * Sinkronkan identitas global person ke index (nama, NIK, tanggal lahir).
+     * Tidak lagi menduplikasi daftar afiliasi lembaga ke JSON refs.
+     */
     public function syncPerson(Person $person): void
     {
         if (empty($person->nik)) {
@@ -23,37 +29,23 @@ class YayasanPersonIndexService
 
         $existing = DB::table('yayasan_person_index')->where('nik', $person->nik)->first();
 
-        $refEntry = [
-            'institution_id' => $person->institution_id,
-            'person_id'      => $person->id,
-            'nama_lengkap'   => $person->nama_lengkap,
-            'created_at'     => now()->toDateTimeString(),
-        ];
-
         if ($existing) {
-            $refs = is_string($existing->refs) ? json_decode($existing->refs, true) : (array) $existing->refs;
-            $exists = collect($refs)->first(fn ($r) => ($r['person_id'] ?? null) === $person->id);
-            if (!$exists) {
-                $refs[] = $refEntry;
-            }
-
             DB::table('yayasan_person_index')
                 ->where('id', $existing->id)
                 ->update([
-                    'nama_lengkap' => $person->nama_lengkap,
+                    'nama_lengkap'  => $person->nama_lengkap,
                     'tanggal_lahir' => $person->tanggal_lahir,
-                    'refs' => json_encode($refs),
-                    'updated_at' => now(),
+                    'updated_at'    => now(),
                 ]);
         } else {
             DB::table('yayasan_person_index')->insert([
-                'id' => (string) \Illuminate\Support\Str::orderedUuid(),
-                'nik' => $person->nik,
-                'nama_lengkap' => $person->nama_lengkap,
+                'id'            => (string) Str::orderedUuid(),
+                'nik'           => $person->nik,
+                'nama_lengkap'  => $person->nama_lengkap,
                 'tanggal_lahir' => $person->tanggal_lahir,
-                'refs' => json_encode([$refEntry]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'refs'          => json_encode([]),
+                'created_at'    => now(),
+                'updated_at'    => now(),
             ]);
         }
     }
@@ -64,89 +56,53 @@ class YayasanPersonIndexService
             return;
         }
 
-        $existing = DB::table('yayasan_person_index')->where('nik', $person->nik)->first();
-        if (!$existing) {
-            return;
-        }
+        // Cek apakah masih ada person lain dengan NIK yang sama (harus 0 karena NIK global unique)
+        $stillExists = Person::where('nik', $person->nik)->where('id', '!=', $person->id)->exists();
 
-        $refs = is_string($existing->refs) ? json_decode($existing->refs, true) : (array) $existing->refs;
-        $refs = collect($refs)->filter(fn ($r) => ($r['person_id'] ?? null) !== $person->id)->values()->toArray();
-
-        if (empty($refs)) {
-            DB::table('yayasan_person_index')->where('id', $existing->id)->delete();
-        } else {
-            DB::table('yayasan_person_index')
-                ->where('id', $existing->id)
-                ->update([
-                    'refs' => json_encode($refs),
-                    'updated_at' => now(),
-                ]);
+        if (! $stillExists) {
+            DB::table('yayasan_person_index')->where('nik', $person->nik)->delete();
         }
     }
 
+    /**
+     * Dapatkan afiliasi lembaga untuk NIK tertentu di luar lembaga yang sedang aktif.
+     * Dibaca langsung dari tabel relasi core_institution_memberships.
+     */
     public function getDuplicates(string $nik, string $currentInstitutionId): array
     {
-        $entry = DB::table('yayasan_person_index')->where('nik', $nik)->first();
-        if (!$entry) {
+        $person = Person::where('nik', $nik)->first();
+        if (! $person) {
             return [];
         }
 
-        $refs = is_string($entry->refs) ? json_decode($entry->refs, true) : (array) $entry->refs;
-
-        return collect($refs)
-            ->filter(fn ($r) => ($r['institution_id'] ?? null) !== $currentInstitutionId)
-            ->map(fn ($r) => [
-                'institution_id' => $r['institution_id'] ?? null,
-                'person_id'      => $r['person_id'] ?? null,
-                'institution_name' => Institution::find($r['institution_id'])?->name,
+        return $person->memberships()
+            ->where('institution_id', '!=', $currentInstitutionId)
+            ->with('institution')
+            ->get()
+            ->map(fn ($m) => [
+                'institution_id'   => $m->institution_id,
+                'person_id'        => $m->person_id,
+                'institution_name' => $m->institution?->name,
+                'status'           => $m->status,
             ])
             ->values()
             ->toArray();
     }
 
-    public function copyFromInstitution(string $nik, string $sourcePersonId, string $targetInstitutionId): ?Person
+    /**
+     * Tautkan Person global ke lembaga baru via InstitutionMembership.
+     * Menggantikan pola lama copyFromInstitution yang mereplikasi record Person.
+     */
+    public function linkToInstitution(string $nik, string $targetInstitutionId): ?Person
     {
-        $sourcePerson = Person::find($sourcePersonId);
-        if (!$sourcePerson) {
+        $person = Person::where('nik', $nik)->first();
+        if (! $person) {
             return null;
         }
 
-        $existing = DB::table('yayasan_person_index')->where('nik', $nik)->first();
-        if (!$existing) {
-            return null;
-        }
+        InstitutionMembership::ensureMembership($person->id, $targetInstitutionId);
 
-        $refs = is_string($existing->refs) ? json_decode($existing->refs, true) : (array) $existing->refs;
-        $targetRef = collect($refs)->first(fn ($r) => ($r['institution_id'] ?? null) === $targetInstitutionId);
-
-        if ($targetRef && isset($targetRef['person_id'])) {
-            return Person::find($targetRef['person_id']);
-        }
-
-        $newPerson = $sourcePerson->replicate(['id', 'institution_id', 'created_at', 'updated_at', 'deleted_at']);
-        $newPerson->institution_id = $targetInstitutionId;
-        $newPerson->save();
-
-        foreach ($sourcePerson->contacts as $contact) {
-            $newContact = $contact->replicate(['id', 'person_id', 'created_at', 'updated_at']);
-            $newContact->person_id = $newPerson->id;
-            $newContact->save();
-        }
-
-        foreach ($sourcePerson->addresses as $address) {
-            $newAddress = $address->replicate(['id', 'person_id', 'created_at', 'updated_at']);
-            $newAddress->person_id = $newPerson->id;
-            $newAddress->save();
-        }
-
-        foreach ($sourcePerson->certificates as $cert) {
-            $newCert = $cert->replicate(['id', 'person_id', 'created_at', 'updated_at']);
-            $newCert->person_id = $newPerson->id;
-            $newCert->save();
-        }
-
-        $this->syncPerson($newPerson);
-
-        return $newPerson;
+        return $person;
     }
 }
+

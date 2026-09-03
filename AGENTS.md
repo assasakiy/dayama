@@ -82,13 +82,20 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Refaktor Fondasi Multi-Domain & Platform Config (2026-09-04)
+## 6. Sesi Terbaru — Eksekusi Tahap 1A: Person Decoupling & Institution Membership (2026-09-04)
 
-- **Restrukturisasi Domain**: Menghapus konsep `config/projects.php` lama dan menggantinya dengan `config/platform.php`.
-- **Root Domain Centric**: Menetapkan `APP_ROOT_DOMAIN=dayama.test` di `.env` lokal dan `.env.example`, otomatis merakit domain `account`, `dashboard`, `portal`, `psb`, `data`, `api`, `blog`, dan root landing `dayama.test`.
-- **Rute Terstruktur**: Memisahkan rute ke dalam:
-  - `routes/apps/`: `account.php`, `dashboard.php`, `portal.php`, `psb.php`, `datacenter.php`, `api.php`.
-  - `routes/sites/`: `landing.php`, `blog.php`.
-- **RoutesServiceProvider**: Rute aplikasi dan situs dimuat dinamis dari konfigurasi `platform.php`.
-- **Kompatibilitas Blade & Controllers**: Memperbarui seluruh referensi `config('projects.*')` di `HandleInertiaRequests`, `CheckDashboardAccess`, `AuthController`, `bootstrap/app.php`, serta seluruh view Blade landing page ke `config('platform.*')`.
-- **Verifikasi**: 333 rute sistem berhasil terdaftar tanpa konflik domain via `php artisan route:list`.
+- **Decoupling Person**:
+  - Kolom `institution_id` dan foreign key `core_persons_institution_id_foreign` berhasil dilepas dari `core_persons`.
+  - Composite index `(nik, institution_id)` diganti menjadi global nullable unique `core_persons_nik_unique`.
+  - Trait `HasInstitutionScope` dihapus dari `Person`.
+- **InstitutionMembership (Person-Centric)**:
+  - Dibuat tabel dan model `core_institution_memberships` dengan constraint unique `(person_id, institution_id)` dan status `active|inactive`.
+  - Dibuat helper `InstitutionMembership::ensureMembership()` yang menangani pembuatan keanggotaan dan reaktivasi status tanpa menimpa `joined_at` awal.
+- **Application Compatibility**:
+  - `PersonController@index`: Menggunakan Foundation Precedence (SuperAdmin/Yayasan melihat Person global; operator lembaga difilter via `whereHas('memberships')`).
+  - `StudentController` & `EmployeeController`: Mengimplementasikan Global Person Resolver (reuse person via `person_id` atau `nik`, create jika baru) + otomatis memanggil `ensureMembership()` tanpa memicu error SQL.
+  - `YayasanPersonIndexService` & `PersonObserver`: Menghilangkan replikasi kloning Person (`copyFromInstitution`) menjadi penautan keanggotaan (`linkToInstitution`). Afiliasi kelembagaan dibaca langsung dari `core_institution_memberships`.
+- **Verifikasi**:
+  - Test migration `migrate`, `rollback`, dan `migrate` ulang sukses tanpa error.
+  - Test automated feature (`IdentityTahap1ATest`) 4 passed (16 assertions).
+  - 333 rute sistem aktif normal via `php artisan route:list`.
