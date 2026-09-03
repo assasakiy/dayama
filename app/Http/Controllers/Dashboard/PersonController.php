@@ -25,6 +25,7 @@ use Modules\Core\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,8 @@ class PersonController extends Controller
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('viewAny', Person::class);
+
         $user = $request->user();
         $isYayasanOrAdmin = ! $user || $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
 
@@ -91,6 +94,8 @@ class PersonController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create', Person::class);
+
         $validated = $request->validate([
             'nama_depan'    => 'required|string|max:100',
             'nama_belakang' => 'nullable|string|max:100',
@@ -112,6 +117,8 @@ class PersonController extends Controller
 
     public function edit(Person $person): Response
     {
+        Gate::authorize('update', $person);
+
         $person->load([
             'positions',
             'contacts.type',
@@ -221,6 +228,8 @@ class PersonController extends Controller
 
     public function update(Request $request, Person $person): RedirectResponse
     {
+        Gate::authorize('update', $person);
+
         $validated = $request->validate([
             'nik'           => ['nullable', 'string', 'max:20', Rule::unique('core_persons', 'nik')->ignore($person->id)],
             'passport'      => 'nullable|string|max:50',
@@ -636,8 +645,10 @@ class PersonController extends Controller
 
     public function destroy(Person $person): RedirectResponse
     {
+        Gate::authorize('delete', $person);
+
         $person->delete();
 
-        return redirect()->route('dashboard.persons.index')->with('success', 'Person berhasil dihapus.');
+        return back()->with('success', 'Data person berhasil dihapus.');
     }
 }

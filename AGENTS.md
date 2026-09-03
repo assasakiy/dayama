@@ -82,7 +82,7 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Eksekusi Tahap 1A: Person Decoupling & Institution Membership (2026-09-04)
+## 6. Sesi Terbaru — Eksekusi Tahap 1A & 1A.1 Hardening: Identity Foundation & RBAC Alignment (2026-09-04)
 
 - **Decoupling Person**:
   - Kolom `institution_id` dan foreign key `core_persons_institution_id_foreign` berhasil dilepas dari `core_persons`.
@@ -91,11 +91,17 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 - **InstitutionMembership (Person-Centric)**:
   - Dibuat tabel dan model `core_institution_memberships` dengan constraint unique `(person_id, institution_id)` dan status `active|inactive`.
   - Dibuat helper `InstitutionMembership::ensureMembership()` yang menangani pembuatan keanggotaan dan reaktivasi status tanpa menimpa `joined_at` awal.
-- **Application Compatibility**:
+  - Data-preserving early rollback: implementasi `down()` memulihkan `institution_id` di `core_persons` dari `core_institution_memberships` sebelum tabel membership di-drop.
+- **RBAC & Authorization Hardening**:
+  - Dibuat `PersonPolicy` sebagai thin adapter menuju `AuthorizationService` (mematuhi `docs/rbac/README.md`).
+  - `PersonController` diproteksi lewat `Gate::authorize('viewAny', Person::class)`, `Gate::authorize('create')`, dsb tanpa hardcode string permission atau cek manual PSA.
+  - `AbilityResolver` dimutakhirkan dengan pemetaan modul domain terpusat (`Person -> persons`, `Student -> academic.students`, `Employee -> hr.employees`, dsb).
+- **Application Compatibility & Query Sweep**:
   - `PersonController@index`: Menggunakan Foundation Precedence (SuperAdmin/Yayasan melihat Person global; operator lembaga difilter via `whereHas('memberships')`).
+  - `StudentController@create`: Query dropdown `Person` kini mematuhi scope kelembagaan (operator lembaga hanya melihat Person terafiliasi lembaganya).
   - `StudentController` & `EmployeeController`: Mengimplementasikan Global Person Resolver (reuse person via `person_id` atau `nik`, create jika baru) + otomatis memanggil `ensureMembership()` tanpa memicu error SQL.
   - `YayasanPersonIndexService` & `PersonObserver`: Menghilangkan replikasi kloning Person (`copyFromInstitution`) menjadi penautan keanggotaan (`linkToInstitution`). Afiliasi kelembagaan dibaca langsung dari `core_institution_memberships`.
 - **Verifikasi**:
   - Test migration `migrate`, `rollback`, dan `migrate` ulang sukses tanpa error.
-  - Test automated feature (`IdentityTahap1ATest`) 4 passed (16 assertions).
+  - Test regression hardening (`IdentityTahap1AHardeningTest`) dan model feature (`IdentityTahap1ATest`) 100% pass (7 tests, 28 assertions).
   - 333 rute sistem aktif normal via `php artisan route:list`.

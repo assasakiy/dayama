@@ -46,11 +46,24 @@ class StudentController extends Controller
 
     public function create(): Response
     {
+        $personQuery = Person::select('id', 'nama_lengkap', 'nik', 'gender', 'tempat_lahir', 'tanggal_lahir', 'agama', 'photo')
+            ->orderBy('nama_lengkap');
+
+        $user = auth()->user();
+        $isYayasanOrAdmin = ! $user || $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
+
+        if (! $isYayasanOrAdmin) {
+            $instId = ActiveInstitution::id();
+            if ($instId) {
+                $personQuery->whereHas('memberships', fn ($m) => $m->where('institution_id', $instId)->where('status', 'active'));
+            } else {
+                $personQuery->whereRaw('1 = 0');
+            }
+        }
+
         return Inertia::render('Academic/Students/Form', [
             'student' => null,
-            'persons' => Person::select('id', 'nama_lengkap', 'nik', 'gender', 'tempat_lahir', 'tanggal_lahir', 'agama', 'photo')
-                ->orderBy('nama_lengkap')
-                ->get(),
+            'persons' => $personQuery->get(),
             'contactTypes' => ContactType::select('id', 'nama')->orderBy('nama')->get(),
             'addressTypes' => AddressType::select('id', 'nama')->orderBy('nama')->get(),
         ]);

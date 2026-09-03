@@ -40,5 +40,14 @@ return new class extends Migration
 
             $table->unique(['nik', 'institution_id'], 'person_nik_per_institution');
         });
+
+        // Data-preserving early rollback: isi kembali institution_id dari core_institution_memberships
+        if (Schema::hasTable('core_institution_memberships')) {
+            \Illuminate\Support\Facades\DB::statement("
+                UPDATE core_persons p
+                INNER JOIN core_institution_memberships m ON p.id = m.person_id
+                SET p.institution_id = m.institution_id
+            ");
+        }
     }
 };

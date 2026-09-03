@@ -40,7 +40,21 @@ class AbilityResolver
 
         // Example: 'update' with App\Models\Post
         $targetClass = is_object($target) ? get_class($target) : $target;
-        $resource = Str::plural(Str::snake(class_basename($targetClass))); // 'posts'
+        
+        // Centralized domain permission mapping
+        $resource = match ($targetClass) {
+            \Modules\Academic\Models\Student::class => 'academic.students',
+            \Modules\Academic\Models\Classroom::class => 'academic.classes',
+            \Modules\Academic\Models\Attendance::class => 'academic.attendance',
+            \Modules\Academic\Models\Grade::class => 'academic.grades',
+            \Modules\HR\Models\Employee::class => 'hr.employees',
+            \Modules\HR\Models\Department::class => 'hr.departments',
+            \Modules\HR\Models\Position::class => 'hr.positions',
+            \Modules\HR\Models\Attendance::class => 'hr.attendance',
+            \Modules\Core\Models\Person::class => 'persons',
+            \Modules\Core\Models\Institution::class => 'institutions',
+            default => Str::plural(Str::snake(class_basename($targetClass))),
+        };
 
         // Map standard abilities
         $mappedAbility = match ($ability) {
