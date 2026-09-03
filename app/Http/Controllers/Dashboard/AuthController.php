@@ -46,7 +46,7 @@ class AuthController
         Auth::login($user);
 
         // User yang baru register biasanya adalah user reguler
-        $blogDomain = config('projects.projects.blog.domain');
+        $blogDomain = config('platform.sites.blog.domain');
         $url = $request->getScheme() . '://' . $blogDomain . '/';
 
         return Inertia::location($url);
@@ -69,13 +69,13 @@ class AuthController
 
             $user = Auth::user();
             if ($user->is_primary_super_admin || $user->hasPermissionTo('dashboard.view')) {
-                $dashboardDomain = config('projects.core.dashboard');
+                $dashboardDomain = config('platform.apps.dashboard.domain');
                 $url = $request->getScheme() . '://' . $dashboardDomain . '/';
 
                 return Inertia::location($url);
             }
 
-            $blogDomain = config('projects.projects.blog.domain');
+            $blogDomain = config('platform.sites.blog.domain');
             $url = $request->getScheme() . '://' . $blogDomain . '/';
 
             return Inertia::location($url);
@@ -92,7 +92,7 @@ class AuthController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $authDomain = config('projects.core.auth');
+        $authDomain = config('platform.apps.account.domain');
         $url = $request->getScheme() . '://' . $authDomain . '/login';
 
         return Inertia::location($url);

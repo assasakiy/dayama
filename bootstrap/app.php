@@ -46,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Kustomisasi pengalihan Guest ke domain Auth
         $middleware->redirectGuestsTo(function (Request $request) {
-            $authDomain = config('projects.core.auth');
+            $authDomain = config('platform.apps.account.domain', 'account.' . config('platform.root_domain'));
             return $request->getScheme() . '://' . $authDomain . '/login';
         });
 
@@ -54,11 +54,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->getHost() === config('projects.core.api'),
+            fn (Request $request) => $request->is('api/*') || $request->getHost() === config('platform.apps.api.domain'),
         );
 
         $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
-            $isDashboard = $request->getHost() === config('projects.core.dashboard') || $request->is('dashboard*');
+            $isDashboard = $request->getHost() === config('platform.apps.dashboard.domain') || $request->is('dashboard*');
             
             if ($request->header('X-Inertia') || $isDashboard) {
                 if (in_array($response->getStatusCode(), [403, 404, 500, 503])) {

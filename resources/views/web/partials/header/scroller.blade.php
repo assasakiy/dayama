@@ -42,7 +42,7 @@
         >
             @php 
                 $categories = \Modules\CMS\Models\Category::where('is_visible', true)->orderBy('name')->get(); 
-                $blogDomain = config('projects.projects.blog.domain', env('DOMAIN_BLOG', 'blog.test-blog.test'));
+                $blogDomain = config('platform.sites.blog.domain', 'blog.' . config('platform.root_domain', 'dayama.test'));
                 $blogUrl = 'http://' . $blogDomain;
             @endphp
             @foreach($categories as $category)

@@ -16,7 +16,7 @@ class CheckDashboardAccess
         }
 
         if (! $request->user()->is_primary_super_admin && ! $request->user()->hasPermissionTo('dashboard.view')) {
-            $blogDomain = config('projects.projects.blog.domain');
+            $blogDomain = config('platform.sites.blog.domain');
             $url = $request->getScheme() . '://' . $blogDomain . '/';
 
             return Inertia::location($url);

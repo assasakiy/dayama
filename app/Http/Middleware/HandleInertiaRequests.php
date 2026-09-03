@@ -12,8 +12,8 @@ class HandleInertiaRequests extends Middleware
     public function rootView(Request $request): string
     {
         // Gunakan host base atau request path untuk menentukan view mana yang akan di load
-        $isDashboardDomain = $request->getHost() === config('projects.core.dashboard');
-        $isAuthDomain = $request->getHost() === config('projects.core.auth');
+        $isDashboardDomain = $request->getHost() === config('platform.apps.dashboard.domain');
+        $isAuthDomain = $request->getHost() === config('platform.apps.account.domain');
 
         if ($isDashboardDomain || $isAuthDomain || $request->is('dashboard*') || $request->is('login*') || $request->is('register*')) {
             return 'dashboard';
@@ -31,9 +31,9 @@ class HandleInertiaRequests extends Middleware
     {
         // Tentukan context branding berdasarkan domain
         $brandingContext = 'global';
-        if ($request->getHost() === config('projects.projects.blog.domain')) {
+        if ($request->getHost() === config('platform.sites.blog.domain')) {
             $brandingContext = 'blog';
-        } elseif ($request->getHost() === config('projects.projects.landing.domain')) {
+        } elseif ($request->getHost() === config('platform.sites.landing.domain')) {
             $brandingContext = 'landing';
         }
 
@@ -52,8 +52,8 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'blog_url' => ($request->secure() ? 'https://' : 'http://') . config('projects.projects.blog.domain'),
-            'domain_main' => config('projects.projects.landing.domain'),
+            'blog_url' => ($request->secure() ? 'https://' : 'http://') . config('platform.sites.blog.domain'),
+            'domain_main' => config('platform.sites.landing.domain'),
             'csrf_token' => csrf_token(),
             'active_institution' => $activeInstitution,
             'institutions' => $institutions,

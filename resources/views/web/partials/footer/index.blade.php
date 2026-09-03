@@ -6,10 +6,10 @@
     $logoUrl = \App\Services\SettingService::get('general.logo_url', null, $context);
     
     // Get URLs for routing
-    $landingDomain = config('projects.projects.landing.domain', env('DOMAIN_MAIN', 'test-blog.test'));
+    $landingDomain = config('platform.sites.landing.domain', env('APP_ROOT_DOMAIN', 'dayama.test'));
     $landingUrl = 'http://' . $landingDomain;
     
-    $blogDomain = config('projects.projects.blog.domain', env('DOMAIN_BLOG', 'blog.test-blog.test'));
+    $blogDomain = config('platform.sites.blog.domain', 'blog.' . $landingDomain);
     $blogUrl = 'http://' . $blogDomain;
     
     // Determine which footer to load

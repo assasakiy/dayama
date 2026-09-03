@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Route;
@@ -20,50 +22,46 @@ class RoutesServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->mapCoreRoutes();
-        $this->mapProjectRoutes();
+        $this->mapPlatformApps();
+        $this->mapPlatformSites();
     }
 
     /**
-     * Memuat rute untuk Sistem Inti (API, Auth, Dashboard)
+     * Memuat rute untuk Platform Applications (Account, Dashboard, Portal, PSB, dll)
      */
-    protected function mapCoreRoutes(): void
+    protected function mapPlatformApps(): void
     {
-        // 1. Domain API
-        if ($domain = config('projects.core.api')) {
-            Route::domain($domain)
-                ->middleware('api')
-                ->group(base_path('routes/api.php'));
-        }
+        $apps = config('platform.apps', []);
 
-        // 2. Domain Auth (Account)
-        if ($domain = config('projects.core.auth')) {
-            Route::domain($domain)
-                ->middleware('web')
-                ->group(base_path('routes/auth.php'));
-        }
-
-        // 3. Domain Dashboard
-        if ($domain = config('projects.core.dashboard')) {
-            Route::domain($domain)
-                ->middleware(['web'])
-                ->group(base_path('routes/dashboard.php'));
+        foreach ($apps as $key => $app) {
+            if (! empty($app['enabled']) && ! empty($app['domain']) && ! empty($app['route_file'])) {
+                $filePath = base_path($app['route_file']);
+                if (file_exists($filePath)) {
+                    Route::domain($app['domain'])
+                        ->middleware($app['middleware'] ?? ['web'])
+                        ->group($filePath);
+                }
+            }
         }
     }
 
     /**
-     * Memuat rute untuk Frontends/Projects (Blog, Landing, dll)
+     * Memuat rute untuk Sites & Content Surfaces (Landing Yayasan, Blog, dll)
      */
-    protected function mapProjectRoutes(): void
+    protected function mapPlatformSites(): void
     {
-        $projects = config('projects.projects', []);
-        
-        foreach ($projects as $name => $project) {
-            if (isset($project['active']) && $project['active'] === true) {
-                Route::domain($project['domain'])
-                    ->middleware('web') // Default middleware untuk project frontend
-                    ->group(base_path($project['route_file']));
+        $sites = config('platform.sites', []);
+
+        foreach ($sites as $key => $site) {
+            if (! empty($site['enabled']) && ! empty($site['domain']) && ! empty($site['route_file'])) {
+                $filePath = base_path($site['route_file']);
+                if (file_exists($filePath)) {
+                    Route::domain($site['domain'])
+                        ->middleware($site['middleware'] ?? ['web'])
+                        ->group($filePath);
+                }
             }
         }
     }
 }
+

@@ -4,7 +4,7 @@
 @section('description', 'Daftar mitra kerja sama Pondok Pesantren Darul Yatama Wal Masakin dalam bidang pendidikan, sosial, dan dakwah.')
 
 @php
-    $landingDomain = config('projects.projects.landing.domain', env('DOMAIN_MAIN', 'test-blog.test'));
+    $landingDomain = config('platform.sites.landing.domain', env('APP_ROOT_DOMAIN', 'dayama.test'));
     $landingUrl = 'http://' . $landingDomain;
 @endphp
 
