@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Services\RoleAssignmentService;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use Modules\CMS\Models\Category;
 use Modules\CMS\Models\Comment;
-use Modules\Core\Models\Person;
 use Modules\CMS\Models\Post;
 use Modules\CMS\Models\Tag;
+use Modules\Core\Models\Person;
 use Modules\Core\Models\User;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Modules\Core\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run(): void
+    public function run(RoleAssignmentService $assignments): void
     {
         $this->call([
             SettingSeeder::class,
@@ -66,8 +66,8 @@ class DatabaseSeeder extends Seeder
                     'is_verified' => $isPrimarySuperAdmin,
                 ]
             );
-            $user->assignRole($userData['role']);
-            if (!$user->profile) {
+            $assignments->assign($user, $userData['role']);
+            if (! $user->profile) {
                 $user->profile()->create([]);
             }
         }
@@ -78,27 +78,27 @@ class DatabaseSeeder extends Seeder
         }
 
         // Additional users
-        User::factory(10)->create()->each(fn (User $u) => $u->assignRole('Author'));
+        User::factory(10)->create()->each(fn (User $user) => $assignments->assign($user, 'Author'));
 
         // Categories
         $categories = collect();
         $parentNames = ['Teknologi', 'Desain', 'Bisnis', 'Sains', 'Gaya Hidup'];
         foreach ($parentNames as $name) {
-            $parent = Category::create(['name' => $name, 'slug' => \Illuminate\Support\Str::slug($name), 'parent_id' => null]);
+            $parent = Category::create(['name' => $name, 'slug' => Str::slug($name), 'parent_id' => null]);
             $categories->push($parent);
 
             $childNames = match ($name) {
                 'Teknologi' => ['Pengembangan Web', 'Aplikasi Mobile', 'Kecerdasan Buatan', 'Keamanan Siber'],
-                'Desain'    => ['UI/UX', 'Desain Grafis', 'Tipografi'],
-                'Bisnis'    => ['Startup', 'Pemasaran', 'Keuangan'],
-                'Sains'     => ['Fisika', 'Biologi', 'Luar Angkasa'],
-                'Gaya Hidup'=> ['Kesehatan', 'Perjalanan', 'Makanan'],
-                default     => [],
+                'Desain' => ['UI/UX', 'Desain Grafis', 'Tipografi'],
+                'Bisnis' => ['Startup', 'Pemasaran', 'Keuangan'],
+                'Sains' => ['Fisika', 'Biologi', 'Luar Angkasa'],
+                'Gaya Hidup' => ['Kesehatan', 'Perjalanan', 'Makanan'],
+                default => [],
             };
             foreach ($childNames as $childName) {
                 $child = Category::create([
                     'name' => $childName,
-                    'slug' => \Illuminate\Support\Str::slug($childName),
+                    'slug' => Str::slug($childName),
                     'parent_id' => $parent->id,
                 ]);
                 $categories->push($child);
@@ -114,7 +114,7 @@ class DatabaseSeeder extends Seeder
         ];
         $tags = collect();
         foreach ($tagNames as $name) {
-            $tags->push(Tag::create(['name' => $name, 'slug' => \Illuminate\Support\Str::slug($name)]));
+            $tags->push(Tag::create(['name' => $name, 'slug' => Str::slug($name)]));
         }
 
         // Posts

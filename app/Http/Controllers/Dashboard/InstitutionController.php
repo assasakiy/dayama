@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use Modules\Core\Models\ContactType;
-use Modules\Core\Models\Institution;
-use Modules\Core\Models\InstitutionAddress;
-use Modules\Core\Models\InstitutionContact;
-use Modules\Core\Models\InstitutionLegality;
-use Modules\Core\Models\InstitutionType;
-use Modules\Core\Models\Role;
+use App\Services\RoleAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Core\Models\ContactType;
+use Modules\Core\Models\Institution;
+use Modules\Core\Models\InstitutionContact;
+use Modules\Core\Models\InstitutionType;
+use Modules\Core\Models\Role;
 
 class InstitutionController extends Controller
 {
     public function index()
     {
         $institutions = Institution::with('type')->orderBy('sort_order')->get();
+
         return Inertia::render('Institutions/Index', [
             'institutions' => $institutions,
             'roles' => Role::orderBy('sort_order')->get(['id', 'name', 'display_name']),
@@ -45,11 +45,10 @@ class InstitutionController extends Controller
         $institution = Institution::create($validated);
 
         // Assign role to the creator if specified
-        if (!empty($validated['assign_role_id']) && $request->user()) {
-            $user = $request->user();
+        if (! empty($validated['assign_role_id']) && $request->user()) {
             $role = Role::find($validated['assign_role_id']);
-            if ($role && !$user->hasRole($role->name)) {
-                $user->assignRole($role->name);
+            if ($role) {
+                app(RoleAssignmentService::class)->assign($request->user(), $role, $institution->id);
             }
         }
 
@@ -66,9 +65,9 @@ class InstitutionController extends Controller
         ]);
 
         return Inertia::render('Institutions/Edit', [
-            'institution'    => $institution,
+            'institution' => $institution,
             'institutionTypes' => InstitutionType::orderBy('sort_order')->get(),
-            'contact_types'  => ContactType::orderBy('nama')->get(['id', 'nama', 'icon']),
+            'contact_types' => ContactType::orderBy('nama')->get(['id', 'nama', 'icon']),
         ]);
     }
 
@@ -92,6 +91,7 @@ class InstitutionController extends Controller
         ]);
 
         $institution->update($validated);
+
         return back()->with('success', 'Lembaga berhasil diperbarui.');
     }
 
@@ -112,6 +112,7 @@ class InstitutionController extends Controller
     public function destroy(Institution $institution)
     {
         $institution->delete();
+
         return back()->with('success', 'Lembaga berhasil dihapus.');
     }
 
@@ -120,14 +121,14 @@ class InstitutionController extends Controller
     public function updateLegality(Request $request, Institution $institution): RedirectResponse
     {
         $validated = $request->validate([
-            'nspp'               => 'nullable|string|max:50',
-            'npsn'               => 'nullable|string|max:50',
-            'kode_registrasi'    => 'nullable|string|max:50',
-            'nomor_ijop'         => 'nullable|string|max:100',
-            'tanggal_ijop'       => 'nullable|date',
+            'nspp' => 'nullable|string|max:50',
+            'npsn' => 'nullable|string|max:50',
+            'kode_registrasi' => 'nullable|string|max:50',
+            'nomor_ijop' => 'nullable|string|max:100',
+            'tanggal_ijop' => 'nullable|date',
             'nomor_akta_yayasan' => 'nullable|string|max:100',
-            'npwp'               => 'nullable|string|max:30',
-            'tahun_berdiri_masehi'  => 'nullable|integer|min:1800|max:2099',
+            'npwp' => 'nullable|string|max:30',
+            'tahun_berdiri_masehi' => 'nullable|integer|min:1800|max:2099',
             'tahun_berdiri_hijriyah' => 'nullable|integer|min:1200|max:1499',
         ]);
 
@@ -144,16 +145,16 @@ class InstitutionController extends Controller
     public function updateAddress(Request $request, Institution $institution): RedirectResponse
     {
         $validated = $request->validate([
-            'alamat_jalan'   => 'nullable|string',
-            'rt'             => 'nullable|string|max:5',
-            'rw'             => 'nullable|string|max:5',
-            'kode_pos'       => 'nullable|string|max:10',
-            'provinsi'       => 'nullable|string|max:100',
+            'alamat_jalan' => 'nullable|string',
+            'rt' => 'nullable|string|max:5',
+            'rw' => 'nullable|string|max:5',
+            'kode_pos' => 'nullable|string|max:10',
+            'provinsi' => 'nullable|string|max:100',
             'kabupaten_kota' => 'nullable|string|max:100',
-            'kecamatan'      => 'nullable|string|max:100',
+            'kecamatan' => 'nullable|string|max:100',
             'desa_kelurahan' => 'nullable|string|max:100',
-            'latitude'       => 'nullable|numeric',
-            'longitude'      => 'nullable|numeric',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $institution->address()->updateOrCreate(
@@ -170,8 +171,8 @@ class InstitutionController extends Controller
     {
         $validated = $request->validate([
             'contact_type_id' => 'required|uuid|exists:contact_types,id',
-            'value'           => 'required|string|max:255',
-            'is_primary'      => 'boolean',
+            'value' => 'required|string|max:255',
+            'is_primary' => 'boolean',
         ]);
 
         if ($validated['is_primary'] ?? false) {
@@ -187,8 +188,8 @@ class InstitutionController extends Controller
     {
         $validated = $request->validate([
             'contact_type_id' => 'required|uuid|exists:contact_types,id',
-            'value'           => 'required|string|max:255',
-            'is_primary'      => 'boolean',
+            'value' => 'required|string|max:255',
+            'is_primary' => 'boolean',
         ]);
 
         if ($validated['is_primary'] ?? false) {

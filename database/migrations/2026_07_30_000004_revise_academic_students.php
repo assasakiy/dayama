@@ -10,13 +10,26 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('academic_students', function (Blueprint $table) {
+        $indexes = collect(\Illuminate\Support\Facades\DB::select('SHOW INDEXES FROM academic_students'))->pluck('Key_name')->all();
+
+        Schema::table('academic_students', function (Blueprint $table) use ($indexes) {
             // Drop old global unique constraints
-            $table->dropUnique('students_nis_unique');
-            $table->dropUnique('students_nisn_unique');
+            if (in_array('students_nis_unique', $indexes, true)) {
+                $table->dropUnique('students_nis_unique');
+            } elseif (in_array('academic_students_nis_unique', $indexes, true)) {
+                $table->dropUnique('academic_students_nis_unique');
+            }
+
+            if (in_array('students_nisn_unique', $indexes, true)) {
+                $table->dropUnique('students_nisn_unique');
+            } elseif (in_array('academic_students_nisn_unique', $indexes, true)) {
+                $table->dropUnique('academic_students_nisn_unique');
+            }
 
             // Drop kelas column — source of truth is academic_classroom_student
-            $table->dropColumn('kelas');
+            if (Schema::hasColumn('academic_students', 'kelas')) {
+                $table->dropColumn('kelas');
+            }
         });
 
         // Add new composite constraints

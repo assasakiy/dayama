@@ -10,15 +10,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('name');
-            $table->dropColumn('banner');
+        $usersTable = Schema::hasTable('core_users') ? 'core_users' : 'users';
+        $profilesTable = Schema::hasTable('core_user_profiles') ? 'core_user_profiles' : 'user_profiles';
+
+        Schema::table($usersTable, function (Blueprint $table) use ($usersTable) {
+            if (Schema::hasColumn($usersTable, 'name')) {
+                $table->dropColumn('name');
+            }
+            if (Schema::hasColumn($usersTable, 'banner')) {
+                $table->dropColumn('banner');
+            }
             $table->string('username', 60)->nullable()->change();
         });
 
-        Schema::table('user_profiles', function (Blueprint $table) {
-            $table->string('banner')->nullable()->after('avatar');
-        });
+        if (Schema::hasTable($profilesTable) && ! Schema::hasColumn($profilesTable, 'banner')) {
+            Schema::table($profilesTable, function (Blueprint $table) {
+                $table->string('banner')->nullable()->after('avatar');
+            });
+        }
     }
 
     public function down(): void

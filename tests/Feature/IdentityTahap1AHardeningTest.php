@@ -131,6 +131,7 @@ class IdentityTahap1AHardeningTest extends TestCase
         $response2 = $this->actingAs($adminUser)
             ->withSession(['active_institution_id' => $ma->id])
             ->post('http://dashboard.dayama.test/hr/employees', $employeePayload);
+
         $response2->assertSessionHasNoErrors();
 
         // Tetap hanya 1 person di database, tapi memiliki 2 membership
@@ -188,6 +189,11 @@ class IdentityTahap1AHardeningTest extends TestCase
         $response = $this->actingAs($operatorMts)
             ->withSession(['active_institution_id' => $mts->id])
             ->get('http://dashboard.dayama.test/academic/students/create');
+
+        if ($response->getStatusCode() === 500) {
+            dump($response->exception?->getMessage());
+        }
+
         $response->assertOk();
 
         $pageProps = $response->viewData('page')['props'] ?? $response->original->getData()['page']['props'];

@@ -8,23 +8,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('role_user', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('user_id');
-            $table->uuid('role_id');
-            $table->uuid('institution_id')->nullable();
-            $table->timestamps();
+        $tableName = Schema::hasTable('core_users') ? 'core_role_user' : 'role_user';
+        $userTable = Schema::hasTable('core_users') ? 'core_users' : 'users';
+        $roleTable = Schema::hasTable('core_roles') ? 'core_roles' : 'roles';
+        $instTable = Schema::hasTable('core_institutions') ? 'core_institutions' : 'institutions';
 
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();
-            $table->foreign('institution_id')->references('id')->on('institutions')->nullOnDelete();
+        if (! Schema::hasTable($tableName)) {
+            Schema::create($tableName, function (Blueprint $table) use ($userTable, $roleTable, $instTable) {
+                $table->uuid('id')->primary();
+                $table->uuid('user_id');
+                $table->uuid('role_id');
+                $table->uuid('institution_id')->nullable();
+                $table->timestamps();
 
-            $table->unique(['user_id', 'role_id', 'institution_id']);
-        });
+                $table->foreign('user_id')->references('id')->on($userTable)->cascadeOnDelete();
+                $table->foreign('role_id')->references('id')->on($roleTable)->cascadeOnDelete();
+                $table->foreign('institution_id')->references('id')->on($instTable)->nullOnDelete();
+
+                $table->unique(['user_id', 'role_id', 'institution_id']);
+            });
+        }
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('core_role_user');
         Schema::dropIfExists('role_user');
     }
 };

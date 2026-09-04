@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
-use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Dashboard\StoreUserRequest;
 use App\Http\Requests\Dashboard\UpdateUserRequest;
-use Modules\Core\Models\Institution;
-use Modules\Core\Models\RoleUser;
-use Modules\Core\Models\User;
+use App\Services\RoleAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Core\Models\Institution;
+use Modules\Core\Models\User;
 use Spatie\Permission\Models\Role;
 
 class UserController
@@ -54,41 +53,41 @@ class UserController
         }
 
         $users = $query->paginate(15)->withQueryString()->through(fn ($user) => [
-            'id'                => $user->id,
-            'name'              => $user->name,
-            'username'          => $user->username,
-            'email'             => $user->email,
-            'avatar_url'        => $user->avatar_url,
-            'status'            => $user->status ?? 'active',
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'avatar_url' => $user->avatar_url,
+            'status' => $user->status ?? 'active',
             'email_verified_at' => $user->email_verified_at,
-            'last_login_at'     => $user->last_login_at,
-            'posts_count'       => (int) $user->posts_count,
-            'comments_count'    => (int) $user->comments_count,
-            'created_at'        => $user->created_at,
-            'roles'             => $user->roles->map(fn ($r) => [
-                'id'    => $r->id,
-                'name'  => $r->name,
+            'last_login_at' => $user->last_login_at,
+            'posts_count' => (int) $user->posts_count,
+            'comments_count' => (int) $user->comments_count,
+            'created_at' => $user->created_at,
+            'roles' => $user->roles->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
                 'color' => $r->color,
-                'icon'  => $r->icon,
+                'icon' => $r->icon,
             ]),
             'is_primary_super_admin' => $user->is_primary_super_admin,
-            'is_protected'      => $user->is_protected,
-            'is_verified'       => $user->is_verified,
-            'highest_rank'      => $user->getHighestRank(),
-            'institution'       => $user->roleUser->first()?->institution ? [
-                'id'   => $user->roleUser->first()->institution->id,
+            'is_protected' => $user->is_protected,
+            'is_verified' => $user->is_verified,
+            'highest_rank' => $user->getHighestRank(),
+            'institution' => $user->roleUser->first()?->institution ? [
+                'id' => $user->roleUser->first()->institution->id,
                 'name' => $user->roleUser->first()->institution->name,
             ] : null,
-            'can'               => [
+            'can' => [
                 'update' => request()->user()->can('update', $user),
                 'delete' => request()->user()->can('delete', $user),
             ],
         ]);
 
         return Inertia::render('Users/Index', [
-            'users'       => $users,
-            'roles'       => Role::orderBy('name')->get(['id', 'name', 'color', 'icon', 'scope']),
-            'filters'     => $request->only(['search', 'role', 'status', 'verified']),
+            'users' => $users,
+            'roles' => Role::orderBy('name')->get(['id', 'name', 'color', 'icon', 'scope']),
+            'filters' => $request->only(['search', 'role', 'status', 'verified']),
             'institutions' => Institution::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -100,29 +99,29 @@ class UserController
 
         return Inertia::render('Users/Show', [
             'user' => [
-                'id'                => $user->id,
-                'name'              => $user->name,
-                'email'             => $user->email,
-                'username'          => $user->username,
-                'avatar_url'        => $user->avatar_url,
-                'biography'         => $user->biography,
-                'website'           => $user->website,
-                'social_links'      => $user->social_links,
-                'status'            => $user->status ?? 'active',
-                'posts_count'       => $user->posts_count,
-                'comments_count'    => $user->comments_count,
-                'created_at'        => $user->created_at,
-                'last_login_at'     => $user->last_login_at,
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'avatar_url' => $user->avatar_url,
+                'biography' => $user->biography,
+                'website' => $user->website,
+                'social_links' => $user->social_links,
+                'status' => $user->status ?? 'active',
+                'posts_count' => $user->posts_count,
+                'comments_count' => $user->comments_count,
+                'created_at' => $user->created_at,
+                'last_login_at' => $user->last_login_at,
                 'email_verified_at' => $user->email_verified_at,
-                'is_verified'       => $user->is_verified,
-                'updated_at'        => $user->updated_at,
-                'roles'             => $user->roles->map(fn ($r) => [
-                    'id'    => $r->id,
-                    'name'  => $r->name,
+                'is_verified' => $user->is_verified,
+                'updated_at' => $user->updated_at,
+                'roles' => $user->roles->map(fn ($r) => [
+                    'id' => $r->id,
+                    'name' => $r->name,
                     'color' => $r->color,
                 ]),
-                'institution'       => $user->roleUser->first()?->institution ? [
-                    'id'   => $user->roleUser->first()->institution->id,
+                'institution' => $user->roleUser->first()?->institution ? [
+                    'id' => $user->roleUser->first()->institution->id,
                     'name' => $user->roleUser->first()->institution->name,
                 ] : null,
             ],
@@ -134,19 +133,19 @@ class UserController
         $validated = $request->validated();
 
         $user = User::create([
-            'email'    => $validated['email'],
+            'email' => $validated['email'],
             'username' => $validated['username'] ?? str($validated['email'])->before('@'),
             'password' => $validated['password'],
-            'status'   => $validated['status'] ?? 'active',
+            'status' => $validated['status'] ?? 'active',
         ]);
 
         $profileData = [
             'full_name' => $validated['name'],
             'biography' => $validated['biography'] ?? null,
-            'website'  => $validated['website'] ?? null,
+            'website' => $validated['website'] ?? null,
             'social_links' => array_filter([
-                'github'   => $validated['social_links']['github'] ?? null,
-                'twitter'  => $validated['social_links']['twitter'] ?? null,
+                'github' => $validated['social_links']['github'] ?? null,
+                'twitter' => $validated['social_links']['twitter'] ?? null,
                 'linkedin' => $validated['social_links']['linkedin'] ?? null,
             ]),
         ];
@@ -157,9 +156,8 @@ class UserController
 
         $user->profile()->create($profileData);
 
-        if (! empty($validated['roles'])) {
-            $user->syncRoles($validated['roles']);
-            $this->syncRoleUserPivot($user, $validated['roles'], $validated['institution_id'] ?? null);
+        if (! empty($validated['roles']) || isset($validated['assignments'])) {
+            app(RoleAssignmentService::class)->sync($user, $this->assignments($validated));
         }
 
         return redirect()->route('dashboard.users.index')->with('success', 'User created.');
@@ -172,22 +170,22 @@ class UserController
 
         return Inertia::render('Users/Form', [
             'user' => [
-                'id'                => $user->id,
-                'name'              => $user->name,
-                'email'             => $user->email,
-                'username'          => $user->username,
-                'avatar_url'        => $user->avatar_url,
-                'biography'         => $user->profile?->biography,
-                'website'           => $user->profile?->website,
-                'social_links'      => $user->profile?->social_links,
-                'status'            => $user->status ?? 'active',
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'avatar_url' => $user->avatar_url,
+                'biography' => $user->profile?->biography,
+                'website' => $user->profile?->website,
+                'social_links' => $user->profile?->social_links,
+                'status' => $user->status ?? 'active',
                 'email_verified_at' => $user->email_verified_at,
-                'created_at'        => $user->created_at,
-                'roles'             => $user->roles->pluck('name'),
-                'is_protected'      => $user->is_protected,
-                'is_verified'       => $user->is_verified,
-                'institution'       => $user->roleUser->first()?->institution ? [
-                    'id'   => $user->roleUser->first()->institution->id,
+                'created_at' => $user->created_at,
+                'roles' => $user->roles->pluck('name'),
+                'is_protected' => $user->is_protected,
+                'is_verified' => $user->is_verified,
+                'institution' => $user->roleUser->first()?->institution ? [
+                    'id' => $user->roleUser->first()->institution->id,
                     'name' => $user->roleUser->first()->institution->name,
                 ] : null,
             ],
@@ -200,10 +198,9 @@ class UserController
     {
         $validated = $request->validated();
 
-
         $data = [
-            'email'    => $validated['email'],
-            'status'   => $validated['status'] ?? 'active',
+            'email' => $validated['email'],
+            'status' => $validated['status'] ?? 'active',
         ];
 
         if (auth()->user()->is_primary_super_admin) {
@@ -217,7 +214,7 @@ class UserController
             if (isset($validated['is_verified'])) {
                 $data['is_verified'] = $validated['is_verified'];
             }
-            if (isset($validated['is_protected']) && !$user->is_primary_super_admin) {
+            if (isset($validated['is_protected']) && ! $user->is_primary_super_admin) {
                 $data['is_protected'] = $validated['is_protected'];
             }
         }
@@ -231,10 +228,10 @@ class UserController
         $profileData = [
             'full_name' => $validated['name'],
             'biography' => $validated['biography'] ?? null,
-            'website'  => $validated['website'] ?? null,
+            'website' => $validated['website'] ?? null,
             'social_links' => array_filter([
-                'github'   => $validated['social_links']['github'] ?? null,
-                'twitter'  => $validated['social_links']['twitter'] ?? null,
+                'github' => $validated['social_links']['github'] ?? null,
+                'twitter' => $validated['social_links']['twitter'] ?? null,
                 'linkedin' => $validated['social_links']['linkedin'] ?? null,
             ]),
         ];
@@ -249,9 +246,8 @@ class UserController
             $user->profile()->create($profileData);
         }
 
-        if (isset($validated['roles'])) {
-            $user->syncRoles($validated['roles']);
-            $this->syncRoleUserPivot($user, $validated['roles'], $validated['institution_id'] ?? null);
+        if (isset($validated['roles']) || isset($validated['assignments'])) {
+            app(RoleAssignmentService::class)->sync($user, $this->assignments($validated));
         }
 
         return redirect()->route('dashboard.users.index')->with('success', 'User updated.');
@@ -265,24 +261,16 @@ class UserController
         return redirect()->route('dashboard.users.index')->with('success', 'User deleted.');
     }
 
-    /**
-     * Sync the core_role_user pivot for lembaga-scoped roles.
-     */
-    private function syncRoleUserPivot(User $user, array $roleNames, ?string $institutionId): void
+    private function assignments(array $validated): array
     {
-        $lembagaRoleIds = Role::whereIn('name', $roleNames)
-            ->where('scope', 'lembaga')
-            ->pluck('id');
-
-        $user->roleUser()->delete();
-
-        foreach ($lembagaRoleIds as $roleId) {
-            RoleUser::create([
-                'user_id'        => $user->id,
-                'role_id'        => $roleId,
-                'institution_id' => $institutionId,
-            ]);
+        if (isset($validated['assignments'])) {
+            return $validated['assignments'];
         }
+
+        return collect($validated['roles'] ?? [])->map(fn (string $role): array => [
+            'role' => $role,
+            'institution_id' => $validated['institution_id'] ?? null,
+        ])->all();
     }
 
     public function bulkDelete(Request $request): RedirectResponse
@@ -299,14 +287,17 @@ class UserController
     {
         Gate::authorize('update', User::class);
         $request->validate([
-            'ids'  => ['required', 'array'],
+            'ids' => ['required', 'array'],
             'ids.*' => ['uuid'],
-            'role' => ['required', 'string', 'exists:roles,name'],
+            'role' => ['required', 'string', 'exists:core_roles,name'],
+            'institution_id' => ['nullable', 'uuid', 'exists:core_institutions,id'],
         ]);
 
-        User::whereIn('id', $request->input('ids'))->each(function (User $user) use ($request): void {
-            $user->assignRole($request->input('role'));
-        });
+        app(RoleAssignmentService::class)->bulkAssign(
+            User::whereIn('id', $request->input('ids'))->get(),
+            $request->input('role'),
+            $request->input('institution_id'),
+        );
 
         return redirect()->route('dashboard.users.index')->with('success', 'Role assigned to selected users.');
     }

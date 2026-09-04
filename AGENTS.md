@@ -82,18 +82,24 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Final Draft Tahap 1B: Organizational Context & Contextual Permission (2026-09-04)
+## 6. Sesi Terbaru — Eksekusi Tahap 1B.0: Role Assignment SSOT & Multi-Institution Support (2026-09-04)
 
-- Memperluas desain 1B menjadi tiga sub-tahap wajib: `1B.0 Role Assignment SSOT`, `1B.1 Organizational Context`, dan `1B.2 Contextual Permission`.
-- Mengunci `RoleAssignmentService` sebagai writer transaksi tunggal untuk assignment Spatie + `core_role_user` multi-institution.
-- Mengunci resolver defensif: institutional assignment wajib memiliki pivot, assignment Spatie yang cocok, dan institution aktif.
-- Menegaskan actor authority tidak bergantung Person membership; target Person tetap membutuhkan active membership.
-- Mengunci `grants_global_context` PSA-only dan activity-log audited.
-- Mengunci InstitutionScope: GLOBAL/FOUNDATION unrestricted, INSTITUTION active-only, PERSONAL no rows.
-- Menambah Institutional Resource Registry dan `PermissionContextResolver` guna mencegah kebocoran permission role lintas institution.
-- Mengunci class-level `create/viewAny` membutuhkan institution authorization context.
-- Menetapkan direct permission tidak menciptakan organizational authority; scope-null neutral role tidak menjadi sumber institutional permission.
-- Menambah 56-case test matrix. Belum ada migration/kode 1B; eksekusi pertama setelah approval hanya 1B.0.
+- **RoleAssignmentService (SSOT Writer)**:
+  - Dibuat `App\Services\RoleAssignmentService` sebagai writer tunggal mutasi role user di seluruh sistem (`assign`, `remove`, `sync`, `bulkAssign`, `assignInstitution`, `removeInstitution`).
+  - Mendukung kontrak multidimensi: `assignments[{role, institution_id}]` (misal: Guru @ MA, Guru @ MTs, Editor @ null) dengan tetap mempertahankan backward compatibility untuk payload `roles` + `institution_id` lama.
+  - Memastikan Spatie role tetap dipertahankan sampai binding institusi terakhir dilepas; penghapusan binding terakhir otomatis mencabut Spatie role.
+  - Memvalidasi institusi aktif secara ketat untuk role lembaga, dan menolak binding institusi untuk non-institution role.
+- **Migrasi Runtime Writers**:
+  - `UserController`: `store`, `update`, dan `bulkAssignRole` kini sepenuhnya melalui `RoleAssignmentService`.
+  - `RoleController@assignUsers`: Menolak penugasan role lembaga tanpa binding institusi (`fails-closed`) dan memutasi via service.
+  - `InstitutionController@store`: Penugasan role opsional saat membuat institusi kini otomatis terikat ke institusi baru via `assignInstitution`.
+  - `DatabaseSeeder`: Seluruh penugasan awal dialihkan melalui `RoleAssignmentService`.
+- **Reconciliation Command**:
+  - Dibuat command `php artisan rbac:reconcile-role-assignments` (dry-run default; `--apply` hanya memperbaiki pivot valid yang kehilangan Spatie role secara deterministik).
+- **Verifikasi**:
+  - `RoleAssignmentTahap1B0Test`: 8 tests, 27 assertions passed (multi-institution persistence, idempotent assignment, fail-closed institutional binding, dry-run & apply reconciliation).
+  - Regression test `IdentityTahap1ATest` & `IdentityTahap1AHardeningTest`: 8 tests, 31 assertions passed.
+  - Seluruh 333 rute sistem aktif normal via `php artisan route:list`.
 
 ## 7. Arsip Sesi — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
 

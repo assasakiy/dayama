@@ -12,13 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Hanya drop index jika database driver bukan sqlite dan index memang ada
-        if (DB::getDriverName() !== 'sqlite') {
-            Schema::table('settings', function (Blueprint $table) {
-                $table->dropUnique('settings_key_unique');
-                $table->unique(['key', 'context']);
-            });
+        if (DB::getDriverName() === 'sqlite') {
+            return;
         }
+
+        $indexes = collect(DB::select('SHOW INDEXES FROM settings'))->pluck('Key_name')->all();
+
+        Schema::table('settings', function (Blueprint $table) use ($indexes) {
+            if (in_array('settings_key_unique', $indexes, true)) {
+                $table->dropUnique('settings_key_unique');
+            }
+
+            if (! in_array('settings_key_context_unique', $indexes, true)) {
+                $table->unique(['key', 'context']);
+            }
+        });
     }
 
     /**
