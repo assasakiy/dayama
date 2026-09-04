@@ -82,7 +82,17 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
+## 6. Sesi Terbaru — Design Tahap 1B: Organizational Context (2026-09-04)
+
+- Menyusun `docs/design-identity-tahap-1b-organizational-context.md` tanpa perubahan migration/code 1B.
+- Mengunci `OrgContext` immutable dengan level `GLOBAL | FOUNDATION | INSTITUTION | PERSONAL` dan precedence tertinggi untuk context saja.
+- Mengunci `OrganizationalAccessResolver` sebagai Laravel scoped service per request; tanpa static cache.
+- Mendefinisikan `null` sebagai unrestricted, `[]` sebagai tanpa akses organisasi, dan `[IDs]` sebagai akses terbatas.
+- Mendefinisikan active institution sebagai pilihan context yang wajib sudah authorized, bukan sumber authorization.
+- Memetakan seluruh consumer resolver: `ActiveInstitution`, `ScopeRule`, `InstitutionScope`, middleware, switch endpoint, Inertia share, capabilities, controllers, dan sidebar.
+- Memisahkan tegas Tahap 1C untuk relationship verification dan portal access grant/revoke.
+
+## 7. Arsip Sesi — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
 
 - **Authorization Closure & Policies**:
   - Dibuat `StudentPolicy` dan `EmployeePolicy` sebagai thin adapter menuju `AuthorizationService`.
