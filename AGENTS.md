@@ -82,14 +82,15 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Design Tahap 1B: Organizational Context (2026-09-04)
+## 6. Sesi Terbaru — Finalisasi Design Tahap 1B: Organizational Context (2026-09-04)
 
-- Menyusun `docs/design-identity-tahap-1b-organizational-context.md` tanpa perubahan migration/code 1B.
-- Mengunci `OrgContext` immutable dengan level `GLOBAL | FOUNDATION | INSTITUTION | PERSONAL` dan precedence tertinggi untuk context saja.
-- Mengunci `OrganizationalAccessResolver` sebagai Laravel scoped service per request; tanpa static cache.
-- Mendefinisikan `null` sebagai unrestricted, `[]` sebagai tanpa akses organisasi, dan `[IDs]` sebagai akses terbatas.
-- Mendefinisikan active institution sebagai pilihan context yang wajib sudah authorized, bukan sumber authorization.
-- Memetakan seluruh consumer resolver: `ActiveInstitution`, `ScopeRule`, `InstitutionScope`, middleware, switch endpoint, Inertia share, capabilities, controllers, dan sidebar.
+- Memperbarui `docs/design-identity-tahap-1b-organizational-context.md` sesuai draft review terbaru; belum ada migration/code 1B.
+- Menambah keputusan `core_roles.grants_global_context` agar `scope = null` tidak otomatis berarti GLOBAL.
+- Mengunci `OrgContext` immutable/serializable, precedence, dan perbedaan fail-safe `null` vs `[]` vs `[IDs]`.
+- Mengunci resolver sebagai Laravel scoped service per request dengan `refreshActiveInstitution()` tanpa static cache.
+- Mengunci institution nonaktif dikeluarkan dari access IDs; assignment lembaga tanpa institution aktif tetap level INSTITUTION dengan `[]`.
+- Menetapkan active/primary institution sebagai preference/filter, bukan bukti authorization.
+- Menetapkan policy boundary GLOBAL/FOUNDATION, hard-deleted institution handling, consumer migration, dan 36-case test matrix.
 - Memisahkan tegas Tahap 1C untuk relationship verification dan portal access grant/revoke.
 
 ## 7. Arsip Sesi — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
