@@ -82,16 +82,17 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Finalisasi Design Tahap 1B: Organizational Context (2026-09-04)
+## 6. Sesi Terbaru — Revisi Final Design Tahap 1B: Organizational Context (2026-09-04)
 
-- Memperbarui `docs/design-identity-tahap-1b-organizational-context.md` sesuai draft review terbaru; belum ada migration/code 1B.
-- Menambah keputusan `core_roles.grants_global_context` agar `scope = null` tidak otomatis berarti GLOBAL.
-- Mengunci `OrgContext` immutable/serializable, precedence, dan perbedaan fail-safe `null` vs `[]` vs `[IDs]`.
-- Mengunci resolver sebagai Laravel scoped service per request dengan `refreshActiveInstitution()` tanpa static cache.
-- Mengunci institution nonaktif dikeluarkan dari access IDs; assignment lembaga tanpa institution aktif tetap level INSTITUTION dengan `[]`.
-- Menetapkan active/primary institution sebagai preference/filter, bukan bukti authorization.
-- Menetapkan policy boundary GLOBAL/FOUNDATION, hard-deleted institution handling, consumer migration, dan 36-case test matrix.
-- Memisahkan tegas Tahap 1C untuk relationship verification dan portal access grant/revoke.
+- Menegaskan authority aktor berasal assignment role, bukan `InstitutionMembership` Person aktor; membership hanya audit signal.
+- Memisahkan `accessibleInstitutionIds` (boleh bekerja) dari `activeInstitutionId` (sedang bekerja/filter query).
+- Menetapkan `InstitutionScope` memakai active context; `whereIn` hanya untuk mode lintas-lembaga eksplisit.
+- Menetapkan resolver defensif: INSTITUTION wajib `core_role_user` + assignment Spatie yang cocok + institution aktif.
+- Menambahkan `RoleAssignmentService` sebagai writer transaksi tunggal untuk Spatie dan `core_role_user`.
+- Merevisi PERSONAL: tetap dapat CMS/personal features sesuai permission, tetapi tidak organizational resources.
+- Mengunci governance `grants_global_context`: hanya Primary Super Admin boleh grant/revoke.
+- Menetapkan status role tidak berubah semantics pada 1B dan menambah total 40 test cases.
+- Belum ada migration/code 1B; relationship authorization tetap Tahap 1C.
 
 ## 7. Arsip Sesi — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
 
