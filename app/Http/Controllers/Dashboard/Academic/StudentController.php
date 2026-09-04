@@ -9,6 +9,7 @@ use App\Support\ActiveInstitution;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Academic\Models\Student;
@@ -21,6 +22,8 @@ class StudentController extends Controller
 {
     public function index(): Response
     {
+        Gate::authorize('viewAny', Student::class);
+
         $students = Student::with('person')
             ->orderBy('created_at', 'desc')
             ->tap(fn ($q) => ActiveInstitution::applyToQuery($q))
@@ -46,6 +49,8 @@ class StudentController extends Controller
 
     public function create(): Response
     {
+        Gate::authorize('create', Student::class);
+
         $personQuery = Person::select('id', 'nama_lengkap', 'nik', 'gender', 'tempat_lahir', 'tanggal_lahir', 'agama', 'photo')
             ->orderBy('nama_lengkap');
 
@@ -71,6 +76,8 @@ class StudentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create', Student::class);
+
         $institutionId = ActiveInstitution::id();
 
         $validated = $request->validate([
@@ -180,11 +187,26 @@ class StudentController extends Controller
             'person.addresses.type',
         ])->findOrFail($id);
 
+        Gate::authorize('update', $student);
+
+        $personQuery = Person::select('id', 'nama_lengkap', 'nik', 'gender', 'tempat_lahir', 'tanggal_lahir', 'agama', 'photo')
+            ->orderBy('nama_lengkap');
+
+        $user = auth()->user();
+        $isYayasanOrAdmin = ! $user || $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
+
+        if (! $isYayasanOrAdmin) {
+            $instId = ActiveInstitution::id();
+            if ($instId) {
+                $personQuery->whereHas('memberships', fn ($m) => $m->where('institution_id', $instId)->where('status', 'active'));
+            } else {
+                $personQuery->whereRaw('1 = 0');
+            }
+        }
+
         return Inertia::render('Academic/Students/Form', [
             'student' => $student,
-            'persons' => Person::select('id', 'nama_lengkap', 'nik', 'gender', 'tempat_lahir', 'tanggal_lahir', 'agama', 'photo')
-                ->orderBy('nama_lengkap')
-                ->get(),
+            'persons' => $personQuery->get(),
             'contactTypes' => ContactType::select('id', 'nama')->orderBy('nama')->get(),
             'addressTypes' => AddressType::select('id', 'nama')->orderBy('nama')->get(),
         ]);
@@ -193,6 +215,8 @@ class StudentController extends Controller
     public function update(Request $request, string $id): RedirectResponse
     {
         $student = Student::with('person')->findOrFail($id);
+        Gate::authorize('update', $student);
+
         $institutionId = $student->institution_id;
 
         $validated = $request->validate([
@@ -269,7 +293,10 @@ class StudentController extends Controller
 
     public function destroy(string $id): RedirectResponse
     {
-        Student::findOrFail($id)->delete();
+        $student = Student::findOrFail($id);
+        Gate::authorize('delete', $student);
+
+        $student->delete();
 
         return redirect('/academic/students')
             ->with('success', 'Siswa berhasil dihapus.');

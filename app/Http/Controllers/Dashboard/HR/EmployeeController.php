@@ -9,6 +9,7 @@ use App\Support\ActiveInstitution;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Modules\Core\Models\Address;
@@ -25,6 +26,8 @@ class EmployeeController extends Controller
 {
     public function index(): Response
     {
+        Gate::authorize('viewAny', Employee::class);
+
         $employees = Employee::with('person', 'employmentStatus', 'department')
             ->tap(fn ($q) => ActiveInstitution::applyToQuery($q))
             ->orderBy('created_at', 'desc')
@@ -46,6 +49,8 @@ class EmployeeController extends Controller
 
     public function create(): Response
     {
+        Gate::authorize('create', Employee::class);
+
         return Inertia::render('HR/Employees/Form', [
             'employee' => null,
             'employmentStatuses' => EmploymentStatus::select('id', 'nama')->orderBy('nama')->get(),
@@ -57,6 +62,8 @@ class EmployeeController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create', Employee::class);
+
         $validated = $request->validate([
             // Person
             'person_id' => 'nullable|uuid|exists:core_persons,id',
@@ -157,6 +164,8 @@ class EmployeeController extends Controller
             'department',
         ])->findOrFail($id);
 
+        Gate::authorize('update', $employee);
+
         return Inertia::render('HR/Employees/Form', [
             'employee' => $employee,
             'employmentStatuses' => EmploymentStatus::select('id', 'nama')->orderBy('nama')->get(),
@@ -169,6 +178,7 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id): RedirectResponse
     {
         $employee = Employee::with('person')->findOrFail($id);
+        Gate::authorize('update', $employee);
 
         $validated = $request->validate([
             // Person
@@ -234,7 +244,10 @@ class EmployeeController extends Controller
 
     public function destroy(string $id): RedirectResponse
     {
-        Employee::findOrFail($id)->delete();
+        $employee = Employee::findOrFail($id);
+        Gate::authorize('delete', $employee);
+
+        $employee->delete();
 
         return redirect('/hr/employees')
             ->with('success', 'Guru / staf berhasil dihapus.');

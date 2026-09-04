@@ -32,14 +32,15 @@ class IdentityTahap1AHardeningTest extends TestCase
 
     private function cleanupData(): void
     {
-        DB::table('academic_students')->whereIn('nis', ['NIS-MTS-01', 'NIS-MTS-02'])->delete();
+        DB::table('academic_students')->whereIn('nis', ['NIS-MTS-01', 'NIS-MTS-02', 'NIS-TEST-403'])->delete();
         DB::table('hr_employees')->whereIn('nip', ['NIP-MA-01', 'NIP-MA-02'])->delete();
         DB::table('core_institution_memberships')->delete();
-        DB::table('core_persons')->whereIn('nik', ['3201018888880001', '3201017777770001', '3201016666660001', '3201016666660002'])->delete();
+        DB::table('core_persons')->whereIn('nik', ['3201018888880001', '3201017777770001', '3201016666660001', '3201016666660002', '3201015555550001', '3201015555550002'])->delete();
         DB::table('core_model_has_roles')->whereIn('model_id', DB::table('core_users')->where('email', 'like', '%@dayama.test')->pluck('id'))->delete();
+        DB::table('core_role_user')->whereIn('user_id', DB::table('core_users')->where('email', 'like', '%@dayama.test')->pluck('id'))->delete();
         DB::table('core_users')->where('email', 'like', '%@dayama.test')->delete();
         DB::table('core_roles')->where('name', 'like', 'operator_mts_%')->delete();
-        DB::table('core_institutions')->where('name', 'like', '%Testing%')->orWhere('name', 'like', '%Scope Test%')->orWhere('name', 'like', '%Rollback Test%')->delete();
+        DB::table('core_institutions')->where('name', 'like', '%Testing%')->orWhere('name', 'like', '%Scope Test%')->orWhere('name', 'like', '%Rollback Test%')->orWhere('name', 'like', '%Role Test%')->delete();
     }
 
     /**
@@ -162,6 +163,7 @@ class IdentityTahap1AHardeningTest extends TestCase
             'scope' => 'lembaga',
             'guard_name' => 'web',
         ]);
+        $roleLembaga->givePermissionTo(['academic.students.view', 'academic.students.create', 'dashboard.view']);
         $operatorMts = User::create([
             'id' => (string) Str::orderedUuid(),
             'username' => 'op_' . Str::random(5),
@@ -171,6 +173,15 @@ class IdentityTahap1AHardeningTest extends TestCase
             'status' => 'active',
         ]);
         $operatorMts->assignRole($roleLembaga);
+
+        DB::table('core_role_user')->insert([
+            'id' => (string) Str::orderedUuid(),
+            'user_id' => $operatorMts->id,
+            'role_id' => $roleLembaga->id,
+            'institution_id' => $mts->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         session(['active_institution_id' => $mts->id]);
 
@@ -184,5 +195,92 @@ class IdentityTahap1AHardeningTest extends TestCase
 
         $this->assertContains($personMts->id, $personIds);
         $this->assertNotContains($personMa->id, $personIds);
+    }
+
+    /**
+     * Test 4: RBAC & Scope Enforcement pada Student & Person
+     * - Operator MTs tanpa permission academic.students.create dilarang POST student (403).
+     * - Operator MTs dengan persons.edit boleh edit Person MTs, tapi dilarang edit Person eksklusif MA (403).
+     */
+    public function test_rbac_and_institution_scope_enforcement(): void
+    {
+        $mts = Institution::create(['name' => 'MTs Role Test', 'slug' => 'mts-rl-' . Str::random(5)]);
+        $ma  = Institution::create(['name' => 'MA Role Test', 'slug' => 'ma-rl-' . Str::random(5)]);
+
+        $personMts = Person::create([
+            'id' => (string) Str::orderedUuid(),
+            'nama_lengkap' => 'Santri MTs RBAC',
+            'nik' => '3201015555550001'
+        ]);
+        InstitutionMembership::ensureMembership($personMts->id, $mts->id);
+
+        $personMa = Person::create([
+            'id' => (string) Str::orderedUuid(),
+            'nama_lengkap' => 'Santri MA RBAC',
+            'nik' => '3201015555550002'
+        ]);
+        InstitutionMembership::ensureMembership($personMa->id, $ma->id);
+
+        // Role 1: Operator MTs dengan persons.edit & persons.view, tetapi TANPA academic.students.create
+        $roleMts = Role::create([
+            'id' => (string) Str::orderedUuid(),
+            'name' => 'operator_mts_' . Str::random(5),
+            'scope' => 'lembaga',
+            'guard_name' => 'web',
+        ]);
+        $roleMts->givePermissionTo(['persons.edit', 'persons.view', 'academic.students.view', 'dashboard.view']);
+
+        $operatorMts = User::create([
+            'id' => (string) Str::orderedUuid(),
+            'username' => 'op_mts_' . Str::random(5),
+            'email' => 'op_mts_' . Str::random(5) . '@dayama.test',
+            'password' => bcrypt('password'),
+            'is_primary_super_admin' => false,
+            'status' => 'active',
+        ]);
+        $operatorMts->assignRole($roleMts);
+
+        // Pasang di core_role_user agar ActiveInstitution & ScopeRule mengenalinya
+        DB::table('core_role_user')->insert([
+            'id' => (string) Str::orderedUuid(),
+            'user_id' => $operatorMts->id,
+            'role_id' => $roleMts->id,
+            'institution_id' => $mts->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        session(['active_institution_id' => $mts->id]);
+
+        // 1. Coba POST student tanpa permission academic.students.create -> 403
+        $studentRes = $this->actingAs($operatorMts)
+            ->withSession(['active_institution_id' => $mts->id])
+            ->post('http://dashboard.dayama.test/academic/students', [
+                'nama_lengkap' => 'Anak Baru',
+                'nis' => 'NIS-TEST-403',
+                'angkatan' => '2026',
+            ]);
+        $studentRes->assertForbidden();
+
+        // 2. Coba update Person eksklusif MA oleh operator MTs -> 403 (ScopeRule memblokir)
+        $personMaRes = $this->actingAs($operatorMts)
+            ->withSession(['active_institution_id' => $mts->id])
+            ->put("http://dashboard.dayama.test/persons/{$personMa->id}", [
+                'nama_depan' => 'Hacker MA',
+            ]);
+        $personMaRes->assertForbidden();
+
+        // 3. Update Person MTs oleh operator MTs -> Berhasil (Allowed 302 redirect)
+        $personMts = $personMts->fresh();
+
+        $personMtsRes = $this->actingAs($operatorMts)
+            ->withSession(['active_institution_id' => $mts->id])
+            ->put("http://dashboard.dayama.test/persons/{$personMts->id}", [
+                'nama_depan' => 'Santri MTs Updated',
+            ]);
+        if ($personMtsRes->getStatusCode() === 403) {
+            dump($personMtsRes->exception?->getMessage());
+        }
+        $personMtsRes->assertRedirect();
     }
 }

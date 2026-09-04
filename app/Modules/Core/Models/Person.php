@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Person extends Model
 {
-    use HasUuids, SoftDeletes;
+    use \App\Models\Concerns\HasUuid, SoftDeletes;
 
     protected $table = 'core_persons';
 

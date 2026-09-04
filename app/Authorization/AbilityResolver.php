@@ -74,6 +74,28 @@ class AbilityResolver
             );
         }
 
+        // Domain models like persons, academic.students, hr.employees do not use .own/.all suffix
+        $isDomainModule = in_array($resource, [
+            'persons',
+            'institutions',
+            'academic.students',
+            'academic.classes',
+            'academic.attendance',
+            'academic.grades',
+            'hr.employees',
+            'hr.departments',
+            'hr.positions',
+            'hr.attendance',
+        ], true);
+
+        if ($isDomainModule) {
+            return new AbilityResolution(
+                action: $mappedAbility,
+                resource: $resource,
+                basePermission: "{$resource}.{$mappedAbility}"
+            );
+        }
+
         return new AbilityResolution(
             action: $mappedAbility,
             resource: $resource,

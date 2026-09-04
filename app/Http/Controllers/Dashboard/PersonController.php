@@ -136,6 +136,19 @@ class PersonController extends Controller
             'relationship_type_id' => $m->pivot->relationship_type_id,
         ]);
 
+        $personQuery = Person::orderBy('nama_lengkap');
+        $user = request()?->user();
+        $isYayasanOrAdmin = ! $user || $user->is_primary_super_admin || $user->roles()->where('scope', 'yayasan')->exists();
+
+        if (! $isYayasanOrAdmin) {
+            $instId = ActiveInstitution::id();
+            if ($instId) {
+                $personQuery->whereHas('memberships', fn ($m) => $m->where('institution_id', $instId)->where('status', 'active'));
+            } else {
+                $personQuery->whereRaw('1 = 0');
+            }
+        }
+
         return Inertia::render('Persons/Form', [
             'person'           => [
                 'id'             => $person->id,
@@ -222,12 +235,13 @@ class PersonController extends Controller
             'skills_list'       => Skill::orderBy('nama')->get(['id', 'nama']),
             'languages_list'    => Language::orderBy('nama')->get(['id', 'nama']),
             'relationship_types' => RelationshipType::orderBy('nama')->get(['id', 'nama']),
-            'persons_list'      => Person::orderBy('nama_lengkap')->get(['id', 'nama_lengkap']),
+            'persons_list'      => $personQuery->get(['id', 'nama_lengkap']),
         ]);
     }
 
-    public function update(Request $request, Person $person): RedirectResponse
+    public function update(Request $request, string $person): RedirectResponse
     {
+        $person = Person::findOrFail($person);
         Gate::authorize('update', $person);
 
         $validated = $request->validate([
@@ -246,7 +260,7 @@ class PersonController extends Controller
         ]);
 
         $validated['nama_lengkap'] = trim(
-            ($validated['gelar_depan'] ? $validated['gelar_depan'] . ' ' : '') .
+            (!empty($validated['gelar_depan']) ? $validated['gelar_depan'] . ' ' : '') .
             ($validated['nama_depan'] ?? '') . ' ' .
             ($validated['nama_belakang'] ?? '')
         );
@@ -260,6 +274,8 @@ class PersonController extends Controller
 
     public function addPosition(Request $request, Person $person): RedirectResponse
     {
+        Gate::authorize('update', $person);
+
         $validated = $request->validate([
             'position_id'    => 'required|uuid|exists:hr_positions,id',
             'institution_id' => 'nullable|uuid|exists:core_institutions,id',
@@ -283,6 +299,8 @@ class PersonController extends Controller
 
     public function removePosition(Request $request, Person $person, string $position): RedirectResponse
     {
+        Gate::authorize('update', $person);
+
         $institutionId = $request->input('institution_id');
 
         $query = $person->positions()->where('positions.id', $position);
@@ -302,6 +320,9 @@ class PersonController extends Controller
 
     public function createAccount(Person $person): RedirectResponse
     {
+        Gate::authorize('update', $person);
+        Gate::authorize('create', User::class);
+
         if ($person->user) {
             return back()->with('error', 'Person ini sudah memiliki akun.');
         }
@@ -614,6 +635,8 @@ class PersonController extends Controller
 
     public function copyFromInstitution(Request $request): JsonResponse
     {
+        Gate::authorize('create', Person::class);
+
         $validated = $request->validate([
             'nik' => 'required|string|max:20',
             'source_person_id' => 'required|uuid|exists:core_persons,id',

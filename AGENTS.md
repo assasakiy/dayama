@@ -82,26 +82,23 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Eksekusi Tahap 1A & 1A.1 Hardening: Identity Foundation & RBAC Alignment (2026-09-04)
+## 6. Sesi Terbaru — Eksekusi Tahap 1A.1b: Authorization Closure & RBAC Hardening (2026-09-04)
 
-- **Decoupling Person**:
-  - Kolom `institution_id` dan foreign key `core_persons_institution_id_foreign` berhasil dilepas dari `core_persons`.
-  - Composite index `(nik, institution_id)` diganti menjadi global nullable unique `core_persons_nik_unique`.
-  - Trait `HasInstitutionScope` dihapus dari `Person`.
-- **InstitutionMembership (Person-Centric)**:
-  - Dibuat tabel dan model `core_institution_memberships` dengan constraint unique `(person_id, institution_id)` dan status `active|inactive`.
-  - Dibuat helper `InstitutionMembership::ensureMembership()` yang menangani pembuatan keanggotaan dan reaktivasi status tanpa menimpa `joined_at` awal.
-  - Data-preserving early rollback: implementasi `down()` memulihkan `institution_id` di `core_persons` dari `core_institution_memberships` sebelum tabel membership di-drop.
-- **RBAC & Authorization Hardening**:
-  - Dibuat `PersonPolicy` sebagai thin adapter menuju `AuthorizationService` (mematuhi `docs/rbac/README.md`).
-  - `PersonController` diproteksi lewat `Gate::authorize('viewAny', Person::class)`, `Gate::authorize('create')`, dsb tanpa hardcode string permission atau cek manual PSA.
-  - `AbilityResolver` dimutakhirkan dengan pemetaan modul domain terpusat (`Person -> persons`, `Student -> academic.students`, `Employee -> hr.employees`, dsb).
-- **Application Compatibility & Query Sweep**:
-  - `PersonController@index`: Menggunakan Foundation Precedence (SuperAdmin/Yayasan melihat Person global; operator lembaga difilter via `whereHas('memberships')`).
-  - `StudentController@create`: Query dropdown `Person` kini mematuhi scope kelembagaan (operator lembaga hanya melihat Person terafiliasi lembaganya).
-  - `StudentController` & `EmployeeController`: Mengimplementasikan Global Person Resolver (reuse person via `person_id` atau `nik`, create jika baru) + otomatis memanggil `ensureMembership()` tanpa memicu error SQL.
-  - `YayasanPersonIndexService` & `PersonObserver`: Menghilangkan replikasi kloning Person (`copyFromInstitution`) menjadi penautan keanggotaan (`linkToInstitution`). Afiliasi kelembagaan dibaca langsung dari `core_institution_memberships`.
+- **Authorization Closure & Policies**:
+  - Dibuat `StudentPolicy` dan `EmployeePolicy` sebagai thin adapter menuju `AuthorizationService`.
+  - `StudentController` & `EmployeeController`: Seluruh aksi CRUD (`index`, `create`, `store`, `edit`, `update`, `destroy`) diproteksi lewat `Gate::authorize()`.
+  - `PersonController`: Melindungi sub-actions (`addPosition`, `removePosition`, `copyFromInstitution`, `createAccount`) menggunakan `Gate::authorize()`. Khusus `createAccount` wajib otorisasi `update Person` dan `create User`.
+- **ScopeRule Person Resolution**:
+  - `ScopeRule` diperluas mengenali target model `Person`: aktor ber-scope lembaga hanya diizinkan berinteraksi dengan `Person` yang memiliki irisan keanggotaan aktif di lembaga yang dipegang aktor. Person eksklusif lembaga lain otomatis diblokir 403.
+- **Visibility Sweep**:
+  - `StudentController@edit` dan `PersonController@edit`: Query dropdown `persons` dibatasi ke institusi aktif untuk user non-yayasan via `whereHas('memberships')` agar data Person lembaga lain tidak bocor.
+- **Database Driver Fix**:
+  - Migration fix settings menambahkan import facade `DB` eksplisit dan pengecekan driver non-sqlite yang aman.
 - **Verifikasi**:
-  - Test migration `migrate`, `rollback`, dan `migrate` ulang sukses tanpa error.
-  - Test regression hardening (`IdentityTahap1AHardeningTest`) dan model feature (`IdentityTahap1ATest`) 100% pass (7 tests, 28 assertions).
-  - 333 rute sistem aktif normal via `php artisan route:list`.
+  - Test regression hardening (`IdentityTahap1AHardeningTest`) 4 passed:
+    1. Data-preserving early rollback (memulihkan `institution_id`).
+    2. Multi-institution reuse Person via Student & Employee store.
+    3. Dropdown visibility sweep (mencegah kebocoran data antar-lembaga).
+    4. RBAC & scope enforcement (penolakan 403 tanpa permission & penolakan 403 saat mengedit Person lembaga lain).
+  - Test model feature (`IdentityTahap1ATest`) 4 passed (total 8 tests, 31 assertions pass).
+  - Seluruh 333 rute sistem aktif normal via `php artisan route:list`.

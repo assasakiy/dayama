@@ -20,9 +20,14 @@ class PermissionRule implements AuthorizationRule
         $hasAnyPermission = false;
 
         foreach ($resolution->permissions() as $permission) {
-            if ($context->actor->hasPermissionTo($permission)) {
-                $hasAnyPermission = true;
-                break;
+            try {
+                if ($context->actor->hasPermissionTo($permission)) {
+                    $hasAnyPermission = true;
+                    break;
+                }
+            } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
+                // Skip jika permission varian (seperti .own/.all) belum ada di DB Spatie
+                continue;
             }
         }
 
