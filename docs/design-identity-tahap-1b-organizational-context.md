@@ -1,28 +1,162 @@
-# DAYAMA — Design Document Tahap 1B: Organizational Context
+# DAYAMA — Design Document Tahap 1B: Organizational Context & Contextual Permission
 
-**Status:** Draft untuk review  
-**Scope:** Organizational Context sahaja. Personal/relationship access masuk Tahap 1C.  
-**Prasyarat:** `docs/rbac/README.md`, terutama bagian Institution Scoping.
+**Status:** Final Draft untuk Approval  
+**Scope:** Tahap 1B — Organizational Context, Role Assignment SSOT, dan Contextual Permission  
+**Di luar scope:** Personal/relationship access seperti Wali→Anak, Santri→own record, PersonRelationshipRule. Seluruhnya masuk Tahap 1C.
 
-## 0. Masalah
+**Prasyarat:**
 
-Saat ini organizational access membaca `core_roles.scope` secara terpisah di `ScopeRule`, `InstitutionScope`, `ActiveInstitution`, middleware, controller, dan frontend. Ini rawan drift dan salah mengartikan `scope = null` sebagai akses global.
+- `docs/rbac/README.md`
+- `.agents/references/rbac-module.md`
+- Tahap 1A Identity Foundation — CLOSED
+- Tahap 1A.1 / 1A.1b / 1A.1c — CLOSED
 
-Tahap 1B menetapkan:
+## 0. Tujuan Tahap 1B
+
+Tahap 1B memisahkan:
 
 ```text
-Authenticated User
-      ↓
-OrganizationalAccessResolver [Laravel scoped]
-      ↓
-OrgContext immutable
-      ↓
-Semua consumer backend dan frontend contract
+ROLE ASSIGNMENT
+→ WHICH role applies WHERE?
+
+ORGANIZATIONAL CONTEXT
+→ WHERE can actor operate?
+
+CONTEXTUAL PERMISSION
+→ WHAT can actor do at that location?
+
+PERSONAL RELATIONSHIP [1C]
+→ WHO may personal actor access?
 ```
 
-Permission tetap diputuskan Gate → Policy → AuthorizationService. OrgContext hanya menentukan batas data organisasi.
+Target:
 
-## 1. OrgContext Contract
+```text
+User
+├── RoleAssignmentService
+├── OrganizationalAccessResolver
+└── PermissionContextResolver
+```
+
+## 1. Sub-Tahap Wajib
+
+```text
+1B.0 Role Assignment SSOT
+ ↓
+1B.1 Organizational Context
+ ↓
+1B.2 Contextual Permission
+```
+
+Urutan tidak boleh dilompati.
+
+## 2. Masalah Saat Ini
+
+- `ScopeRule`, `InstitutionScope`, `ActiveInstitution`, controllers, dan frontend membaca role/scope sendiri.
+- `scope = null` tidak berarti GLOBAL; editor/author/subscriber juga scope null.
+- Spatie role assignment tidak menyimpan institution context.
+- Union permission Spatie berpotensi membocorkan permission role institutional lintas institution.
+
+## 3. Tahap 1B.0 — Role Assignment SSOT
+
+### 3.1 Writer Resmi
+
+Semua mutasi role wajib melalui `RoleAssignmentService`:
+
+```text
+assign()
+remove()
+sync()
+bulkAssign()
+assignInstitution()
+removeInstitution()
+```
+
+Dilarang bagi controller baru memanggil langsung `assignRole`, `removeRole`, `syncRoles`, atau mutasi `RoleUser` untuk organizational assignment.
+
+### 3.2 Kontrak Multi-Institution
+
+```json
+{
+  "assignments": [
+    {"role": "guru", "institution": "MA"},
+    {"role": "wakil_kepala", "institution": "MTs"},
+    {"role": "editor", "institution": null}
+  ]
+}
+```
+
+### 3.3 Sinkronisasi
+
+```text
+Assign Guru @ MA
+→ ensure Spatie Guru
+→ ensure core_role_user Guru @ MA
+
+Assign Guru @ MTs
+→ Spatie Guru tetap satu
+→ pivots Guru @ MA dan Guru @ MTs
+
+Remove Guru @ MA
+→ hapus pivot MA
+→ Spatie Guru tetap karena pivot MTs masih ada
+
+Remove Guru @ MTs terakhir
+→ hapus pivot
+→ remove Spatie Guru
+```
+
+Role non-institution (`editor`, `operator_yayasan`, administrator) memakai assignment Spatie tanpa institution binding.
+
+### 3.4 Resolver Defensive Validation
+
+INSTITUTION assignment valid hanya jika:
+
+```text
+core_role_user ada
++ role sama masih assigned melalui Spatie
++ institution exists dan aktif
+```
+
+Stale pivot tanpa Spatie role tidak memberi akses. Spatie institutional role tanpa pivot juga tidak memberi institution authority.
+
+### 3.5 Reconciliation
+
+Preflight 1B.0 mengaudit:
+
+```text
+orphan role_user
+Spatie role missing
+institution missing/inactive
+duplicate assignments
+institutional role tanpa institution binding
+```
+
+Perbaikan deterministic dan terdokumentasi; tidak ada delete agresif tanpa aturan.
+
+## 4. Tahap 1B.1 — Organizational Context
+
+### 4.1 OrgLevel
+
+```php
+enum OrgLevel: string
+{
+    case GLOBAL = 'global';
+    case FOUNDATION = 'foundation';
+    case INSTITUTION = 'institution';
+    case PERSONAL = 'personal';
+}
+```
+
+Precedence:
+
+```text
+GLOBAL > FOUNDATION > INSTITUTION > PERSONAL
+```
+
+Hanya level mengikuti precedence. Permission tetap union, lalu difilter context pada 1B.2.
+
+### 4.2 OrgContext
 
 ```php
 final readonly class OrgContext implements JsonSerializable
@@ -36,104 +170,151 @@ final readonly class OrgContext implements JsonSerializable
 }
 ```
 
-```php
-enum OrgLevel: string
-{
-    case GLOBAL = 'global';
-    case FOUNDATION = 'foundation';
-    case INSTITUTION = 'institution';
-    case PERSONAL = 'personal';
-}
-```
+Immutable, serializable, tidak membawa model User, ID dinormalisasi string unique.
 
-Syarat:
-
-- Immutable dan serializable.
-- Tidak membawa model `User` atau relasi sensitif.
-- ID dinormalisasi sebagai unique array string.
-
-## 2. Level dan GLOBAL Authority
+### 4.3 Definisi Level
 
 | Level | Kriteria |
 |---|---|
-| `GLOBAL` | Primary Super Admin atau role dengan `grants_global_context = true` |
-| `FOUNDATION` | Minimal satu assignment role aktif dengan `scope = yayasan` |
-| `INSTITUTION` | Minimal satu assignment role lembaga, termasuk jika semua institusinya sedang nonaktif |
-| `PERSONAL` | User terautentikasi tanpa authority organisasi |
+| GLOBAL | PSA atau assigned role dengan `grants_global_context=true` |
+| FOUNDATION | assigned Spatie role `scope=yayasan` |
+| INSTITUTION | minimal satu valid role-institution assignment |
+| PERSONAL | authenticated user tanpa authority organisasi |
 
-`scope = null` tidak otomatis `GLOBAL`. Editor, author, dan subscriber dapat memakai scope null tanpa platform authority.
+Guest/public berada di luar resolver.
 
-Migration 1B menambah:
+### 4.4 grants_global_context
+
+Migration:
 
 ```text
 core_roles.grants_global_context boolean default false
 ```
 
-Seed:
+Seed awal:
 
 ```text
-super-admin / administrator platform → true
-editor / author / subscriber          → false
+super-admin, administrator platform → true
+lainnya                           → false
 ```
 
-Security tidak boleh bergantung nama role. Seeder boleh memilih role awal berdasarkan registry deklaratif, tetapi resolver hanya membaca flag.
+Runtime resolver hanya membaca flag, tidak nama role.
 
-## 3. Precedence
+Hanya Primary Super Admin boleh grant/revoke. Backend/service/policy wajib enforce; UI hiding tidak cukup. Perubahan masuk activity log existing:
 
 ```text
-GLOBAL > FOUNDATION > INSTITUTION > PERSONAL
+role.grants_global_context.changed
+actor, role_id, old_value, new_value, timestamp
 ```
 
-Precedence hanya memilih organizational level. Permission Spatie tetap union dari seluruh role.
+### 4.5 Role Status
 
-Contoh:
+`Role.status` tidak berubah semantics pada 1B. PermissionRule dan resolver tidak menambahkan enforcement status baru. Ini known gap terpisah.
+
+### 4.6 Actor Authority vs Person Membership
+
+Authority actor berasal role assignment, bukan `InstitutionMembership` Person actor.
+
+Target Person berbeda: akses memakai intersection:
 
 ```text
-operator_yayasan + guru MA
-→ level FOUNDATION
-→ permission guru tetap tersedia
+actor authorized institution IDs
+∩ target Person active memberships
 ```
 
-## 4. Null vs [] vs [IDs]
+Inactive target membership tidak memberi akses.
 
-| Level | accessibleInstitutionIds |
-|---|---|
-| `GLOBAL` | `null` |
-| `FOUNDATION` | `null` |
-| `INSTITUTION` | `[A,B,...]`, dapat `[]` bila semua assignment menuju institusi nonaktif |
-| `PERSONAL` | `[]` |
+### 4.7 accessibleInstitutionIds
 
 ```text
-null  = unrestricted organizational access
-[]    = tidak ada institution aktif yang boleh diakses
-[IDs] = akses terbatas
+GLOBAL      → null
+FOUNDATION  → null
+INSTITUTION → [active institution IDs], dapat []
+PERSONAL    → []
 ```
 
-Larangan: pengecekan falsy seperti `if (!$ids) unrestricted`. Consumer wajib membedakan `null` dengan `[]` secara eksplisit.
+```text
+null !== []
+null  = unrestricted boundary
+[]    = no authorized institution
+[IDs] = restricted authority
+```
 
-## 5. Active Institution
+Institution nonaktif dikeluarkan. Jika semua institution nonaktif, level tetap INSTITUTION dengan `[]`.
 
-`activeInstitutionId` adalah working/filter context, bukan bukti authorization.
+### 4.8 PERSONAL dan Dashboard
 
-- `INSTITUTION`: hanya valid bila termasuk `accessibleInstitutionIds`.
-- `GLOBAL/FOUNDATION`: boleh menunjuk institution aktif untuk filter tampilan; tidak mengurangi atau menambah authority.
-- `PERSONAL`: selalu null.
-- Session tidak pernah ditambahkan ke daftar institution authorized.
+PERSONAL berarti tanpa organizational authority, bukan tanpa dashboard.
 
-Default awal sesi untuk `INSTITUTION`:
+```text
+PERSONAL + CMS permission → CMS allowed
+PERSONAL → Academic/HR/institutional resources denied
+```
 
-1. primary institution jika masih accessible;
-2. institution aktif pertama;
-3. null jika accessible IDs kosong.
+Dashboard shell tetap permission-based.
 
-## 6. Primary Institution
+## 5. Working Context
 
-`primaryInstitutionId` hanya preference/default.
+### 5.1 activeInstitutionId
 
-- Tidak memberikan permission.
-- Tidak memperluas accessible IDs.
-- Nilai stale diabaikan.
-- Simpan di preference existing jika cocok; jika tidak ada, migration dapat menambah storage preference paling kecil setelah audit implementasi.
+Menjawab DI MANA user sedang bekerja, bukan DI MANA boleh bekerja.
+
+- INSTITUTION: wajib anggota accessible IDs.
+- GLOBAL/FOUNDATION: boleh institution aktif sebagai display/operational filter, bukan authority.
+- PERSONAL: selalu null.
+
+Session tidak memberi authority.
+
+### 5.2 primaryInstitutionId
+
+Disimpan di `core_users.preferences`:
+
+```json
+{"primary_institution_id": "uuid"}
+```
+
+Update wajib merge JSON. Primary hanya default preference, bukan permission/assignment.
+
+### 5.3 Default Active
+
+```text
+INSTITUTION:
+primary valid → primary
+else first accessible
+else null
+
+GLOBAL/FOUNDATION:
+primary active valid → optional working context
+else null
+
+PERSONAL:
+null
+```
+
+### 5.4 Switch
+
+Backend:
+
+1. target exists dan aktif;
+2. INSTITUTION target harus accessible;
+3. GLOBAL/FOUNDATION boleh target aktif;
+4. PERSONAL 403;
+5. refresh resolver context;
+6. write session.
+
+## 6. InstitutionScope Final
+
+```text
+GLOBAL      → unrestricted
+FOUNDATION  → unrestricted
+INSTITUTION → WHERE institution_id = activeInstitutionId
+               active null → WHERE 1=0
+PERSONAL    → WHERE 1=0
+```
+
+GLOBAL/FOUNDATION tidak otomatis terfilter session. Operational view tertentu harus explicit opt-in ke active institution.
+
+INSTITUTION multi-institution report juga explicit opt-in + permission + `whereIn(accessible IDs)`; bukan global scope default.
 
 ## 7. Resolver Lifecycle
 
@@ -141,75 +322,127 @@ Default awal sesi untuk `INSTITUTION`:
 $this->app->scoped(OrganizationalAccessResolver::class);
 ```
 
-Resolver menyimpan cache pada property instance per request, bukan static/singleton. Aman untuk PHP-FPM dan Octane.
+Cache pada instance per request; bukan static/singleton/cross-request. `refreshActiveInstitution()` membuat immutable context baru tanpa menghitung ulang level/IDs.
 
-`refreshActiveInstitution()` membuat OrgContext baru dengan active ID baru setelah validasi, tanpa mengulang resolusi role/access IDs.
+`ActiveInstitution` dipertahankan sebagai compatibility facade tipis ke resolver. Tidak boleh membaca role.scope, RoleUser, atau session sebagai authority sendiri.
 
-## 8. Algoritma Resolver
+## 8. ScopeRule Final
+
+Target dengan `institution_id`:
+
+- GLOBAL/FOUNDATION: boundary lewat, lanjut PermissionRule.
+- INSTITUTION: target institution harus accessible.
+- PERSONAL: deny.
+
+Target Person:
+
+- INSTITUTION: active target memberships beririsan dengan accessible IDs.
+- GLOBAL/FOUNDATION: organizational boundary unrestricted; permission tetap wajib.
+- PERSONAL: dibahas Tahap 1C, fail closed untuk organizational action pada 1B.
+
+## 9. Tahap 1B.2 — Contextual Permission
+
+### 9.1 Tujuan
+
+Role institutional hanya memberi permission di institution assignment-nya.
 
 ```text
-PSA?
-├── ya → GLOBAL
-└── tidak
-    ↓
-role grants_global_context?
-├── ya → GLOBAL
-└── tidak
-    ↓
-assignment scope yayasan?
-├── ya → FOUNDATION
-└── tidak
-    ↓
-ada assignment scope lembaga yang valid?
-├── ya → INSTITUTION
-│        accessible IDs = institution aktif dari core_role_user
-└── tidak → PERSONAL
+Guru @ MA + Wakil Kepala @ MTs
+MA  → Guru permissions
+MTs → Wakil Kepala permissions
 ```
 
-Institution nonaktif dikeluarkan dari accessible IDs. User tetap `INSTITUTION` dengan `[]` bila assignment lembaga masih ada tetapi seluruh institusi nonaktif. `InstitutionMembership` milik Person aktor bukan syarat organizational authority; membership aktor hanya consistency/audit signal. Untuk target `Person`, active target membership tetap wajib beririsan dengan institution authority aktor.
+### 9.2 Institutional Resource Registry
 
-## 9. Institution Switch
+Registry terpusat, tidak memakai nama `SCOPED_MODULES`:
 
-Backend wajib:
+```text
+resource class/name
+permission prefix
+institutional true/false
+```
 
-1. cek target institution exists dan aktif;
-2. `INSTITUTION`: target harus ada dalam accessible IDs;
-3. `GLOBAL/FOUNDATION`: target boleh institution aktif dalam boundary terkait;
-4. `PERSONAL`: selalu 403;
-5. baru tulis session dan panggil `refreshActiveInstitution()`.
+Contoh:
 
-Request palsu yang hanya mengubah session tidak memberi akses.
+```text
+Student  → academic.students → true
+Employee → hr.employees      → true
+Post     → posts             → false
+```
 
-## 10. Consumer Wajib
+AbilityResolver dan PermissionContextResolver menggunakan mapping sama.
 
-| Consumer | Target perubahan |
-|---|---|
-| `ActiveInstitution` | Facade compatibility tipis ke resolver |
-| `ScopeRule` | Baca OrgContext; tidak query role scope/RoleUser langsung |
-| `InstitutionScope` | Filter memakai active working context; `null` unrestricted tanpa active = no filter, `[]` = `1=0`, active valid = `where institution_id = active`, mode lintas-lembaga eksplisit saja boleh `whereIn` |
-| `CheckInstitutionScope` | Resolver only |
-| Switch endpoint | Validasi lewat resolver |
-| `AuthorizationService::capabilities()` | Gunakan OrgContext untuk capability scope |
-| `HandleInertiaRequests` | Share OrgContext, capabilities, accessible/active institutions |
-| Controllers | Hapus direct `roles()->where('scope', ...)` |
-| Frontend/sidebar | Render contract backend; tidak infer dari role/scope |
+### 9.3 PermissionContextResolver
 
-Consumer hasil sweep saat desain:
+Kontrak konsep:
 
-- `PersonController`
-- `StudentController`
-- `EmployeeController`
-- `DepartmentController`
-- `RombelController`
-- `UserController`
-- `ScopeRule`
-- `InstitutionScope`
-- `ActiveInstitution`
-- `CheckInstitutionScope`
-- `InstitutionController`
-- `HandleInertiaRequests`
+```text
+resolve(User actor, permission, institutionId)
+```
 
-## 11. Frontend Contract
+Sumber institutional permission:
+
+- GLOBAL role: permission berlaku seluruh platform boundary.
+- FOUNDATION role: permission berlaku lintas foundation institutions.
+- INSTITUTION role: permission hanya pada institution binding role itu.
+- Direct user permission: berlaku pada seluruh institution yang sudah authorized OrgContext, tetapi tidak menciptakan WHERE/authority.
+- scope-null non-global role: institutional permission diabaikan sebagai configuration anomaly.
+
+Non-institutional permissions tetap memakai existing Spatie semantics.
+
+### 9.4 Mixed Role
+
+```text
+Operator Yayasan + Guru @ MA
+Target MA  → Foundation + Guru permission
+Target MTs → Foundation permission saja
+```
+
+Precedence level tidak menghapus lower-level assignment; permission lower-level tetap contextual.
+
+### 9.5 Class-Level Authorization
+
+Instance action mengambil institution ID dari target.
+
+Class action (`viewAny`, `create`) membutuhkan institution authorization context:
+
+```text
+INSTITUTION → activeInstitutionId
+explicit create institution → validated request context
+```
+
+Tidak boleh class-level institutional authorization tanpa institution context. Controller tetap masuk melalui Gate → Policy → AuthorizationService. Policy tetap thin adapter.
+
+### 9.6 Pipeline
+
+Urutan tetap:
+
+```text
+PrimarySuperAdminRule
+ScopeRule
+PermissionRule
+OwnershipRule
+RankRule
+```
+
+ScopeRule menjawab WHERE. PermissionRule menjawab WHAT dan mendelegasikan institutional checks ke PermissionContextResolver.
+
+### 9.7 effectiveRolesByInstitution
+
+Resolver membangun peta per request dari assignment data bersama:
+
+```text
+MA  → [guru]
+MTs → [wakil_kepala]
+```
+
+Tidak query ulang setiap permission check. Cache permission context per `(user,institution,permission)` hanya per request.
+
+### 9.8 Contextual Capabilities
+
+Capabilities institutional dihitung terhadap active/explicit institution. Switch wajib menghasilkan fresh Inertia props/capabilities; tidak cache lintas switch.
+
+## 10. Frontend Contract
 
 ```json
 {
@@ -227,185 +460,203 @@ Consumer hasil sweep saat desain:
 }
 ```
 
-Frontend dilarang memakai `roles.includes(...)` atau `role.scope` untuk keputusan akses. Permission list mentah boleh tetap tersedia selama transisi untuk granular `can()` existing, tetapi organizational UI harus memakai OrgContext.
+Frontend tidak boleh infer authority dari role name/scope. Raw role/permissions boleh sementara untuk compatibility granular; organizational decisions memakai OrgContext dan capabilities.
 
-## 12. GLOBAL vs FOUNDATION Policy Boundary
+## 11. Platform Modules
 
-OrgContext tidak sendirian memberikan akses modul. Semua modul tetap Gate/permission-gated.
+Platform modules default diberikan hanya kepada GLOBAL authority melalui registry/seeder, tetapi enforcement tetap Gate/permission-based; bukan `if level GLOBAL allow`.
 
-Kebijakan produk 1B:
+FOUNDATION tidak otomatis mendapat users/roles/permissions/settings/apps/domains/platform registry.
 
-- `GLOBAL`: dapat diberi permission platform-level seperti users, roles, permissions, settings, application registry, domains/sites.
-- `FOUNDATION`: tidak otomatis boleh modul platform-level; hanya boleh bila registry/seeder memberikan permission yang relevan.
-- `INSTITUTION`: permission berlaku pada data institution yang authorized.
-- `PERSONAL`: tidak punya organizational authority, tetapi tetap dapat memakai dashboard shell dan fitur non-organizational seperti CMS/bookmark jika permission mengizinkan. Academic/HR/institutional resources tetap ditolak.
+## 12. Hard-Deleted Institution
 
-Perbedaan GLOBAL dan FOUNDATION berasal dari organizational authority + permission registry, bukan hardcode role name.
+Resolver hanya menerima institution existing dan aktif. Stale pivot ke institution hilang tidak menghasilkan ID. Audit FK wajib sebelum implementasi; cascade unrelated tidak diubah diam-diam.
 
-## 13. Role Assignment Source of Truth dan Write Paths
+## 13. Consumer Migration
 
-Resolver memakai aturan sumber berikut:
+Wajib:
 
 ```text
-GLOBAL
-→ Spatie-assigned role JOIN core_roles
-  grants_global_context = true
-
-FOUNDATION
-→ Spatie-assigned role JOIN core_roles
-  scope = yayasan
-
-INSTITUTION
-→ core_role_user institution binding
-  + role yang sama masih assigned ke User melalui Spatie
-  + institution exists dan aktif
+RoleAssignmentService writers
+ActiveInstitution
+ScopeRule
+InstitutionScope
+CheckInstitutionScope
+Institution switch
+HandleInertiaRequests
+AuthorizationService capabilities
+PersonController
+StudentController
+EmployeeController
+DepartmentController
+RombelController
+UserController
+RoleController
+frontend sidebar
+usePermissions
+semua hasil grep tambahan
 ```
 
-Stale `core_role_user` setelah Spatie role dicabut tidak memberi akses. Role lembaga tanpa institution binding juga tidak memberi akses.
+Pengecualian direct role.scope read hanya untuk resolver/assignment domain dan Role administration metadata UI.
 
-Seluruh writer role dipusatkan dalam `RoleAssignmentService` dengan transaksi tunggal:
+## 14. Test Matrix 1B.0
+
+1. Assign Guru@MA → Spatie+pivot sync.
+2. Assign Guru@MTs → no duplicate Spatie, two pivots.
+3. Remove Guru@MA → Spatie remains.
+4. Remove last Guru assignment → Spatie removed.
+5. Bulk assignment sync.
+6. RoleController assign users sync.
+7. Stale pivot without Spatie gives no authority.
+8. Spatie institutional role without pivot gives no authority.
+9. Reconciliation deterministic.
+
+## 15. Test Matrix 1B.1
+
+10. PSA → GLOBAL/null.
+11. grants global flag → GLOBAL/null.
+12. scope-null non-global → PERSONAL/[].
+13. Foundation → FOUNDATION/null.
+14. MA+MTs assignments → INSTITUTION/[MA,MTs].
+15. Foundation+institution → FOUNDATION/null.
+16. Inactive institution excluded.
+17. All inactive → INSTITUTION/[].
+18. PERSONAL active null.
+19. Forged session gives no authority.
+20. Valid primary defaults active.
+21. Stale primary fallback.
+22. Resolve once/request.
+23. Actor membership inactive does not reduce role authority.
+24. Target Person active membership passes scope.
+25. Target Person inactive membership denied.
+
+## 16. Test Matrix InstitutionScope/Switch
+
+26. GLOBAL unrestricted.
+27. FOUNDATION unrestricted.
+28. INSTITUTION active MA → MA only.
+29. INSTITUTION active null → no rows.
+30. PERSONAL → no rows.
+31. null distinct from [].
+32. Unauthorized switch 403.
+33. Authorized switch allowed.
+34. Inactive switch 403.
+35. GLOBAL/FOUNDATION active switch allowed.
+36. PERSONAL switch 403.
+
+## 17. Test Matrix 1B.2
+
+37. Guru@MA + Wakil Kepala@MTs does not leak permissions.
+38. Foundation+Guru: Guru permission only at MA.
+39. Direct institutional permission works only inside authorized IDs.
+40. PERSONAL direct institutional permission remains denied organizationally.
+41. Neutral scope-null role institutional permission ignored.
+42. create/viewAny Student requires institution context.
+43. Explicit create MA by MTs-only actor denied.
+44. Explicit create MA by authorized actor+permission allowed.
+45. Contextual capabilities change after switch.
+
+## 18. Regression/Security Tests
+
+46. PERSONAL editor CMS remains allowed.
+47. PERSONAL editor Academic/HR denied.
+48. Non-PSA global-flag mutation denied.
+49. PSA global-flag mutation allowed and logged old/new.
+50. Role removal reflected next request.
+51. Inertia contract stable.
+52. Sidebar does not read role/scope.
+53. Existing Gate/Policy tests pass.
+54. 1A tests pass.
+55. Auth/session tests pass.
+56. Route list valid.
+
+## 19. Security Invariants
+
+1. Session/primary never give authority.
+2. null and [] remain distinct.
+3. PERSONAL fails closed for organizational resources.
+4. Actor authority never depends on Person membership.
+5. Target Person requires active affiliation for institution scope.
+6. Stale pivot without matching Spatie assignment gives no authority.
+7. Institutional permission never leaks across role bindings.
+8. Direct permission does not create institution authority.
+9. Neutral scope-null role cannot source institutional permission.
+10. Role scope only read by resolver/assignment domain and metadata admin.
+11. UI is never enforcement.
+12. Global flag mutation is PSA-only and audited.
+13. Guest/public is not PERSONAL.
+14. Pipeline separation WHAT/WHERE remains.
+
+## 20. Implementation Order
 
 ```text
-assign / remove / sync / bulk assign / institution bind
-      ↓
-RoleAssignmentService
-      ↓ transaction
-Spatie assignment + core_role_user konsisten
+1B.0 Role Assignment SSOT
+├── audit/reconciliation
+├── RoleAssignmentService
+├── multi-dimensional contract
+├── migrate all writers
+└── tests
+
+1B.1 Organizational Context
+├── grants_global_context migration/governance
+├── OrgLevel, OrgContext, scoped resolver
+├── primary preference
+├── ActiveInstitution facade
+├── ScopeRule, InstitutionScope, middleware/switch
+├── Inertia orgContext
+├── frontend organization rendering
+└── tests
+
+1B.2 Contextual Permission
+├── Institutional Resource Registry
+├── effective roles map
+├── PermissionContextResolver
+├── PermissionRule integration
+├── class-level context
+├── direct/neutral role semantics
+├── capabilities refresh
+└── leakage/security tests
 ```
 
-Consumer yang wajib dimigrasi mencakup `UserController`, `RoleController`, bulk assignment, dan writer lain hasil grep. Resolver tetap defensif terhadap data stale walau writer telah disatukan.
-
-Status `core_roles.status` tidak mengubah semantics permission pada 1B. Resolver dan PermissionRule tetap mengikuti assignment Spatie/core_role_user tanpa enforcement status baru; enforcement role inactive dijadwalkan terpisah agar organizational context dan permission tidak berbeda semantics.
-
-## 14. GLOBAL Flag Governance
-
-`grants_global_context` adalah security-sensitive authority, bukan field Role biasa.
-
-```text
-Hanya Primary Super Admin
-→ boleh grant/revoke grants_global_context
-```
-
-Backend wajib Gate/Policy check khusus berdasarkan flag PSA existing. Mass assignment Role umum tidak boleh menerima perubahan field ini. UI non-PSA tidak menampilkan kontrol, tetapi backend tetap enforcement utama.
-
-## 15. Hard-Deleted Institution
-
-- `core_role_user` dan domain tables tetap wajib memakai FK yang tepat.
-- Resolver selalu inner-join/filter ke `core_institutions` aktif; orphan assignment tidak menghasilkan access ID.
-- GLOBAL/FOUNDATION active filter ke institution hard-deleted dianggap stale, dibersihkan/diabaikan.
-- Audit FK semua tabel operasional menjadi preflight implementasi; perubahan cascade yang tidak terkait tidak dikerjakan diam-diam dalam 1B.
-
-## 16. Migration Path
-
-1. Tambah `OrgLevel`, `OrgContext`, scoped `OrganizationalAccessResolver`; unit test dahulu.
-2. Tambah `core_roles.grants_global_context`; seed authority flags dan governance PSA-only.
-3. Tambah `RoleAssignmentService`; migrasi seluruh writer Spatie + `core_role_user` ke transaksi tunggal.
-4. Refactor `ActiveInstitution` menjadi facade resolver dengan signature lama.
-5. Refactor `ScopeRule`, `InstitutionScope`, `CheckInstitutionScope`.
-6. Validasi switch institution.
-7. Share frontend contract dari `HandleInertiaRequests` dan capabilities.
-8. Sweep controller/backend direct role scope reads.
-9. Refactor frontend `usePermissions()`/sidebar.
-10. Grep gate: direct role scope reads hanya boleh di resolver dan fitur administrasi metadata role.
-11. Full regression.
-
-## 17. Test Matrix
-
-### Resolver
-
-1. PSA → GLOBAL/null.
-2. grants_global_context → GLOBAL/null.
-3. scope null tanpa global flag → PERSONAL/[].
-4. yayasan → FOUNDATION/null.
-5. lembaga A+B → INSTITUTION/[A,B].
-6. yayasan + lembaga → FOUNDATION/null.
-7. permission seluruh role tetap union.
-8. duplicate assignments menghasilkan IDs unik.
-9. target Person membership inactive tidak memberi akses Person; membership Person aktor tidak memotong institution authority.
-10. institution nonaktif dikeluarkan.
-11. seluruh institution nonaktif → INSTITUTION/[].
-12. resolve hanya sekali per user/request.
-
-### Active/Primary
-
-13. Active accessible diterima.
-14. Active tidak accessible ditolak.
-15. Session palsu tidak memberi authority.
-16. Primary valid menjadi default.
-17. Primary stale diabaikan.
-18. PERSONAL active selalu null.
-19. GLOBAL/FOUNDATION boleh active null.
-20. Switch ke institution nonaktif ditolak.
-
-### Enforcement
-
-21. `InstitutionScope`: unrestricted + active null tidak filter.
-22. `InstitutionScope`: [] menghasilkan no rows.
-23. Accessible `[MTs,MA]` + active `MA` memfilter hanya MA; `whereIn` hanya mode lintas-lembaga eksplisit.
-24. Operator MTs dengan session MA palsu tetap 403.
-25. Mixed Yayasan+Guru tetap FOUNDATION.
-26. PERSONAL editor dengan CMS permission tetap dapat CMS, tetapi gagal organizational resource/module.
-27. Person active membership dapat diakses dengan permission.
-28. Target Person inactive membership ditolak.
-29. Role dicabut terlihat pada request berikutnya.
-30. Stale `core_role_user` + Spatie role dicabut tidak memberi institution access.
-31. Role lembaga tanpa institution binding tidak memberi institution access.
-32. FOUNDATION role via Spatie tanpa `core_role_user` tetap FOUNDATION.
-33. Non-PSA mencoba grant/revoke `grants_global_context` ditolak.
-
-### Presentation/Regression
-
-34. Inertia share shape stabil.
-35. Sidebar tidak membaca role/scope.
-36. Capabilities berasal backend.
-37. Gate/Policy tests tetap lulus.
-38. Auth/session tetap lulus.
-39. Tahap 1A tests tetap lulus.
-40. Route list valid.
-
-## 18. Security Invariants
-
-1. Session dan primary institution tidak pernah memberikan akses.
-2. `null` dan `[]` tidak pernah tertukar.
-3. PERSONAL fail closed untuk organizational data.
-4. Institution dan membership inactive tidak memberi akses aktif.
-5. UI bukan enforcement layer.
-6. Role scope hanya dibaca resolver.
-7. Permission dan OrgContext dievaluasi terpisah.
-8. Guest/public tidak di-resolve sebagai PERSONAL.
-9. Actor authority berasal assignment role, bukan Person membership.
-10. Active/primary/session tidak menjadi bukti authority.
-11. `grants_global_context` hanya dapat diubah PSA.
-12. Stale `core_role_user` tidak memberi akses tanpa assignment Spatie yang cocok.
-
-## 19. Batas Tahap 1C
-
-Di luar 1B:
+## 21. Tahap 1C — Out of Scope
 
 ```text
 core_person_relationships
-PersonRelationshipRule
+guardian/parent/child
 relationship verification
 portal access grant/revoke
-guardian → child
-santri → own Student
-own Person access
+PersonRelationshipRule
+santri own Student
+own Person
+portal authorization
 ```
 
-Relasi identity dan keputusan portal access tetap terpisah. Relationship verified tidak otomatis berarti portal access granted.
+## 22. Acceptance Criteria
 
-## 20. Keputusan Open Questions
+Tahap 1B CLOSED hanya jika:
 
-1. Institution nonaktif dikeluarkan dari accessible IDs.
-2. User dengan assignment lembaga tetapi seluruh institution nonaktif tetap `INSTITUTION` dengan `[]`.
-3. Modul platform selalu permission-gated; `FOUNDATION` tidak otomatis mendapat authority GLOBAL.
-4. Hard-deleted institution tidak menghasilkan access ID; FK audit wajib sebelum implementasi.
+- role writers terpusat dan Spatie/core_role_user sinkron;
+- stale data tidak memberi authority;
+- OrganizationalAccessResolver menjadi SSOT;
+- ActiveInstitution hanya facade;
+- InstitutionScope mengikuti active context final;
+- contextual permissions tidak bocor lintas institution;
+- class-level actions punya institution context;
+- direct/neutral role semantics teruji;
+- capabilities refresh sesuai switch;
+- frontend tidak infer authority dari role/scope;
+- seluruh test 1A/1B/auth/route lulus;
+- tidak ada scope 1C masuk.
 
-## 21. Hold
+## 23. Status Mandor
 
 ```text
-🟢 Design 1B siap review
-⛔ Migration/code 1B belum boleh dijalankan
-⛔ PersonRelationshipRule ditahan untuk 1C
-⛔ Relationship migration ditahan untuk 1C
+Tahap 1A      ✅ CLOSED
+Tahap 1B      ✅ FINAL DRAFT
+Tahap 1B.0    ⛔ HOLD sampai commit dokumen direview
+Tahap 1B.1    ⛔ HOLD sampai 1B.0 selesai
+Tahap 1B.2    ⛔ HOLD sampai 1B.1 selesai
+Tahap 1C      ⛔ HOLD
 ```
+
+Eksekusi pertama setelah approval hanya Tahap 1B.0 — Role Assignment SSOT.

@@ -82,17 +82,18 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Revisi Final Design Tahap 1B: Organizational Context (2026-09-04)
+## 6. Sesi Terbaru — Final Draft Tahap 1B: Organizational Context & Contextual Permission (2026-09-04)
 
-- Menegaskan authority aktor berasal assignment role, bukan `InstitutionMembership` Person aktor; membership hanya audit signal.
-- Memisahkan `accessibleInstitutionIds` (boleh bekerja) dari `activeInstitutionId` (sedang bekerja/filter query).
-- Menetapkan `InstitutionScope` memakai active context; `whereIn` hanya untuk mode lintas-lembaga eksplisit.
-- Menetapkan resolver defensif: INSTITUTION wajib `core_role_user` + assignment Spatie yang cocok + institution aktif.
-- Menambahkan `RoleAssignmentService` sebagai writer transaksi tunggal untuk Spatie dan `core_role_user`.
-- Merevisi PERSONAL: tetap dapat CMS/personal features sesuai permission, tetapi tidak organizational resources.
-- Mengunci governance `grants_global_context`: hanya Primary Super Admin boleh grant/revoke.
-- Menetapkan status role tidak berubah semantics pada 1B dan menambah total 40 test cases.
-- Belum ada migration/code 1B; relationship authorization tetap Tahap 1C.
+- Memperluas desain 1B menjadi tiga sub-tahap wajib: `1B.0 Role Assignment SSOT`, `1B.1 Organizational Context`, dan `1B.2 Contextual Permission`.
+- Mengunci `RoleAssignmentService` sebagai writer transaksi tunggal untuk assignment Spatie + `core_role_user` multi-institution.
+- Mengunci resolver defensif: institutional assignment wajib memiliki pivot, assignment Spatie yang cocok, dan institution aktif.
+- Menegaskan actor authority tidak bergantung Person membership; target Person tetap membutuhkan active membership.
+- Mengunci `grants_global_context` PSA-only dan activity-log audited.
+- Mengunci InstitutionScope: GLOBAL/FOUNDATION unrestricted, INSTITUTION active-only, PERSONAL no rows.
+- Menambah Institutional Resource Registry dan `PermissionContextResolver` guna mencegah kebocoran permission role lintas institution.
+- Mengunci class-level `create/viewAny` membutuhkan institution authorization context.
+- Menetapkan direct permission tidak menciptakan organizational authority; scope-null neutral role tidak menjadi sumber institutional permission.
+- Menambah 56-case test matrix. Belum ada migration/kode 1B; eksekusi pertama setelah approval hanya 1B.0.
 
 ## 7. Arsip Sesi — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
 
