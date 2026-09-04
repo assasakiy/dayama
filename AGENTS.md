@@ -82,7 +82,7 @@ Domain dibangun otomatis dari root domain (`APP_ROOT_DOMAIN`):
 
 ---
 
-## 6. Sesi Terbaru — Eksekusi Tahap 1A.1b: Authorization Closure & RBAC Hardening (2026-09-04)
+## 6. Sesi Terbaru — Eksekusi Tahap 1A.1c: Final Security Closure (2026-09-04)
 
 - **Authorization Closure & Policies**:
   - Dibuat `StudentPolicy` dan `EmployeePolicy` sebagai thin adapter menuju `AuthorizationService`.

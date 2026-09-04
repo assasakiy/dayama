@@ -229,33 +229,35 @@ Route::middleware(['auth', 'dashboard.access'])->name('dashboard.')->group(funct
         Route::delete('/{person}/positions/{position}', [\App\Http\Controllers\Dashboard\PersonController::class, 'removePosition'])->name('positions.remove');
         Route::post('/{person}/create-account', [\App\Http\Controllers\Dashboard\PersonController::class, 'createAccount'])->name('create-account');
 
-        Route::post('/{person}/contacts', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeContact'])->name('contacts.store');
-        Route::put('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateContact'])->name('contacts.update');
-        Route::delete('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyContact'])->name('contacts.destroy');
+        Route::middleware('can:update,person')->group(function (): void {
+            Route::post('/{person}/contacts', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeContact'])->name('contacts.store');
+            Route::put('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateContact'])->name('contacts.update');
+            Route::delete('/{person}/contacts/{contact}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyContact'])->name('contacts.destroy');
 
-        Route::post('/{person}/addresses', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeAddress'])->name('addresses.store');
-        Route::put('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateAddress'])->name('addresses.update');
-        Route::delete('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyAddress'])->name('addresses.destroy');
+            Route::post('/{person}/addresses', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeAddress'])->name('addresses.store');
+            Route::put('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateAddress'])->name('addresses.update');
+            Route::delete('/{person}/addresses/{address}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyAddress'])->name('addresses.destroy');
 
-        Route::post('/{person}/educations', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeEducation'])->name('educations.store');
-        Route::put('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateEducation'])->name('educations.update');
-        Route::delete('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyEducation'])->name('educations.destroy');
+            Route::post('/{person}/educations', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeEducation'])->name('educations.store');
+            Route::put('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateEducation'])->name('educations.update');
+            Route::delete('/{person}/educations/{education}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyEducation'])->name('educations.destroy');
 
-        Route::post('/{person}/skills', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeSkill'])->name('skills.store');
-        Route::put('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateSkill'])->name('skills.update');
-        Route::delete('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroySkill'])->name('skills.destroy');
+            Route::post('/{person}/skills', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeSkill'])->name('skills.store');
+            Route::put('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateSkill'])->name('skills.update');
+            Route::delete('/{person}/skills/{skill}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroySkill'])->name('skills.destroy');
 
-        Route::post('/{person}/languages', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeLanguage'])->name('languages.store');
-        Route::delete('/{person}/languages/{language}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyLanguage'])->name('languages.destroy');
+            Route::post('/{person}/languages', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeLanguage'])->name('languages.store');
+            Route::delete('/{person}/languages/{language}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyLanguage'])->name('languages.destroy');
 
-        Route::post('/{person}/family', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeFamily'])->name('family.store');
-        Route::delete('/{person}/family/{relatedPerson}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyFamily'])->name('family.destroy');
+            Route::post('/{person}/family', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeFamily'])->name('family.store');
+            Route::delete('/{person}/family/{relatedPerson}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyFamily'])->name('family.destroy');
 
-        Route::post('/{person}/certificates', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeCertificate'])->name('certificates.store');
-        Route::put('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateCertificate'])->name('certificates.update');
-        Route::delete('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyCertificate'])->name('certificates.destroy');
+            Route::post('/{person}/certificates', [\App\Http\Controllers\Dashboard\PersonController::class, 'storeCertificate'])->name('certificates.store');
+            Route::put('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'updateCertificate'])->name('certificates.update');
+            Route::delete('/{person}/certificates/{certificate}', [\App\Http\Controllers\Dashboard\PersonController::class, 'destroyCertificate'])->name('certificates.destroy');
+        });
 
-        Route::get('/check-nik/{nik}', [\App\Http\Controllers\Dashboard\PersonController::class, 'checkNik'])->name('check-nik');
+        Route::get('/check-nik/{nik}', [\App\Http\Controllers\Dashboard\PersonController::class, 'checkNik'])->middleware('can:viewAny,' . \Modules\Core\Models\Person::class)->name('check-nik');
         Route::post('/copy-from', [\App\Http\Controllers\Dashboard\PersonController::class, 'copyFromInstitution'])->name('copy-from');
     });
 
